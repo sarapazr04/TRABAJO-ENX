@@ -1,4 +1,13 @@
+# Mi entorno (Sara)
+Enviroment_ENX/
+venv/
+.env
+
+# Archivos de Python
 __pycache__/
 *.pyc
-.env
-.vscode/
+*.pyo
+*.pyd
+
+.vscode/ 
+*.env
