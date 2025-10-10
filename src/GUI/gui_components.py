@@ -410,7 +410,7 @@ class LoadingIndicator(ctk.CTkFrame):
             )
         
         self.status_label.pack(pady=(0,15))
-        
+
     def stop(self) -> None:
         """
         Detiene la animación de la barra de progreso.
@@ -424,3 +424,94 @@ class LoadingIndicator(ctk.CTkFrame):
         >>> indicator.destroy()
         """
         self.progress_bar.stop()
+    
+
+class NotificationWindow(ctk.CTkToplevel):
+
+    WINDOW_WIDTH = 450
+    WINDOW_HIGHT = 180
+
+    NOTIFICATION_CONFIG = {
+        "success": {"color": AppTheme.SUCCES, "icon": "✓"},
+        "error": {"color": AppTheme.ERROR, "icon": "✗"},
+        "waring": {"color": AppTheme.WARNING, "icon": "⚠"}, 
+        "info": {"color": AppTheme.PRIMARY_ACCENT, "icono": "i"}
+        }
+    
+    def __init__(
+        self, 
+        parent: ctk.CTk, 
+        title: str, 
+        message: str, 
+        notification_type: str = "info"
+        ):
+        
+        super.__init__(parent)
+        
+        self._configure_notification_window()
+        self._center_notification_window()
+        config = self._get_notification_config(notification_type)
+        self._create_user_interface(title, message, config)
+        self._make_modal(parent) 
+
+    def _configure_notification_window(self) -> None:
+        
+        self.title("")
+        self.geometry(f"{self.WINDOW_WIDTH}x{self.WINDOW_HIGHT}")
+        self.resizable(False, False)
+
+    def _center_notification_window(self) -> None:
+
+        self.update_idletasks()
+        x = (self.winfo_screenwidth() // 2) - (self.WINDOW_WIDTH // 2)
+        y = (self.winfo_screenheight() // 2) - (self.WINDOW_HIGHT // 2)
+        self.geometry(f"{self.WINDOW_WIDTH}x{self.WINDOW_HIGHT}+{x}+{y}")
+    
+    def _get_notification_config(self, notification_type: str) -> dict:
+
+        return self.NOTIFICATION_CONFIG.get(notification_type, self.NOTIFICATION_CONFIG["info"])
+    
+    def _create_user_interface(self, title: str, message: str, config: dict) -> None:
+
+        accent_color = config["color"]
+        icon = config["icon"]
+        main_frame = self._create_main_frame(accent_color)
+        self._create_header(main_frame, title, icon, accent_color)
+        self._create_message_area(main_frame, message)
+        self._create_button(main_frame, accent_color)
+    
+    def _create_main_frame(self, border_color: str):
+
+        frame = ctk.CTkFrame(self, fg_color = AppTheme.SECONDERY_BACKGROUND, border_width = 2, border_color = border_color)
+        frame.pack(fill = "both", expand = True, padx = 2, pady = 2)
+        return frame
+    
+    def _create_header(self, parent: ctk.CTkFrame, title: str, icon: str, color: str) -> None:
+
+        header_frame = ctk.CTkFrame(master = parent, fg_color = AppTheme.PRIMARY_BACKGROUND, height = 45)
+        header_frame.pack(fill = "x")
+
+        header_frame.pack_propagate(False)
+
+        title_label = ctk.CTkLabel(master = header_frame, text = f"{icon} {title}", font = ("Segoe UI", 13, "bold"), text_color = color)
+        title_label.pack(pady = 12, padx = 20, anchor = "w")
+
+    def _create_message_area(self, parent: ctk.CTkFrame, message: str) -> None:
+
+        message_frame  = ctk.CTkFrame(parent, fg_color = "transparent")
+        message_frame.pack(fill = "both", expand = True, padx = 20, pady = (15, 10))
+        message_label = ctk.CTkLabel(message_frame, text = message, font = AppConfig.BODY_FONT, text_color = AppTheme.PRIMARY_TEXT, wraplength = 400, justify = "left")
+        message_label.pack()
+    
+    def _create_button(self, parent: ctk.CTkFrame, color: str) -> None:
+
+        button_frame = ctk.CTkFrame(parent, fg_color = "transparent")
+
+        button_frame.pack(fill = "both", padx = 20, pady = (0, 15))
+        close_button = ctk.CTkButton(button_frame, text = "ACEPTAR", font = ("Orbitron", 10, "bold"), fg_color = color, hover_color = color, text_color = "#ffffff", height = 32, corner_radius = 6, command = self.destroy)
+        close_button.pack(side = "right")
+    
+    def _make_modal(self, parent: ctk.CTk) -> None:
+
+        self.transient(parent)
+        self.grab_set()
