@@ -482,33 +482,61 @@ class NotificationWindow(ctk.CTkToplevel):
     
     def _create_main_frame(self, border_color: str):
 
-        frame = ctk.CTkFrame(self, fg_color = AppTheme.SECONDERY_BACKGROUND, border_width = 2, border_color = border_color)
+        frame = ctk.CTkFrame(
+            self, 
+            fg_color = AppTheme.SECONDERY_BACKGROUND, 
+            border_width = 2, 
+            border_color = border_color
+            )
         frame.pack(fill = "both", expand = True, padx = 2, pady = 2)
+
         return frame
     
     def _create_header(self, parent: ctk.CTkFrame, title: str, icon: str, color: str) -> None:
 
         header_frame = ctk.CTkFrame(master = parent, fg_color = AppTheme.PRIMARY_BACKGROUND, height = 45)
         header_frame.pack(fill = "x")
-
         header_frame.pack_propagate(False)
 
-        title_label = ctk.CTkLabel(master = header_frame, text = f"{icon} {title}", font = ("Segoe UI", 13, "bold"), text_color = color)
+        title_label = ctk.CTkLabel(
+            master = header_frame, 
+            text = f"{icon} {title}", 
+            font = ("Segoe UI", 13, "bold"), 
+            text_color = color
+            )
         title_label.pack(pady = 12, padx = 20, anchor = "w")
 
     def _create_message_area(self, parent: ctk.CTkFrame, message: str) -> None:
 
         message_frame  = ctk.CTkFrame(parent, fg_color = "transparent")
         message_frame.pack(fill = "both", expand = True, padx = 20, pady = (15, 10))
-        message_label = ctk.CTkLabel(message_frame, text = message, font = AppConfig.BODY_FONT, text_color = AppTheme.PRIMARY_TEXT, wraplength = 400, justify = "left")
+
+        message_label = ctk.CTkLabel(
+            message_frame, 
+            text = message, 
+            font = AppConfig.BODY_FONT, 
+            text_color = AppTheme.PRIMARY_TEXT, 
+            wraplength = 400, 
+            justify = "left"
+            )
         message_label.pack()
     
     def _create_button(self, parent: ctk.CTkFrame, color: str) -> None:
 
         button_frame = ctk.CTkFrame(parent, fg_color = "transparent")
-
         button_frame.pack(fill = "both", padx = 20, pady = (0, 15))
-        close_button = ctk.CTkButton(button_frame, text = "ACEPTAR", font = ("Orbitron", 10, "bold"), fg_color = color, hover_color = color, text_color = "#ffffff", height = 32, corner_radius = 6, command = self.destroy)
+
+        close_button = ctk.CTkButton(
+            button_frame, 
+            text = "ACEPTAR", 
+            font = ("Orbitron", 10, "bold"), 
+            fg_color = color, 
+            hover_color = color, 
+            text_color = "#ffffff", 
+            height = 32, 
+            corner_radius = 6, 
+            command = self.destroy
+            )
         close_button.pack(side = "right")
     
     def _make_modal(self, parent: ctk.CTk) -> None:
