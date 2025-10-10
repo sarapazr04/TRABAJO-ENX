@@ -14,6 +14,8 @@ Panel
     Contenedor con título integrado.
 LoadingIndicator
     Indicador de carga animado.
+NotificationWindow
+    Ventana modal de notificación.
 """
 
 import customtkinter as ctk
@@ -349,9 +351,9 @@ class LoadingIndicator(ctk.CTkFrame):
 
     def _create_user_interface(self) -> None:
         """
-        Crea los elementos visuales del indicador.
+        Crear los elementos visuales del indicador.
         
-        Organiza la creación de label, barra de progreso y label de estado
+        Organizar la creación de label, barra de progreso y label de estado
         mediante métodos especializados.
         """
 
@@ -361,9 +363,9 @@ class LoadingIndicator(ctk.CTkFrame):
 
     def _create_label(self) -> None:
         """
-        Crea la etiqueta principal.
+        Crear la etiqueta principal.
 
-        Muestra el texto "Cargando datos..." en la parte superior
+        Mostrar el texto "Cargando datos..." en la parte superior
         del indicador.
         """
 
@@ -379,9 +381,9 @@ class LoadingIndicator(ctk.CTkFrame):
 
     def _create_progress_bar(self) -> None:
         """
-        Crea la barra de progreso.
+        Crear la barra de progreso.
         
-        Configura una barra en modo indeterminado (animación continua).
+        Configurar una barra en modo indeterminado (animación continua).
         """
 
         self.progress_bar = ctk.CTkProgressBar(
@@ -397,9 +399,9 @@ class LoadingIndicator(ctk.CTkFrame):
     
     def _create_status_label(self) -> None:
         """
-        Crea la etiqueta de estado.
+        Crear la etiqueta de estado.
         
-        Muestra información adicional sobre el proceso en curso.
+        Mostrar información adicional sobre el proceso en curso.
         """
 
         self.status_label = ctk.CTkLabel(
@@ -413,30 +415,86 @@ class LoadingIndicator(ctk.CTkFrame):
 
     def stop(self) -> None:
         """
-        Detiene la animación de la barra de progreso.
-        
-        Debe llamarse antes de destruir el widget para evitar
-        errores de referencia a widgets destruidos.
+        Detener la animación de la barra de progreso.
         
         Ejemplos
         --------
         >>> indicator.stop()
         >>> indicator.destroy()
+
+        Notas
+        -----
+        Debe llamarse antes de destruir el widget para evitar
+        errores de referencia a widgets destruidos.
         """
         self.progress_bar.stop()
     
 
 class NotificationWindow(ctk.CTkToplevel):
-
+    """
+    Ventana modal de notificación.
+    
+    Proporcionar una ventana de diálogo personalizada con diseño consistente,
+    diferentes estilos según el tipo de notificación.
+    
+    Parámetros
+    ----------
+    parent : ctk.CTk
+        Ventana padre sobre la que se mostrará la notificación.
+    title : str
+        Título de la notificación.
+    message : str
+        Mensaje descriptivo a mostrar.
+    notification_type : str, opcional
+        Tipo de notificación: 'success', 'error', 'warning' o 'info'.
+        Por defecto 'info'.
+    
+    Atributos de clase
+    ------------------
+    WINDOW_WIDTH : int
+        Ancho de la ventana de notificación (450 px).
+    WINDOW_HEIGHT : int
+        Alto de la ventana de notificación (180 px).
+    NOTIFICATION_CONFIGS : dict
+        Mapeo de tipos a configuración visual (color e icono).
+    
+    Métodos
+    -------
+    _configure_window()
+        Configura propiedades básicas de la ventana.
+    _center_window()
+        Centra la ventana en la pantalla.
+    _get_notification_config(notification_type)
+        Obtiene la configuración visual según el tipo.
+    _create_notification_interface(title, message, config)
+        Crea todos los elementos de la interfaz.
+    
+    Ejemplos
+    --------
+    >>> NotificationWindow(
+    ...     parent=app,
+    ...     title="Operación Exitosa",
+    ...     message="El archivo se cargó correctamente",
+    ...     notification_type="success"
+    ... )
+    
+    Notas
+    -----
+    La ventana es modal (bloquea interacción con la ventana padre).
+    Se destruye automáticamente al hacer clic en el botón "ACEPTAR".
+    """
+    # Constantes de configuracion
     WINDOW_WIDTH = 450
     WINDOW_HIGHT = 180
 
+    # Mapeo de tipos a configuracion visual
     NOTIFICATION_CONFIG = {
         "success": {"color": AppTheme.SUCCES, "icon": "✓"},
         "error": {"color": AppTheme.ERROR, "icon": "✗"},
         "waring": {"color": AppTheme.WARNING, "icon": "⚠"}, 
         "info": {"color": AppTheme.PRIMARY_ACCENT, "icono": "i"}
         }
+    
     
     def __init__(
         self, 
@@ -445,72 +503,208 @@ class NotificationWindow(ctk.CTkToplevel):
         message: str, 
         notification_type: str = "info"
         ):
-        
+
+    # Llamar al constructor de CTkToplevel para crear la ventana base   
         super.__init__(parent)
-        
+
+    # Configurar tamaño, titulo, etc
         self._configure_notification_window()
+
+    # Calcular la posicion centrada en pantalla
         self._center_notification_window()
+    
+    # Obtener colores/icono según el tipo (success/error/etc)
         config = self._get_notification_config(notification_type)
+    
+    # Crear todo el contenido visual (header, mensaje, boton)
         self._create_user_interface(title, message, config)
+    
+    # Bloquear la ventana padre (modal)
         self._make_modal(parent) 
 
     def _configure_notification_window(self) -> None:
+        """
+        Configurar las propiedades básicas de la ventana.
         
+        Establecer el título vacío, dimensiones fijas y deshabilita
+        el redimensionamiento.
+        """
+        # Titulo vacío (no mostrar titulo en la barra)
         self.title("")
+
+        # Establecer tamño fijo para la ventana
         self.geometry(f"{self.WINDOW_WIDTH}x{self.WINDOW_HIGHT}")
+
+        # Desactivar redimensionar la ventana (False, False) = no horizontal, no vertical
         self.resizable(False, False)
 
     def _center_notification_window(self) -> None:
-
+        """
+        Centrar la ventana en la pantalla.
+        
+        Calcular la posición x,y para que la ventana aparezca centrada
+        en la pantalla del usuario.
+        """
+        # Forcar actualizacíon de geometria para obtener valores correctos
         self.update_idletasks()
+
+        # Calcular la posicion X: (ancho_pantalla / 2) - (ancho_ventana / 2)
         x = (self.winfo_screenwidth() // 2) - (self.WINDOW_WIDTH // 2)
+
+        # Calcular la posicion Y: (alto_pantalla / 2) - (alto_ventana / 2)
         y = (self.winfo_screenheight() // 2) - (self.WINDOW_HIGHT // 2)
+
+        # Aplicar geometria: "ANCHOxALTO+X+Y"
         self.geometry(f"{self.WINDOW_WIDTH}x{self.WINDOW_HIGHT}+{x}+{y}")
     
     def _get_notification_config(self, notification_type: str) -> dict:
+        """
+        Obtiener la configuración visual según el tipo de notificación.
+    
+        Parámetros
+        ----------
+        notification_type : str
+            Tipo de notificación.
+        
+        Devuelve
+        --------
+        dict
+            Diccionario con 'color' e 'icon' para el tipo especificado.
+            Si el tipo no existe, devuelve la configuración de 'info'.
+        
+        Ejemplos
+        --------
+        >>> config = self._get_notification_config('success')
+        >>> config['icon']
+        '✓'
+        """
 
         return self.NOTIFICATION_CONFIG.get(notification_type, self.NOTIFICATION_CONFIG["info"])
     
-    def _create_user_interface(self, title: str, message: str, config: dict) -> None:
-
+    def _create_notification_interface(self, title: str, message: str, config: dict) -> None:
+        """
+        Crear la interfaz completa de la notificación.
+        
+        Parámetros
+        ----------
+        title : str
+            Título a mostrar.
+        message : str
+            Mensaje descriptivo.
+        config : dict
+            Configuración visual con 'color' e 'icon'.
+        
+        Notas
+        -----
+        Delega la creación a submétodos especializados para mantener
+        responsabilidad única y facilitar mantenimiento.
+        """
+        # Extraer color e icono del diccionario de configuración
         accent_color = config["color"]
+
+        # Crer frame principal (caja contenedora con borde de color)
         icon = config["icon"]
+
+        # Crear header (barra superior con icono y título)
         main_frame = self._create_main_frame(accent_color)
+
+        # Crear header (barra superior con icono y título)
         self._create_header(main_frame, title, icon, accent_color)
+
+        # Crear area de mensaje (texto central)
         self._create_message_area(main_frame, message)
+        
+        # Crear botón de cerrar la ventana (botón "ACEPTAR")
         self._create_button(main_frame, accent_color)
     
-    def _create_main_frame(self, border_color: str):
-
+    def _create_main_frame(self, border_color: str) -> ctk.CTkFrame:
+        """
+        Crear el frame principal con borde coloreado.
+        
+        Parámetros
+        ----------
+        border_color : str
+            Color del borde en formato hexadecimal.
+        
+        Devuelve
+        --------
+        ctk.CTkFrame
+            Frame principal configurado.
+        """
+        # Crear un frame (contenedor) dentro la ventana (self)
         frame = ctk.CTkFrame(
-            self, 
+            self, # Padre = la ventana de notificacion
             fg_color = AppTheme.SECONDERY_BACKGROUND, 
             border_width = 2, 
             border_color = border_color
             )
+        
+        # .pack() posiciona el frame dentro de la ventana
+        # fill = "both" -> rellena horizontal y vertical
+        # expand = True -> toma espacio extra si existe
+        # padx/pady -> margenes de 2px
         frame.pack(fill = "both", expand = True, padx = 2, pady = 2)
 
         return frame
     
     def _create_header(self, parent: ctk.CTkFrame, title: str, icon: str, color: str) -> None:
+        """
+        Crear la barra de título con icono.
+        
+        Parámetros
+        ----------
+        parent : ctk.CTkFrame
+            Widget padre donde se añadirá el header.
+        title : str
+            Texto del título.
+        icon : str
+            Carácter Unicode del icono.
+        color : str
+            Color del texto en formato hexadecimal.
+        """
+        # Frame que contiene el header
+        header_frame = ctk.CTkFrame(
+            master = parent, 
+            fg_color = AppTheme.PRIMARY_BACKGROUND, 
+            height = 45
+            )
+        # fill = "x" = solo horizontal
+        header_frame.pack(fill = "x") 
 
-        header_frame = ctk.CTkFrame(master = parent, fg_color = AppTheme.PRIMARY_BACKGROUND, height = 45)
-        header_frame.pack(fill = "x")
+        # pack_propagate(False) = mantiene altura fija de 45px
+        # Sin esto, el frame se ajustara al contenido
         header_frame.pack_propagate(False)
 
+        # Label con icono + título
+        # f"{icon}  {title}" = combina icono y título con 2 espacios
         title_label = ctk.CTkLabel(
             master = header_frame, 
             text = f"{icon} {title}", 
             font = ("Segoe UI", 13, "bold"), 
             text_color = color
             )
+        
+        # anchor="w" = alinea a la izquierda (west)
         title_label.pack(pady = 12, padx = 20, anchor = "w")
 
     def _create_message_area(self, parent: ctk.CTkFrame, message: str) -> None:
-
+        """
+        Crear el área de mensaje.
+        
+        Parámetros
+        ----------
+        parent : ctk.CTkFrame
+            Widget padre donde se añadirá el área de mensaje.
+        message : str
+            Texto del mensaje a mostrar.
+        """
+        # Frame contenedor del mensaje (transparente)
         message_frame  = ctk.CTkFrame(parent, fg_color = "transparent")
+
+        # pady=(15, 10) = 15px arriba, 10px abajo
         message_frame.pack(fill = "both", expand = True, padx = 20, pady = (15, 10))
 
+        # Label con el mensaje
         message_label = ctk.CTkLabel(
             message_frame, 
             text = message, 
@@ -522,10 +716,23 @@ class NotificationWindow(ctk.CTkToplevel):
         message_label.pack()
     
     def _create_button(self, parent: ctk.CTkFrame, color: str) -> None:
-
+        """
+        Crear el botón de cierre.
+        
+        Parámetros
+        ----------
+        parent : ctk.CTkFrame
+            Widget padre donde se añadirá el botón.
+        color : str
+            Color del botón en formato hexadecimal.
+        """
+        # Frame contenedor del boton
         button_frame = ctk.CTkFrame(parent, fg_color = "transparent")
+
+        # pady=(0, 15) = 0px arriba, 15px abajo
         button_frame.pack(fill = "both", padx = 20, pady = (0, 15))
 
+        # Botón de cierre
         close_button = ctk.CTkButton(
             button_frame, 
             text = "ACEPTAR", 
@@ -537,9 +744,24 @@ class NotificationWindow(ctk.CTkToplevel):
             corner_radius = 6, 
             command = self.destroy
             )
+        
+        # side="right" = alinea botón a la derecha
         close_button.pack(side = "right")
     
     def _make_modal(self, parent: ctk.CTk) -> None:
-
+        """
+        Hace la ventana modal.
+        
+        Bloquea la interacción con la ventana padre hasta que
+        se cierre esta notificación.
+        
+        Parámetros
+        ----------
+        parent : ctk.CTk
+            Ventana padre que será bloqueada.
+        """
+        # Establecer relación padre-hijo (siempre encima, se minimizan juntos)
         self.transient(parent)
+
+        # Bloquear interacción con otras ventanas (MODAL)
         self.grab_set()
