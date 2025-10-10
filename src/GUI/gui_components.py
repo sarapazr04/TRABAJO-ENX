@@ -8,16 +8,23 @@ AppTheme
     Paleta de colores y constantes visuales.
 AppConfig
     Configuraciones globales de la aplicación.
+UploadButton
+    Botón con estilo consistente.
+Panel
+    Contenedor con título integrado.
+LoadingIndicator
+    Indicador de carga animado.
 """
 
 import customtkinter as ctk
 from typing import Optional, Callable
 
+
 class AppTheme:
     """
     Paleta de colores y constantes visuales de la GUI.
     
-    Centraliza todos los colores utilizados en la interfaz para mantener
+    Centralizar todos los colores utilizados en la interfaz para mantener
     consistencia visual y facilitar cambios de tema futuros.
     
     Atributos
@@ -78,11 +85,12 @@ class AppTheme:
     # Bordes
     BORDER = "#3e3e42"
 
+
 class AppConfig:
     """
     Configuraciones globales de la GUI.
     
-    Centraliza constantes de configuración como fuentes, dimensiones
+    Centralizar constantes de configuración como fuentes, dimensiones
     y extensiones de archivo permitidas.
     
     Atributos
@@ -137,16 +145,48 @@ class AppConfig:
         ("Datasets soportados", "*.csv *.xlsx *.xls *.sqlite *.db")
         ]
 
+
 class UploadButton(ctk.CTkButton):
+    """
+    Botón con estilo consistente del software.
+    
+    Hereda de CTkButton y aplica automáticamente el estilo visual
+    definido en AppTheme, garantizando consistencia en toda la GUI.
+    
+    Parámetros
+    ----------
+    master : ctk.CTkBaseClass
+        Widget padre donde se colocará el botón.
+    text : str
+        Texto a mostrar en el botón.
+    command : callable, opcional
+        Función a ejecutar al hacer clic. Por defecto None.
+    **kwargs
+        Argumentos adicionales para CTkButton.
+    
+    Ejemplos
+    --------
+    >>> button = UploadButton(
+    ...     parent_frame,
+    ...     text="CARGAR",
+    ...     command=load_file_function
+    ... )
+    
+    Notas
+    -----
+    Los colores y dimensiones se toman automáticamente de AppTheme
+    y AppConfig, facilitando cambios globales de estilo.
+    """
 
     def __init__(
             self, 
             master: ctk.CTkBaseClass, 
             text: str, 
             command: Optional[Callable] = None, 
-            **kwargs
+            **kwargs # Permitir pasar parametros adicionales
             ):
         
+        # Llama al constructor del padre (CTkButton) con estilo predefinido
         super().__init__(
             master, 
             text = text, 
@@ -155,15 +195,49 @@ class UploadButton(ctk.CTkButton):
             height = AppConfig.BUTTON_HEIGHT, 
             corner_radius = 6, 
             fg_color = AppTheme.PRIMARY_ACCENT, 
-            hover_color = AppTheme.HOVER_ACCENT, 
+            hover_color = AppTheme.HOVER_ACCENT, # Color a pasar raton
             text_color = "#ffffff", 
             border_width = 0, 
-            **kwargs
+            **kwargs # Sobrescribir parametros si es necesario 
             )
 
+
 class Panel(ctk.CTkFrame):
+    """
+    Contenedor con barra de título integrada.
+    
+    Proporciona un frame con una barra de título consistente,
+    
+    Parámetros
+    ----------
+    master : ctk.CTkBaseClass
+        Widget padre donde se colocará el panel.
+    title : str
+        Texto del título a mostrar en la barra superior.
+    **kwargs
+        Argumentos adicionales para CTkFrame.
+    
+    Atributos
+    ---------
+    title_label : ctk.CTkLabel
+        Label con el título del panel (accesible para modificación).
+    
+    Ejemplos
+    --------
+    >>> panel = Panel(window, "Configuración")
+    >>> button = ctk.CTkButton(panel, text="OK")
+    >>> button.pack()
+    
+    Notas
+    -----
+    El título se crea automáticamente en una barra superior con
+    estilo consistente. Los widgets hijos deben añadirse después
+    de la creación.
+    """
 
     def __init__(self, master: ctk.CTkBaseClass, title: str, **kwargs):
+
+        # Crear el frame con estilo predefenido
         super().__init__(
             master, 
             corner_radius = 8, 
@@ -173,10 +247,24 @@ class Panel(ctk.CTkFrame):
             **kwargs
             )
         
+        # Crear la barra del titulo automaticamente
         self._create_title_bar(title)
     
     def _create_title_bar(self, title: str) -> None:
+        """
+        Crear la barra del título del panel.
 
+        Parámetros
+        ----------
+        title: str
+            Texto del título a mostrar.
+        
+        Notas
+        -----
+        La barra tiene altura fija.
+        """
+
+        # Frame de la barra de título
         title_bar = ctk.CTkFrame(
             self, 
             g_color = AppTheme.PRIMARY_BACKGROUND, 
@@ -185,19 +273,65 @@ class Panel(ctk.CTkFrame):
             )
         
         title_bar.pack(fill = "x", padx = 2, pady = 2)
+
+        # Mantiene altura fija (no se ajusta al contenido)
         title_bar.propagate(False)
 
+        # Label del título (guardado en self para poder modificarlo después)
         self.title_label  = ctk.CTkLabel(
             title_bar, 
             text = title, 
             font = ("Orbitron", 12, "bold"), 
             text_color = AppTheme.PRIMARY_TEXT)
 
+        # anchor="w" = alinea a la izquierda (west)
         self.title_label.pack(pady = 10, padx = 15, anchor = "w")
 
+
 class LoadingIndicator(ctk.CTkFrame):
+    """
+    Indicador de carga con barra de progreso animada.
+    
+    Proporciona feedback visual durante operaciones largas mediante
+    una barra de progreso en modo indeterminado y etiquetas informativas.
+    
+    Parámetros
+    ----------
+    master : ctk.CTkBaseClass
+        Widget padre donde se colocará el indicador.
+    **kwargs
+        Argumentos adicionales para CTkFrame.
+    
+    Atributos
+    ---------
+    label : ctk.CTkLabel
+        Label principal con texto "Cargando datos...".
+    progress : ctk.CTkProgressBar
+        Barra de progreso en modo indeterminado.
+    status_label : ctk.CTkLabel
+        Label de estado con texto adicional.
+    
+    Métodos
+    -------
+    stop()
+        Detiene la animación de la barra de progreso.
+    
+    Ejemplos
+    --------
+    >>> indicator = LoadingIndicator(window)
+    >>> indicator.place(relx=0.5, rely=0.5, anchor="center")
+    >>> # ... operación larga ...
+    >>> indicator.stop()
+    >>> indicator.destroy()
+    
+    Notas
+    -----
+    La animación se inicia automáticamente al crear el widget.
+    """
 
     def __init__(self, master : ctk.CTkBaseClass, **kwargs):
+
+        # Crear el frame contenedor con borde de color
         super().__init__(
             master, 
             fg_color = AppTheme.SECONDERY_BACKGROUND, 
@@ -206,16 +340,32 @@ class LoadingIndicator(ctk.CTkFrame):
             border_color = AppTheme.PRIMARY_ACCENT, 
             **kwargs
             )
+        
+        # Crear todos los elementos visuales
         self._create_user_interface()
-        self.progress.start()
+
+        # Inicializar la animacion de la barra de progresso
+        self.progress_bar.start()
 
     def _create_user_interface(self) -> None:
+        """
+        Crea los elementos visuales del indicador.
+        
+        Organiza la creación de label, barra de progreso y label de estado
+        mediante métodos especializados.
+        """
 
         self._create_label()
         self._create_progress_bar()
         self._create_status_label()
 
     def _create_label(self) -> None:
+        """
+        Crea la etiqueta principal.
+
+        Muestra el texto "Cargando datos..." en la parte superior
+        del indicador.
+        """
 
         self.label = ctk.CTkLabel(
             self, 
@@ -224,10 +374,16 @@ class LoadingIndicator(ctk.CTkFrame):
             text_color = AppTheme.PRIMARY_TEXT
             )
         
+        # pady=(20, 10) = 20px arriba, 10px abajo
         self.label.pack(pady = (20, 10))
 
     def _create_progress_bar(self) -> None:
+        """
+        Crea la barra de progreso.
         
+        Configura una barra en modo indeterminado (animación continua).
+        """
+
         self.progress_bar = ctk.CTkProgressBar(
             self, 
             mode = "indeterminate", 
@@ -240,15 +396,31 @@ class LoadingIndicator(ctk.CTkFrame):
         self.progress_bar.pack(fill = "x", padx = 30, pady = (0,20))
     
     def _create_status_label(self) -> None:
+        """
+        Crea la etiqueta de estado.
         
+        Muestra información adicional sobre el proceso en curso.
+        """
+
         self.status_label = ctk.CTkLabel(
             self, 
             text = "Prcesando datos...", 
             font = AppConfig.SMALL_FONT, 
             text_color = AppTheme.SECONDARY_TEXT
             )
+        
         self.status_label.pack(pady=(0,15))
-
+        
     def stop(self) -> None:
-
+        """
+        Detiene la animación de la barra de progreso.
+        
+        Debe llamarse antes de destruir el widget para evitar
+        errores de referencia a widgets destruidos.
+        
+        Ejemplos
+        --------
+        >>> indicator.stop()
+        >>> indicator.destroy()
+        """
         self.progress_bar.stop()
