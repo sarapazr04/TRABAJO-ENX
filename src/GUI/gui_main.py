@@ -169,3 +169,102 @@ class DataLoaderApp(ctk.CTk):
             text_color = AppTheme.SECONDARY_TEXT
         )
         self.stats_label.pack(pady = 8, padx = 15)
+
+    def _load_file(self) -> None:
+        
+        file_path = self._select_file()
+        
+        if file_path is None:
+            return
+        
+        self._prepare_for_loading()
+        self._start_loading_thread(file_path)
+    
+    def _select_file(self) -> Optional[str]:
+        
+        return filedialog.askopenfilename(
+            title = "Seleccionar archivo de datos",
+            filetypes=AppConfig.ALLOWED_EXTENSIONS
+        )
+    
+    def _disable_load_button(self) -> None:
+        
+        self.load_button.configure(state = "disabled", text = "Cargando...")
+    
+    def _enable_load_button(self) -> None:
+       
+        self.load_button.configure(state = "normal", text = "Cargar Archivo")
+    
+    def _start_loading_thread(self, file_path: str) -> None:
+        
+        thread = threading.Thread(
+            target = self._load_file_thread,
+            args = (file_path,),
+            daemon = True
+        )
+        thread.start()
+    
+    def _load_file_thread(self, file_path: str) -> None:
+       
+        try:
+            df, preview = import_data(file_path)
+            self.after(0, self._on_load_success, file_path, df)
+
+        except Exception as e:
+            self.after(0, self._on_load_error, str(e))
+    
+    def _on_load_success(self, file_path: str, dataframe: pd.DataFrame) -> None:
+        
+        self._update_application_state(file_path, dataframe)
+        self._update_user_interface_after_load(file_path, dataframe)
+        self._show_success_notification(dataframe)
+    
+    def _update_application_state(self,file_path: str,dataframe: pd.DataFrame) -> None:
+
+        self.current_file_path = file_path
+        self.current_dataframe = dataframe
+    
+    def _update_user_interface_after_load(self, file_path: str, dataframe: pd.DataFrame) -> None:
+
+        self._hide_loading_indicator()
+        self._update_file_path_display(file_path)
+        self._update_statistics(dataframe)
+        self._display_data(dataframe)
+        self._enable_load_button()
+    
+    def _show_success_notification(self, dataframe: pd.DataFrame) -> None:
+
+        rows, cols = dataframe.shape
+        NotificationWindow(
+            self,
+            "Carga Exitosa",
+            f"Archivo cargado correctamente\n\n{rows:,} filas × {cols} columnas",
+            "success"
+        )
+    
+    def _on_load_error(self, error_message: str) -> None:
+        
+        self._hide_loading_indicator()
+        self._enable_load_button()
+        
+        NotificationWindow(
+            self,
+            "Error de Carga",
+            f"No se puede cargar el archivo:\n\n{error_message}",
+            "error"
+        )
+    
+    def _show_loading_indicator(self) -> None:
+        
+        if self.loading_indicator is not None:
+            self.loading_indicator.destroy()
+        
+        self.loading_indicator = LoadingIndicator(self)
+        self.loading_indicator.place(relx = 0.5, rely = 0.5, anchor = "center")
+    
+    def _hide_loading_indicator(self) -> None:
+        
+        if self.loading_indicator is not None:
+            self.loading_indicator.stop()
+            self.loading_indicator.destroy()
+            self.loading_indicator = None
