@@ -12,7 +12,7 @@ Funciones principales expuestas:
 - import_data(file_path: str, preview_rows: int = 5)
 """
 
-from importer import import_data
-from utils import coerce_dtypes
+from .importer import import_data
+from .utils import coerce_dtypes
 
 __all__ = ["import_data", "coerce_dtypes"]
