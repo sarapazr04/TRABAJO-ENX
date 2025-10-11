@@ -22,7 +22,7 @@ from gui_components import (
 )
 
 # Importar el modulo de importacion datos 
-sys.path.append(str(Path(__file__).parent.parent / "data_import"))
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 from data_import.importer import import_data
 
 
@@ -338,9 +338,11 @@ class DataLoaderApp(ctk.CTk):
         Formatear las estadísticas del dataset.
         
         Args:
+        ----
             dataframe: DataFrame con los datos
             
         Returns:
+        -------
             Cadena formateada con las estadísticas
         """
         rows, cols = dataframe.shape
@@ -395,3 +397,443 @@ class DataLoaderApp(ctk.CTk):
             text_color = AppTheme.DIM_TEXT
         )
         self.empty_state_label.place(relx = 0.5, rely = 0.5, anchor = "center")
+    
+    def _format_cell_value(self, value) -> str:
+        """
+        Formatear un valor de celda individual.
+        
+        Args:
+        ----
+            value: Valor a formatear
+            
+        Returns:
+        -------
+            Cadena formateada
+        """
+        # Verificar si el valor es NaN (Not a Number / dato faltante)
+        if pd.isna(value):
+            return "N/A"
+        # Si es un numero decimal, formatearlo con 4 decimales
+        elif isinstance(value, float):
+            return f"{value:.4f}"
+        # Para cualquier otro tipo, convertirlo a texto
+        else:
+            return str(value)
+
+
+    def _get_row_tag(self, index: int) -> str:
+        """
+        Determina la etiqueta de fila para alternar colores.
+        
+        Args:
+        ----
+            index: Indice de la fila
+            
+        Returns:
+        -------
+            Nombre de la etiqueta
+        """
+        # Alternar etiquetas: pares son "evenrow", impares son "oddrow"
+        # Esto permite colorear filas alternadas en la tabla
+        return "evenrow" if index % 2 == 0 else "oddrow"
+
+
+    def _format_row_values(self, dataframe: pd.DataFrame, row_index: int) -> list:
+        """
+        Formatear los valores de una fila para mostrar.
+        
+        Args:
+        ----
+            dataframe: DataFrame fuente
+            row_index: Índice de la fila
+            
+        Returns:
+        -------
+            Lista de valores formateados
+        """
+        # Lista para almacenar los valores formateados de la fila
+        values = []
+
+        # Iterar por cada columna del DataFrame
+        for col in dataframe.columns:
+            # Obtener el valor de la celda en la fila y columna actual
+            val = dataframe.iloc[row_index][col]
+
+            # Formatear el valor usando el metodo auxiliar
+            formatted_val = self._format_cell_value(val)
+
+            # Añadir el valor formateado a la lista
+            values.append(formatted_val)
+
+        # Devolver la lista completa de valores formateados
+        return values
+
+
+    def _configure_row_tags(self, tree: ttk.Treeview) -> None:
+        """Configurar los colores alternados de las filas."""
+
+        # Configurar color de fondo para filas pares (gris medio)
+        tree.tag_configure("evenrow", background = AppTheme.SECONDERY_BACKGROUND)
+
+        # Configurar color de fondo para filas impares (gris oscuro)
+        tree.tag_configure("oddrow", background = AppTheme.PRIMARY_BACKGROUND)
+
+
+    def _configure_treeview_base_style(self, style: ttk.Style) -> None:
+        """Configurar el estilo base del Treeview."""
+
+        # Aplicar estilos base al widget Treeview
+        style.configure(
+            "Treeview",
+            background = AppTheme.SECONDERY_BACKGROUND,     
+            foreground = AppTheme.PRIMARY_TEXT,    
+            fieldbackground = AppTheme.SECONDERY_BACKGROUND,
+            borderwidth = 0,                  
+            font = ("Segoe UI", 12),               
+            rowheight = 24                                    
+        )
+
+
+    def _configure_treeview_heading_style(self, style: ttk.Style) -> None:
+        """Configura el estilo de los encabezados."""
+
+        # Aplicar estilos a los encabezados de columna
+        style.configure(
+            "Treeview.Heading",
+            background = AppTheme.TERTIARY_BACKGROUND, 
+            foreground = AppTheme.PRIMARY_TEXT,        
+            borderwidth = 1,                            
+            relief = "flat", # Sin efecto 3D (plano)
+            font = ("Segoe UI", 13, "bold")            
+        )
+
+
+    def _configure_treeview_selection(self, style: ttk.Style) -> None:
+        """Configurar los colores de selección y hover."""
+
+        # Configurar colores cuando se selecciona una fila
+        style.map(
+            "Treeview",
+            # Cuando una fila esta seleccionada: fondo azul
+            background = [("selected", AppTheme.PRIMARY_ACCENT)],
+            # Cuando una fila esta seleccionada: texto blanco
+            foreground = [("selected", "#ffffff")]
+        )
+
+
+    def _configure_index_column(self, tree: ttk.Treeview) -> None:
+        """Configurar la columna del indice."""
+
+        # Configurar la columna del indice (primera columna "#0")
+        tree.column("#0", width = 60, anchor = "center")  # Ancho 60px, texto centrado
+
+        # Configurar el encabezado de la columna del indice
+        tree.heading("#0", text = "INDEX", anchor = "center")  # Texto "INDEX" centrado
+
+
+    def _configure_data_columns(self, tree: ttk.Treeview, dataframe: pd.DataFrame) -> None:
+        """Configurar las columnas de datos."""
+
+        # Iterar por cada columna del DataFrame
+        for col in dataframe.columns:
+            # Configurar propiedades de la columna
+            tree.column(
+                col,
+                width = 150,      # Ancho por defecto: 150px
+                anchor = "center", # Alineacion: centrada
+                minwidth = 100    # Ancho mínimo: 100px
+            )
+
+            # Configurar el encabezado de la columna
+            tree.heading(
+                col,
+                text = str(col).upper(),  # Nombre en MAYUSCULAS
+                anchor = "center"          # Texto centrado
+            )
+
+
+    def _apply_treeview_style(self) -> None:
+        """
+        Aplicar el estilo visual al Treeview.
+        
+        Configurar colores, fuentes y comportamiento de selección.
+        """
+        # Crear objeto de estilo de ttk
+        style = ttk.Style()
+
+        # Usar tema "clam" (tema moderno y personalizable)
+        style.theme_use("clam")
+
+        # Aplicar los tres tipos de estilos configurados
+        self._configure_treeview_base_style(style)      # Estilo base
+        self._configure_treeview_heading_style(style)   # Estilo de encabezados
+        self._configure_treeview_selection(style)       # Estilo de seleccion
+
+
+    def _populate_treeview(self, tree: ttk.Treeview, dataframe: pd.DataFrame) -> None:
+        """
+        Insertar los datos en el Treeview.
+        
+        Args:
+        ----
+            tree: Widget Treeview
+            dataframe: DataFrame con los datos
+        """
+        # Iterar por cada fila del DataFrame usando su indice
+        for idx in range(len(dataframe)):
+            # Obtener los valores formateados de la fila actual
+            values = self._format_row_values(dataframe, idx)
+
+            # Determinar la etiqueta (par/impar) para colorear
+            tag = self._get_row_tag(idx)
+
+            # Insertar la fila en el Treeview
+            tree.insert(
+                "",              # Padre: "" significa nivel raiz
+                "end",           # Posicion: al final
+                text = str(idx),   # Texto de la columna índice
+                values = values,   # Valores de las columnas de datos
+                tags = (tag,)      # Etiqueta para aplicar color
+            )
+
+        # Configurar los colores de las etiquetas (pares/impares)
+        self._configure_row_tags(tree)
+
+
+    def _create_scrollbars(self, parent: tk.Frame) -> tuple[tk.Scrollbar, tk.Scrollbar]:
+        """
+        Crear las scrollbars vertical y horizontal.
+        
+        Returns:
+        -------
+            Tupla con (scrollbar_vertical, scrollbar_horizontal)
+        """
+
+        # Crear scrollbar vertical (orientacion vertical)
+        vsb = tk.Scrollbar(parent, orient="vertical")
+
+        # Crear scrollbar horizontal (orientacion horizontal)
+        hsb = tk.Scrollbar(parent, orient="horizontal")
+
+        # Devolver ambas scrollbars como tupla
+        return vsb, hsb
+
+
+    def _layout_tree_and_scrollbars(
+        self,
+        parent: tk.Frame,
+        tree: ttk.Treeview,
+        vsb: tk.Scrollbar,
+        hsb: tk.Scrollbar
+    ) -> None:
+        """Organizar el Treeview y scrollbars en el layout."""
+
+        # Colocar el Treeview en la posicióon (0,0) del grid
+        # sticky = "nsew" hace que se expanda en todas direcciones
+        tree.grid(row = 0, column = 0, sticky = "nsew")
+
+        # Colocar scrollbar vertical a la derecha del Treeview
+        # sticky = "ns" hace que se expanda verticalmente (Norte-Sur)
+        vsb.grid(row = 0, column = 1, sticky = "ns")
+
+        # Colocar scrollbar horizontal debajo del Treeview
+        # sticky = "ew" hace que se expanda horizontalmente (Este-Oeste)
+        hsb.grid(row = 1, column = 0, sticky = "ew")
+
+        # Configurar la fila 0 para que se expanda (peso 1)
+        parent.grid_rowconfigure(0, weight = 1)
+
+        # Configurar la columna 0 para que se expanda (peso 1)
+        parent.grid_columnconfigure(0, weight = 1)
+
+
+    def _create_tree(
+        self,
+        parent: tk.Frame,
+        dataframe: pd.DataFrame,
+        vsb: tk.Scrollbar,
+        hsb: tk.Scrollbar
+    ) -> ttk.Treeview:
+        """Crear el Treeview y conectarlo con las scrollbars."""
+
+        # Crear el widget Treeview con configuracion completa
+        tree = ttk.Treeview(
+            parent,                          # Widget padre
+            columns = list(dataframe.columns), # Lista de columnas del DataFrame
+            show = "tree headings",            # Mostrar columna de árbol y encabezados
+            yscrollcommand = vsb.set,         # Conectar con scrollbar vertical
+            xscrollcommand = hsb.set,         # Conectar con scrollbar horizontal
+            selectmode = "browse"              # Modo: seleccionar una fila a la vez
+        )
+
+        # Configurar scrollbar vertical para controlar el Treeview
+        vsb.config(command = tree.yview)
+
+        # Configurar scrollbar horizontal para controlar el Treeview
+        hsb.config(command = tree.xview)
+
+        # Devolver el Treeview configurado
+        return tree
+
+
+    def _setup_mouse_wheel_scroll(self, tree: ttk.Treeview) -> None:
+        """
+        Configurar el scroll con rueda del ratón.
+        
+        Compatible con Windows, macOS y Linux.
+        
+        Args:
+        ----
+            tree: Widget Treeview
+        """
+        
+        def on_mousewheel(event):
+            # Detectar scroll hacia abajo:
+            # - event.num == 5: Linux (botón 5)
+            # - event.delta < 0: Windows/macOS (delta negativo)
+            if event.num == 5 or event.delta < 0:
+                tree.yview_scroll(1, "units")  # Scroll 1 unidad hacia abajo
+
+            # Detectar scroll hacia arriba:
+            # - event.num == 4: Linux (botón 4)
+            # - event.delta > 0: Windows/macOS (delta positivo)
+            elif event.num == 4 or event.delta > 0:
+                tree.yview_scroll(-1, "units")  # Scroll 1 unidad hacia arriba
+
+        # Vincular evento de rueda del raton (Windows/macOS)
+        tree.bind("<MouseWheel>", on_mousewheel)
+
+        # Vincular evento de boton 4 del ratón (Linux - scroll arriba)
+        tree.bind("<Button-4>", on_mousewheel)
+
+        # Vincular evento de boton 5 del ratón (Linux - scroll abajo)
+        tree.bind("<Button-5>", on_mousewheel)
+
+
+    def _configure_treeview(self, tree: ttk.Treeview, dataframe: pd.DataFrame) -> None:
+        """
+        Configurar columnas y estilo del Treeview.
+        
+        Args:
+        ----
+            tree: Widget Treeview
+            dataframe: DataFrame para extraer nombres de columnas
+        """
+        # Aplicar los estilos visuales al Treeview
+        self._apply_treeview_style()
+
+        # Configurar la columna del indice (primera columna)
+        self._configure_index_column(tree)
+
+        # Configurar todas las columnas de datos
+        self._configure_data_columns(tree, dataframe)
+
+
+    def _create_treeview_widget(self, dataframe: pd.DataFrame) -> ttk.Treeview:
+        """
+        Crear el widget Treeview con scrollbars.
+        
+        Args:
+        ----
+            dataframe: DataFrame para configurar columnas
+            
+        Returns:
+        -------
+            Widget Treeview configurado
+        """
+        # Crear un Frame contenedor para el Treeview y scrollbars
+        tree_frame = tk.Frame(
+            self.table_container,              
+            bg = AppTheme.PRIMARY_BACKGROUND     
+        )
+
+        # Colocar el frame y hacerlo expandible
+        tree_frame.pack(fill = "both", expand = True, padx = 8, pady = 8)
+
+        # Crear las scrollbars vertical y horizontal
+        vsb, hsb = self._create_scrollbars(tree_frame)
+
+        # Crear el Treeview y conectarlo con las scrollbars
+        tree = self._create_tree(tree_frame, dataframe, vsb, hsb)
+
+        # Organizar el Treeview y scrollbars en el layout grid
+        self._layout_tree_and_scrollbars(tree_frame, tree, vsb, hsb)
+
+        # Devolver el Treeview configurado
+        return tree
+
+
+    def _hide_empty_state(self) -> None:
+        """Ocultar el mensaje de estado vacio si existe."""
+        try:
+            # Verificar si el label de estado vacoo existe
+            if self.empty_state_label.winfo_exists():
+                # Ocultar el label (quitar del layout)
+                self.empty_state_label.place_forget()
+
+        # Capturar cualquier excepcon (por si el widget no existe)
+        except Exception:
+            pass  # No hacer nada si hay error
+
+
+    def _recreate_table_container(self) -> None:
+        """
+        Destruir y recrear el contenedor de la tabla.
+        
+        Refactorización: limpieza completa para evitar widgets huérfanos.
+        """
+        # Destruir el contenedor actual de la tabla
+        # Esto elimina todos los widgets hijos también
+        self.table_container.destroy()
+
+        # Crear un nuevo contenedor de tabla limpio
+        self.table_container = ctk.CTkFrame(
+            self.table_outer_frame,                
+            fg_color = AppTheme.PRIMARY_BACKGROUND,
+            corner_radius = 6,                       
+            border_width = 1,                        
+            border_color = AppTheme.BORDER          
+        )
+
+        # Colocar el nuevo contenedor en el layout
+        self.table_container.pack(fill = "both", expand = True)
+
+
+    def _display_data(self, dataframe: pd.DataFrame) -> None:
+        """
+        Mostrar los datos en un Treeview optimizado.
+        
+        Utilizar virtualizacion para manejar datasets grandes eficientemente.
+        
+        Args:
+        ----
+            dataframe: DataFrame a visualizar
+        """
+        # Ocultar el mensaje de "estado vacio"
+        self._hide_empty_state()
+
+        # Destruir y recrear el contenedor (limpieza)
+        self._recreate_table_container()
+
+        # Crear el widget Treeview con scrollbars
+        tree = self._create_treeview_widget(dataframe)
+
+        # Configurar columnas y estilos del Treeview
+        self._configure_treeview(tree, dataframe)
+
+        # Insertar los datos en el Treeview
+        self._populate_treeview(tree, dataframe)
+
+        # Habilitar scroll con rueda del raton
+        self._setup_mouse_wheel_scroll(tree)
+    
+def main():
+    """
+    Función principal de la GUI.
+    """
+    app = DataLoaderApp()
+    app.mainloop()
+
+
+if __name__ == "__main__":
+    main()
