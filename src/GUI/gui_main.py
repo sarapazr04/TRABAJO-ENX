@@ -171,7 +171,11 @@ class DataLoaderApp(ctk.CTk):
         self.stats_label.pack(pady = 8, padx = 15)
 
     def _load_file(self) -> None:
+        """
+        Iniciar el proceso de carga de archivo.
         
+        Delega la carga pesada a un thread separado para no bloquear la GUI.
+        """
         file_path = self._select_file()
         
         if file_path is None:
@@ -181,22 +185,37 @@ class DataLoaderApp(ctk.CTk):
         self._start_loading_thread(file_path)
     
     def _select_file(self) -> Optional[str]:
+        """
+        Abrir el diálogo de selección de archivo.
         
+        Returns:
+            Ruta del archivo seleccionado o None si se cancela.
+        """
         return filedialog.askopenfilename(
             title = "Seleccionar archivo de datos",
             filetypes=AppConfig.ALLOWED_EXTENSIONS
         )
     
+    def _prepare_for_loading(self) -> None:
+        """Preparar la interfaz para el proceso de carga."""
+        self._show_loading_indicator()
+        self._disable_load_button()
+
     def _disable_load_button(self) -> None:
-        
+        """Deshabilitar el botón de carga durante el proceso."""
         self.load_button.configure(state = "disabled", text = "Cargando...")
     
     def _enable_load_button(self) -> None:
-       
+        """Rehabilitar el botón de carga."""
         self.load_button.configure(state = "normal", text = "Cargar Archivo")
     
     def _start_loading_thread(self, file_path: str) -> None:
+        """
+        Iniciar un thread para la carga del archivo.
         
+        Args:
+            file_path: Ruta del archivo a cargar
+        """
         thread = threading.Thread(
             target = self._load_file_thread,
             args = (file_path,),
@@ -205,7 +224,15 @@ class DataLoaderApp(ctk.CTk):
         thread.start()
     
     def _load_file_thread(self, file_path: str) -> None:
-       
+        """
+        Thread worker para la importación de datos.
+        
+        Ejecutar la operación pesada en segundo plano y notifica
+        al hilo principal mediante callbacks.
+        
+        Args:
+            file_path: Ruta del archivo a importar
+        """
         try:
             df, preview = import_data(file_path)
             self.after(0, self._on_load_success, file_path, df)
@@ -214,18 +241,24 @@ class DataLoaderApp(ctk.CTk):
             self.after(0, self._on_load_error, str(e))
     
     def _on_load_success(self, file_path: str, dataframe: pd.DataFrame) -> None:
+        """
+        Callback ejecutado tras carga exitosa.
         
+        Args:
+            file_path: Ruta del archivo cargado
+            dataframe: DataFrame con los datos
+        """
         self._update_application_state(file_path, dataframe)
         self._update_user_interface_after_load(file_path, dataframe)
         self._show_success_notification(dataframe)
     
     def _update_application_state(self,file_path: str,dataframe: pd.DataFrame) -> None:
-
+        """Actualizar el estado interno del software."""
         self.current_file_path = file_path
         self.current_dataframe = dataframe
     
     def _update_user_interface_after_load(self, file_path: str, dataframe: pd.DataFrame) -> None:
-
+        """Actualizar todos los elementos de la interfaz tras la carga."""
         self._hide_loading_indicator()
         self._update_file_path_display(file_path)
         self._update_statistics(dataframe)
@@ -233,7 +266,7 @@ class DataLoaderApp(ctk.CTk):
         self._enable_load_button()
     
     def _show_success_notification(self, dataframe: pd.DataFrame) -> None:
-
+        """Mostrar notificación de carga exitosa."""    
         rows, cols = dataframe.shape
         NotificationWindow(
             self,
@@ -243,7 +276,12 @@ class DataLoaderApp(ctk.CTk):
         )
     
     def _on_load_error(self, error_message: str) -> None:
+        """
+        Callback ejecutado si hay error en la carga.
         
+        Args:
+            error_message: Descripción del error
+        """
         self._hide_loading_indicator()
         self._enable_load_button()
         
@@ -255,7 +293,7 @@ class DataLoaderApp(ctk.CTk):
         )
     
     def _show_loading_indicator(self) -> None:
-        
+        """Mostrar el indicador de carga centrado."""
         if self.loading_indicator is not None:
             self.loading_indicator.destroy()
         
@@ -263,7 +301,7 @@ class DataLoaderApp(ctk.CTk):
         self.loading_indicator.place(relx = 0.5, rely = 0.5, anchor = "center")
     
     def _hide_loading_indicator(self) -> None:
-        
+        """Ocultar y destruir el indicador de carga."""
         if self.loading_indicator is not None:
             self.loading_indicator.stop()
             self.loading_indicator.destroy()
