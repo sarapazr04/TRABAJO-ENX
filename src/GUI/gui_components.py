@@ -269,7 +269,7 @@ class Panel(ctk.CTkFrame):
         # Frame de la barra de título
         title_bar = ctk.CTkFrame(
             self, 
-            g_color = AppTheme.PRIMARY_BACKGROUND, 
+            fg_color = AppTheme.PRIMARY_BACKGROUND, 
             corner_radius = 6, 
             height = 38
             )
@@ -283,7 +283,7 @@ class Panel(ctk.CTkFrame):
         self.title_label  = ctk.CTkLabel(
             title_bar, 
             text = title, 
-            font = ("Orbitron", 12, "bold"), 
+            font = ("Orbitron", 15, "bold"), 
             text_color = AppTheme.PRIMARY_TEXT)
 
         # anchor="w" = alinea a la izquierda (west)
@@ -406,7 +406,7 @@ class LoadingIndicator(ctk.CTkFrame):
 
         self.status_label = ctk.CTkLabel(
             self, 
-            text = "Prcesando datos...", 
+            text = "Procesando datos...", 
             font = AppConfig.SMALL_FONT, 
             text_color = AppTheme.SECONDARY_TEXT
             )
@@ -505,7 +505,7 @@ class NotificationWindow(ctk.CTkToplevel):
         ):
 
     # Llamar al constructor de CTkToplevel para crear la ventana base   
-        super.__init__(parent)
+        super().__init__(parent)
 
     # Configurar tamaño, titulo, etc
         self._configure_notification_window()
