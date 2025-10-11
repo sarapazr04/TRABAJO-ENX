@@ -40,7 +40,7 @@ class DataLoaderApp(ctk.CTk):
     def _configure_window(self) -> None:
         """Configurar las propiedades de la ventana principal."""
 
-        self.title("LUNEX DATASETS LOADER")
+        self.title("LUNEX v1.0")
         self.geometry(
             f"{AppConfig.WINDOW_WIDTH}x{AppConfig.WINDOW_HEIGHT}"
         )
@@ -60,10 +60,45 @@ class DataLoaderApp(ctk.CTk):
     
     def _setup_user_interface(self) -> None:
         """Configurar todos los componentes de la GUI."""
-        
+
         self.configure(fg_color = AppTheme.PRIMARY_BACKGROUND)
         
         self._create_header()
         self._create_control_panel()
         self._create_data_panel()
-    
+
+    def _create_header(self) -> None:
+
+        header_frame = self._create_header_frame()
+        self._add_header_content(header_frame)
+
+    def _create_header_frame(self) -> ctk.CTkFrame:
+
+        header_frame = ctk.CTkFrame(
+            self,
+            height = 100,
+            corner_radius = 0,
+            fg_color = AppTheme.SECONDERY_BACKGROUND
+        )    
+        header_frame.pack(fill = "x")
+        header_frame.pack_propagate(False)
+
+        return header_frame
+
+    def _add_header_content(self, parent: ctk.CTkFrame) -> None:
+
+        title_label = ctk.CTkLabel(
+            parent,
+            text = "LUNEX DATASETS LOADER",
+            font = AppConfig.TITLE_FONT,
+            text_color = AppTheme.PRIMARY_TEXT
+        )
+        title_label.pack(pady = (25, 5))
+
+        subtitle_label = ctk.CTkLabel(
+            parent,
+            text = "Sprint 1 - Historia #14 | Visualización de datasets",
+            font = AppConfig.FONT_SMALL,
+            text_color = AppTheme.SECONDARY_TEXT
+        )
+        subtitle_label.pack()
