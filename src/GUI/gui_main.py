@@ -68,12 +68,12 @@ class DataLoaderApp(ctk.CTk):
         self._create_data_panel()
 
     def _create_header(self) -> None:
-
+        """Crear el header superior con información de la GUI."""
         header_frame = self._create_header_frame()
         self._add_header_content(header_frame)
 
     def _create_header_frame(self) -> ctk.CTkFrame:
-
+        """Crear y configurar el frame del header."""
         header_frame = ctk.CTkFrame(
             self,
             height = 100,
@@ -86,7 +86,7 @@ class DataLoaderApp(ctk.CTk):
         return header_frame
 
     def _add_header_content(self, parent: ctk.CTkFrame) -> None:
-
+        """Añadir el contenido textual al header."""
         title_label = ctk.CTkLabel(
             parent,
             text = "LUNEX DATASETS LOADER",
@@ -98,7 +98,7 @@ class DataLoaderApp(ctk.CTk):
         subtitle_label = ctk.CTkLabel(
             parent,
             text = "Sprint 1 - Historia #14 | Visualización de datasets",
-            font = AppConfig.FONT_SMALL,
+            font = AppConfig.SMALL_FONT,
             text_color = AppTheme.SECONDARY_TEXT
         )
         subtitle_label.pack()
