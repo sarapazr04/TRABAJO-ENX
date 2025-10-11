@@ -104,7 +104,7 @@ class DataLoaderApp(ctk.CTk):
         subtitle_label.pack()
 
     def _create_control_panel(self) -> None:
-        
+        """Crear el panel de control con botones y estadisticas."""
         control_panel = Panel(self, "Carga de datasets")
         control_panel.pack(
             fill = "x",
@@ -116,7 +116,7 @@ class DataLoaderApp(ctk.CTk):
         self._create_stats_section(control_panel)
 
     def _create_button_section(self, parent: Panel) -> None:
-        
+        """Crear la sección de botón y visualización de ruta."""
         button_frame = ctk.CTkFrame(parent, fg_color = "transparent")
         button_frame.pack(fill = "x", padx = 20, pady = (15, 10))
         
@@ -124,7 +124,7 @@ class DataLoaderApp(ctk.CTk):
         self._create_path_display(button_frame)
     
     def _create_upload_button(self, parent: ctk.CTkFrame) -> None:
-
+        """Crear el botón de carga de archivos."""
         self.upload_button = UploadButton(
             parent,
             text = "Cargar Archivo",
@@ -133,7 +133,7 @@ class DataLoaderApp(ctk.CTk):
         self.upload_button.pack(side = "left", padx = (0, 15))
     
     def _create_path_display(self, parent: ctk.CTkFrame) -> None:
-        
+        """Crear el frame de visualización de ruta del archivo."""
         self.path_frame = ctk.CTkFrame(
             parent,
             fg_color = AppTheme.PRIMARY_BACKGROUND,
@@ -154,7 +154,7 @@ class DataLoaderApp(ctk.CTk):
         self.path_label.pack(pady = 10, padx = 15, fill = "x", expand = True)
     
     def _create_stats_section(self, parent: Panel) -> None:
-        
+        """Crear la sección de estadísticas del dataset."""
         self.stats_frame = ctk.CTkFrame(
             parent,
             fg_color = AppTheme.PRIMARY_BACKGROUND,
