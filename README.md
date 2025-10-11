@@ -17,13 +17,52 @@ El propósito es construir un software funcional, bien documentado y gestionado 
 - **Control de versiones:** Git + GitHub  
 - **Gestión del proyecto:** Taiga (metodología Scrum)
 
+## Instalación
+
+### Requisitos
+
+La GUI requiere Python y las dependencias especificadas en **requirements.txt**.
+
+### Instalar Dependencias
+
+- pip install -r requirements.txt
+
+### Instalar la Fuente Orbitron
+
+- La aplicación utiliza el font Orbitron. Los archivos del font se encuentran en la carpeta **Orbitron/**.
+
+#### Windows
+
+- 1. Navega a la carpeta **Orbitron/**
+- 2. Selecciona todos los archivos **.ttf**
+- 3. Clic derecho -> **Instalar**
+
+### macOS
+
+- Navega a la carpeta **Orbitron/**
+- Doble clic en cada archivo **.ttf**
+- Clic en **Instalar Fuente** en Font Book
+
+### Linux
+
+- mkdir -p ~/.local/share/fonts
+- **cp** Orbitron/*.ttf ~/.local/share/fonts/
+- fc-cache -f -v
+
+## Ejecutar la Aplicación
+
+- cd src/GUI
+- python main.py
+
 ## Estado del Proyecto
 
 - Versión inicial del repositorio.  
 Actualmente se están definiendo los **requisitos**, el **alcance funcional** y la **planificación del primer sprint**.  
 El README se ampliará progresivamente con la guía de instalación, manual de usuario y documentación técnica conforme avance el desarrollo.
 
+
 ---
+
 
 **Equipo de desarrollo:** Laura Castro Expósito, Sara Paz Romero, Mohammed El Ghanemy, Youssef Nabaha 
 **Scrum Master:** Sara Paz Romero  
