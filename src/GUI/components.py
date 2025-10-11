@@ -21,6 +21,9 @@ NotificationWindow
 import customtkinter as ctk
 from typing import Optional, Callable
 
+# ============================================================================
+# CONFIGURACIÓN Y TEMAS
+# ============================================================================
 
 class AppTheme:
     """
@@ -147,6 +150,9 @@ class AppConfig:
         ("Datasets soportados", "*.csv *.xlsx *.xls *.sqlite *.db")
         ]
 
+# ============================================================================
+# COMPONENTES DE INTERFAZ
+# ============================================================================
 
 class UploadButton(ctk.CTkButton):
     """
@@ -289,6 +295,9 @@ class Panel(ctk.CTkFrame):
         # anchor="w" = alinea a la izquierda (west)
         self.title_label.pack(pady = 10, padx = 15, anchor = "w")
 
+# ============================================================================
+# COMPONENTES DE FEEDBACK
+# ============================================================================
 
 class LoadingIndicator(ctk.CTkFrame):
     """

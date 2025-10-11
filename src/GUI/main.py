@@ -16,7 +16,7 @@ import pandas as pd
 import threading
 from tkinter import ttk
 
-from gui_components import (
+from components import (
     AppTheme, AppConfig, NotificationWindow,
     UploadButton, Panel, LoadingIndicator
 )
@@ -25,6 +25,9 @@ from gui_components import (
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from data_import.importer import import_data
 
+# ============================================================================
+# APLICACIÓN PRINCIPAL
+# ============================================================================
 
 class DataLoaderApp(ctk.CTk):
     """Aplicación principal para importación y visualización de datos."""
@@ -66,6 +69,10 @@ class DataLoaderApp(ctk.CTk):
         self._create_header()
         self._create_control_panel()
         self._create_data_panel()
+
+# ============================================================================
+# HEADER
+# ============================================================================
 
     def _create_header(self) -> None:
         """Crear el header superior con información de la GUI."""
@@ -183,6 +190,10 @@ class DataLoaderApp(ctk.CTk):
         
         self._prepare_for_loading()
         self._start_loading_thread(file_path)
+
+# ============================================================================
+# SISTEMA DE CARGA CON THREADING
+# ============================================================================
     
     def _select_file(self) -> Optional[str]:
         """
@@ -352,6 +363,10 @@ class DataLoaderApp(ctk.CTk):
             f"Filas: {rows:,}  |  Columnas: {cols}  |  "
             f"Memoria: {memory_mb:.2f} MB"
         )
+    
+# ============================================================================
+# PANEL DE VISUALIZACIÓN DE DATOS
+# ============================================================================
 
     def _create_data_panel(self) -> None:
         """Crear el panel principal de visualización de datos."""
@@ -387,6 +402,8 @@ class DataLoaderApp(ctk.CTk):
             border_color = AppTheme.BORDER
         )
         self.table_container.pack(fill = "both", expand = True)
+
+
     
     def _create_empty_state(self) -> None:
         """Crear el mensaje de estado vacío."""
@@ -397,6 +414,10 @@ class DataLoaderApp(ctk.CTk):
             text_color = AppTheme.DIM_TEXT
         )
         self.empty_state_label.place(relx = 0.5, rely = 0.5, anchor = "center")
+
+# ============================================================================
+# VISUALIZACIÓN CON TREEVIEW
+# ============================================================================
     
     def _format_cell_value(self, value) -> str:
         """
