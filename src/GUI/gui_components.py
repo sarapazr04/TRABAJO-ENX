@@ -485,14 +485,14 @@ class NotificationWindow(ctk.CTkToplevel):
     """
     # Constantes de configuracion
     WINDOW_WIDTH = 450
-    WINDOW_HIGHT = 180
+    WINDOW_HEIGHT = 180
 
     # Mapeo de tipos a configuracion visual
     NOTIFICATION_CONFIG = {
         "success": {"color": AppTheme.SUCCES, "icon": "✓"},
         "error": {"color": AppTheme.ERROR, "icon": "✗"},
-        "waring": {"color": AppTheme.WARNING, "icon": "⚠"}, 
-        "info": {"color": AppTheme.PRIMARY_ACCENT, "icono": "i"}
+        "warning": {"color": AppTheme.WARNING, "icon": "⚠"}, 
+        "info": {"color": AppTheme.PRIMARY_ACCENT, "icon": "i"}
         }
     
     
@@ -517,7 +517,7 @@ class NotificationWindow(ctk.CTkToplevel):
         config = self._get_notification_config(notification_type)
     
     # Crear todo el contenido visual (header, mensaje, boton)
-        self._create_user_interface(title, message, config)
+        self._create_notification_interface(title, message, config)
     
     # Bloquear la ventana padre (modal)
         self._make_modal(parent) 
@@ -533,7 +533,7 @@ class NotificationWindow(ctk.CTkToplevel):
         self.title("")
 
         # Establecer tamño fijo para la ventana
-        self.geometry(f"{self.WINDOW_WIDTH}x{self.WINDOW_HIGHT}")
+        self.geometry(f"{self.WINDOW_WIDTH}x{self.WINDOW_HEIGHT}")
 
         # Desactivar redimensionar la ventana (False, False) = no horizontal, no vertical
         self.resizable(False, False)
@@ -552,10 +552,10 @@ class NotificationWindow(ctk.CTkToplevel):
         x = (self.winfo_screenwidth() // 2) - (self.WINDOW_WIDTH // 2)
 
         # Calcular la posicion Y: (alto_pantalla / 2) - (alto_ventana / 2)
-        y = (self.winfo_screenheight() // 2) - (self.WINDOW_HIGHT // 2)
+        y = (self.winfo_screenheight() // 2) - (self.WINDOW_HEIGHT // 2)
 
         # Aplicar geometria: "ANCHOxALTO+X+Y"
-        self.geometry(f"{self.WINDOW_WIDTH}x{self.WINDOW_HIGHT}+{x}+{y}")
+        self.geometry(f"{self.WINDOW_WIDTH}x{self.WINDOW_HEIGHT}+{x}+{y}")
     
     def _get_notification_config(self, notification_type: str) -> dict:
         """
