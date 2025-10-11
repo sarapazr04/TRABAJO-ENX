@@ -102,3 +102,70 @@ class DataLoaderApp(ctk.CTk):
             text_color = AppTheme.SECONDARY_TEXT
         )
         subtitle_label.pack()
+
+    def _create_control_panel(self) -> None:
+        
+        control_panel = Panel(self, "Carga de datasets")
+        control_panel.pack(
+            fill = "x",
+            padx = AppConfig.PADDING,
+            pady=(AppConfig.PADDING, 10)
+        )
+        
+        self._create_button_section(control_panel)
+        self._create_stats_section(control_panel)
+
+    def _create_button_section(self, parent: Panel) -> None:
+        
+        button_frame = ctk.CTkFrame(parent, fg_color = "transparent")
+        button_frame.pack(fill = "x", padx = 20, pady = (15, 10))
+        
+        self._create_upload_button(button_frame)
+        self._create_path_display(button_frame)
+    
+    def _create_upload_button(self, parent: ctk.CTkFrame) -> None:
+
+        self.upload_button = UploadButton(
+            parent,
+            text = "Cargar Archivo",
+            command = self._load_file
+        )
+        self.upload_button.pack(side = "left", padx = (0, 15))
+    
+    def _create_path_display(self, parent: ctk.CTkFrame) -> None:
+        
+        self.path_frame = ctk.CTkFrame(
+            parent,
+            fg_color = AppTheme.PRIMARY_BACKGROUND,
+            corner_radius = 6,
+            border_width = 1,
+            border_color = AppTheme.BORDER
+        )
+        self.path_frame.pack(side = "left", fill = "x", expand = True)
+        
+        self.path_label = ctk.CTkLabel(
+            self.path_frame,
+            text = "Ningún archivo seleccionado",
+            font = AppConfig.BODY_FONT,
+            text_color = AppTheme.DIM_TEXT,
+            anchor = "center",
+            justify = "center"
+        )
+        self.path_label.pack(pady = 10, padx = 15, fill = "x", expand = True)
+    
+    def _create_stats_section(self, parent: Panel) -> None:
+        
+        self.stats_frame = ctk.CTkFrame(
+            parent,
+            fg_color = AppTheme.PRIMARY_BACKGROUND,
+            corner_radius = 6
+        )
+        self.stats_frame.pack(fill = "x", padx = 20, pady = (5, 15))
+        
+        self.stats_label = ctk.CTkLabel(
+            self.stats_frame,
+            text = "",
+            font = AppConfig.MONO_FONT,
+            text_color = AppTheme.SECONDARY_TEXT
+        )
+        self.stats_label.pack(pady = 8, padx = 15)
