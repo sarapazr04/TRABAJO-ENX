@@ -21,13 +21,16 @@ from gui_components import (
     UploadButton, Panel, LoadingIndicator
 )
 
+# Importar el modulo de importacion datos 
 sys.path.append(str(Path(__file__).parent.parent / "data_import"))
 from data_import.importer import import_data
 
 
 class DataLoaderApp(ctk.CTk):
+    """Aplicación principal para importación y visualización de datos."""
     
     def __init__(self):
+        """Inicializar la aplicación y configura el estado inicial."""
         super().__init__()
         
         self._configure_window()
@@ -35,6 +38,8 @@ class DataLoaderApp(ctk.CTk):
         self._setup_user_interface()
     
     def _configure_window(self) -> None:
+        """Configurar las propiedades de la ventana principal."""
+
         self.title("LUNEX DATASETS LOADER")
         self.geometry(
             f"{AppConfig.WINDOW_WIDTH}x{AppConfig.WINDOW_HEIGHT}"
@@ -44,11 +49,18 @@ class DataLoaderApp(ctk.CTk):
         ctk.set_default_color_theme("blue")
     
     def _initialize_state(self) -> None:
+        """
+        Inicializar el estado de la aplicación.
+        
+        Variables de instancia que mantienen el estado actual.
+        """
         self.current_file_path: Optional[str] = None
         self.current_dataframe: Optional[pd.DataFrame] = None
         self.loading_indicator: Optional[LoadingIndicator] = None
     
     def _setup_user_interface(self) -> None:
+        """Configurar todos los componentes de la GUI."""
+        
         self.configure(fg_color = AppTheme.PRIMARY_BACKGROUND)
         
         self._create_header()
