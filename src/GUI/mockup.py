@@ -2,7 +2,7 @@
 Test visual completo que simula la aplicación final.
 """
 import customtkinter as ctk
-from gui_components import (
+from components import (
     AppTheme, AppConfig, Panel, UploadButton,
     NotificationWindow, LoadingIndicator
 )
