@@ -1,3 +1,12 @@
+"""
+Estructura general para la interfaz gráfica.
+Autor: youssef-nabaha
+
+Clases
+------
+DataLoaderApp
+    Lógica principal para la carga y visualización de datasets
+"""
 
 import customtkinter as ctk
 from tkinter import filedialog
@@ -23,7 +32,7 @@ from data_import.importer import import_data
 # ============================================================================
 
 class DataLoaderApp(ctk.CTk):
-    """Aplicación principal para importación y visualización de datos."""
+    """Lógica para importación y visualización de datos."""
     
     def __init__(self):
         """Inicializar la aplicación y configura el estado inicial."""
