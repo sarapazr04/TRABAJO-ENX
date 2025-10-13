@@ -1,69 +1,115 @@
+
 # Proyecto: Aplicación para Modelos de Regresión Lineal
+
+  
 
 ## Descripción General
 
-Este proyecto tiene como objetivo desarrollar una **aplicación interactiva** que permita crear, visualizar y gestionar **modelos de regresión lineal simple y múltiple** a partir de datos almacenados en distintos formatos (CSV, Excel y bases de datos SQLite).  
+  
+
+Este proyecto tiene como objetivo desarrollar una **aplicación interactiva** que permita crear, visualizar y gestionar **modelos de regresión lineal simple y múltiple** a partir de datos almacenados en distintos formatos (CSV, Excel y bases de datos SQLite).
+
 La aplicación permitirá además **entrenar modelos, realizar predicciones, guardar y cargar modelos existentes**, y ofrecerá una **interfaz gráfica intuitiva** para facilitar el uso por parte del usuario final.
+
+  
 
 ## Objetivo del Proyecto
 
-El desarrollo se llevará a cabo siguiendo la metodología **Scrum**, con un equipo de 4 desarrolladores y el profesor actuando como **Product Owner**.  
+  
+
+El desarrollo se llevará a cabo siguiendo la metodología **Scrum**, con un equipo de 4 desarrolladores y el profesor actuando como **Product Owner**.
+
 El propósito es construir un software funcional, bien documentado y gestionado bajo control de versiones con **Git y GitHub**, cumpliendo los principios de desarrollo ágil y buenas prácticas de ingeniería de software.
+
+  
 
 ## Tecnologías Iniciales
 
-- **Lenguaje principal:** Python  
-- **Formatos de datos:** CSV, Excel (XLSX) y SQLite  
-- **Control de versiones:** Git + GitHub  
-- **Gestión del proyecto:** Taiga (metodología Scrum)
+  
+
+-  **Lenguaje principal:** Python
+
+-  **Formatos de datos:** CSV, Excel (XLSX) y SQLite
+
+-  **Control de versiones:** Git + GitHub
+
+-  **Gestión del proyecto:** Taiga (metodología Scrum)
+
+  
 
 ## Instalación
 
+  
+
 ### Requisitos
 
+  
 La GUI requiere Python y las dependencias especificadas en **requirements.txt**.
 
+  
 ### Instalar Dependencias
 
-- pip install -r requirements.txt
+  
+```pip install -r requirements.txt```
 
-### Instalar la Fuente Orbitron
+  
+### Instalar la Fuente [Orbitron](https://fonts.google.com/specimen/Orbitron?preview.text=Datasets%20loader)
 
 - La aplicación utiliza el font Orbitron. Los archivos del font se encuentran en la carpeta **Orbitron/**.
 
+
 #### Windows
 
-- 1. Navega a la carpeta **Orbitron/**
-- 2. Selecciona todos los archivos **.ttf**
-- 3. Clic derecho -> **Instalar**
+- Navega a la carpeta **Orbitron/**
+
+- Selecciona todos los archivos **.ttf**
+
+- Clic derecho -> **Instalar**
+
 
 ### macOS
 
 - Navega a la carpeta **Orbitron/**
+
 - Doble clic en cada archivo **.ttf**
+
 - Clic en **Instalar Fuente** en Font Book
 
+  
 ### Linux
+```
+mkdir -p ~/.local/share/fonts
+cp Orbitron/*.ttf ~/.local/share/fonts/
+fc-cache -f -v
+```
 
-- mkdir -p ~/.local/share/fonts
-- **cp** Orbitron/*.ttf ~/.local/share/fonts/
-- fc-cache -f -v
+  
 
 ## Ejecutar la Aplicación
-
-- cd src/GUI
-- python main.py
+```
+cd src/
+python main.py
+```
+  
 
 ## Estado del Proyecto
 
-- Versión inicial del repositorio.  
-Actualmente se están definiendo los **requisitos**, el **alcance funcional** y la **planificación del primer sprint**.  
-El README se ampliará progresivamente con la guía de instalación, manual de usuario y documentación técnica conforme avance el desarrollo.
+- Versión inicial del repositorio.
 
+Actualmente se están definiendo los **requisitos**, el **alcance funcional** y la **planificación del primer sprint**.
+
+El **README** se ampliará progresivamente con la guía de instalación, manual de usuario y documentación técnica conforme avance el desarrollo.
+
+  
+  
 
 ---
 
+  
+  
 
-**Equipo de desarrollo:** Laura Castro Expósito, Sara Paz Romero, Mohammed El Ghanemy, Youssef Nabaha 
-**Scrum Master:** Sara Paz Romero  
+**Equipo de desarrollo:** Laura Castro Expósito, Sara Paz Romero, Mohammed El Ghanemy, Youssef Nabaha
+
+**Scrum Master:** Sara Paz Romero
+
 **Product Owner:** Alberto Alvarellos González
