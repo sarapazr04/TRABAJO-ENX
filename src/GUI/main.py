@@ -18,7 +18,7 @@ import pandas as pd
 import threading
 from tkinter import ttk
 
-from components import (
+from .components import (
     AppTheme, AppConfig, NotificationWindow,
     UploadButton, Panel, LoadingIndicator
 )
