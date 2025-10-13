@@ -24,7 +24,7 @@ import pandas as pd
 import sqlite3
 from pathlib import Path
 from typing import Tuple
-from utils import coerce_dtypes
+from .utils import coerce_dtypes
 
 
 def import_data(file_path: str, preview_rows: int = 5) -> Tuple[pd.DataFrame, pd.DataFrame]:

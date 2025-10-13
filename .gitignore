@@ -1,13 +1,40 @@
 # Mi entorno (Sara)
 Enviroment_ENX/
-venv/
-.env
 
-# Archivos de Python
+# Mi entorno (Youssef)
+Lunex/
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
 
-.vscode/ 
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDEs
+.vscode/
+.idea/
 *.env
+*.swp
+*.swo
+*~
+
