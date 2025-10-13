@@ -10,3 +10,8 @@
 
 Tras la comparación de las distintas librerías concluímos que la que mejor se adapta a nosotros y nuestro uso es **CustomTkinter**.
 
+
+**Proceso de aprendizaje**
+
+A medida que investigávamos nos íbamos dando cuenta de que la mayoría de las librerías orientadas a GUI no estan orientadas para Python o simplemente eran copias de librerías de otros lenguajes (Dear ImGUI), además de que algunas de las que estaban principalmente orientadas a Python estaban obsoletas, librerías antiguas o desalineadas, es exponencialmente dificil encontrar librerías que no esten en fase de prueba (versiones menores que 1.0.0) y que tengan un gran nivel de personalización, e ahí de donde deducimos que custom Tkinter es la mejor opción, pues se encuentra en una versión estable (5.2.2) y cuenta con un gran repertorio de personalización, 
+otro problema a socavar es la compatibilidad de las librerías, pues hay varias liberías que únicamente son compatibles con Windows, o no tienen acceso a bases de datos.
