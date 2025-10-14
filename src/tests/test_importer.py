@@ -1,5 +1,7 @@
 from pathlib import Path
-from importer import import_data
+import sys
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+from data_import.importer import import_data
 
 BASE_DIR = Path(__file__).resolve().parents[2]  
 DATA_DIR = BASE_DIR / "data" / "raw"
