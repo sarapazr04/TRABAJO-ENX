@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import tkinter as tk
 from components import (
     AppTheme, AppConfig, NotificationWindow,
     Panel, LoadingIndicator
@@ -36,7 +37,7 @@ class RadioButtonFrame(ctk.CTkFrame):
                 radiobutton.grid(row=i + 1, column=0, padx=10, pady=(10, 0), sticky="w")
                 self.radiobuttons.append(radiobutton)
 
-    def get_button(self):
+    def get_button(self): #
         return self.variable.get()
 
     def set_button(self, value):
@@ -50,52 +51,84 @@ class RadioButtonFrame(ctk.CTkFrame):
         self.entries[index].delete(0,last_index)
         
 
-def _create_preprocessing_panel(master):
-    preprocessing_panel = Panel(master, "Preprocesamiento de datos")
-    preprocessing_panel.pack(
-            fill = "x",
-            padx = AppConfig.PADDING,
-            pady=(AppConfig.PADDING, 10))
-    _create_NA_table(preprocessing_panel)
-    _create_substitute_options(preprocessing_panel)
-    
-def _create_NA_table(master):
-    pass
+class PreprocessingPanel(Panel):
 
-def _create_substitute_options(master):
-    app.radiobutton_frame = RadioButtonFrame(app, "Opciones", values=["Eliminar", "Media", "Mediana", "Constante"], input_box= [3])
-    app.radiobutton_frame.entries[0].configure(placeholder_text = "Introduzca constante")
-    app.radiobutton_frame.pack(fill="both", expand= True, padx=10, pady=(10, 0))
-    app.button = ctk.CTkButton(app, text="Confirmar", command = _confirm_button_callback)
-    app.button.pack(side = "left", expand= False, padx=10, pady=10)
+    def __init__(self, master):
+        self.elements = []
+        
+
+    # def _create_preprocessing_panel(self,master):
+    #     preprocessing_panel = Panel(master, "Preprocesamiento de datos")
+    #     preprocessing_panel.pack(
+    #             fill = "x",
+    #             padx = AppConfig.PADDING,
+    #             pady=(AppConfig.PADDING, 10))
+    #     self._create_NA_table(preprocessing_panel)
+    #     self._create_substitute_options(preprocessing_panel)
+
+    def _create_preprocessing_panel(self,master):
+        preprocessing_panel = Panel(master, "Preprocesamiento de datos")
+        
+        self._create_NA_table(preprocessing_panel)
+        self._create_substitute_options(preprocessing_panel)
+        return preprocessing_panel
 
 
-def _confirm_button_callback():
-    choice = app.radiobutton_frame.get_button()
-    if choice == "":
-        NotificationWindow(
-            app,
-            "Error de confirmación",
-            "Tiene que eligir una opción.",
-            "warning"
-        )
-    if choice == "Constante":
-        entry_val = app.radiobutton_frame.get_entry(0)
-        try:
-            float(entry_val)
-        except:
-            app.radiobutton_frame.del_entry(0)
+    def _create_NA_table(self, master):
+        label = ctk.CTkLabel(master, text="Nº total de N/As:", fg_color="transparent")
+        self.elements.append(label)
+        label.pack(expand=True)
+        table = tk.ttk.Treeview()
+        pass
+
+    def _create_substitute_options(self,master):
+        radiobutton_frame = RadioButtonFrame(master, "Opciones", values=["Eliminar", "Media", "Mediana", "Constante"], input_box= [3])
+        self.elements.append(radiobutton_frame)
+        radiobutton_frame.entries[0].configure(placeholder_text = "Introduzca constante")
+        radiobutton_frame.pack(fill="both", expand= True, padx=10, pady=(10, 0))
+        button = ctk.CTkButton(master, text="Confirmar", command = self._confirm_button_callback)
+        self.elements.append(button)
+        button.pack(side = "left", expand= False, padx=10, pady=10)
+
+
+    def _confirm_button_callback(self):
+        choice = self.elements[1].get_button()
+        if choice == "":
             NotificationWindow(
-            app,
-            "Error de confirmación",
-            "La constante debe de ser un número! Ej: 4.25",
-            "warning"
-        )
-    pass
+                app,
+                "Error de confirmación",
+                "Tiene que eligir una opción.",
+                "warning"
+            )
+        if choice == "Constante":
+            entry_val = self.elements[1].get_entry(0)
+            try:
+                float(entry_val)
+            except:
+                self.elements[1].del_entry(0)
+                NotificationWindow(
+                app,
+                "Error de confirmación",
+                "La constante debe de ser un número! Ej: 4.25",
+                "warning"
+            )
+
 
 
 app = ctk.CTk()
-app.geometry("400x350")
-_create_preprocessing_panel(app)
+app.geometry("800x350")
+a = PreprocessingPanel(app)
+b = a._create_preprocessing_panel(app)
+c = a._create_preprocessing_panel(app)
+b.pack(
+                side = "left",
+                fill= "y",
+                padx = AppConfig.PADDING,
+                pady=(AppConfig.PADDING, 10))
+c.pack(
+                side = "right",
+                padx = AppConfig.PADDING,
+                pady=(AppConfig.PADDING, 10))
+
 
 app.mainloop()
