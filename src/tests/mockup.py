@@ -2,7 +2,11 @@
 Test visual completo que simula la aplicación final.
 """
 import customtkinter as ctk
-from components import (
+from pathlib import Path
+import sys
+
+sys.path.append(str(Path(__file__).resolve().parents[1]))
+from GUI.components import (
     AppTheme, AppConfig, Panel, UploadButton,
     NotificationWindow, LoadingIndicator
 )

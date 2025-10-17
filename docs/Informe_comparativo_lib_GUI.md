@@ -1,0 +1,17 @@
+### Investigación y comparativa de librerías de GUI Python
+
+**Tkinter**: A pesar de que la librería se encuentra bastante completa, con diversas funciones, sigue sin ser suficiente para proyectos grandes o estilizados, pues esta librería es bastante antigua y por ello no cuenta con muchas opciones para la personalización o para la creación de aplicaciones avanzadas, es una librería básica de para la creación de GUI en Python, por ello no la tomaremos como primera opción, aunque si que puede llegar a ser útil para el aprendizaje básico del manejo de herramientas de GUI.
+
+**PyQt**: En este caso nos encontramos con una librería muy completa con diferentes funcionalidades para el manejo de datos, como bases SQL, además de ser multiplataforma, pudiendo ejecutarse en Windows, MacOS o Linux. Por otro lado esta librería fue lanzada en 1998 por lo que la GUI es muy antigua, al estilo de Windows XP, además de tener limitaciones a la hora de aprenderlo y aplicarlo, pues es bastante complejo en cuanto a su implementación, es por ello que tampoco se tomará como primera opción
+
+**Dear PyGUI**: Nos encontramos con un framework multiplataforma cuya principal característica es el uso de subprocesos múltiples y la subcontratación de operaciones a la GPU para acelerar el renderizado, estando la mayor parte del código de la librería escrito en C++ y adaptado tanto para crear interfaces simples como para desarrollar videojuegos, aplicaciones científicas o de ingeniería. A pesar de que destaca su alto catálogo de recursos para la implementación de GUI esta librería aún es inestable, pues cuenta con actualizaciones recurrentes con muchos fallos que se corrigen versión a versión, siendo lanzada apenas octubre de 2021 la primera versión estable (1.0.0), pues es una adaptación de Dear ImGUI de C++ más que una librería echa íntegramente en Python y para Python.
+
+**CustomTkinter**: Por último investigamos CustomTkinter por su similaridad con Tkinter pero adoptación de estilos más modernos. La librería destacó para nosotros por su simpleza para el aprendizaje desde zero permitiendo crear GUIs simples a la vez que, sin comprometer la calidad del resultado, permite la creación de GUIs más complejas y estilizadas a medida que nos familiarizamos con su uso. El basto rango de customización del que potencialmente podríamos hacer uso, también como la apariencia moderna que nos proporciona, empaquetados en un formato simple de aprender, es el principal fuerte de esta librería.
+
+Tras la comparación de las distintas librerías concluímos que la que mejor se adapta a nosotros y nuestro uso es **CustomTkinter**.
+
+
+**Proceso de aprendizaje**
+
+A medida que investigávamos nos íbamos dando cuenta de que la mayoría de las librerías orientadas a GUI no estan orientadas para Python o simplemente eran copias de librerías de otros lenguajes (Dear ImGUI), además de que algunas de las que estaban principalmente orientadas a Python estaban obsoletas, librerías antiguas o desalineadas, es exponencialmente dificil encontrar librerías que no esten en fase de prueba (versiones menores que 1.0.0) y que tengan un gran nivel de personalización, e ahí de donde deducimos que custom Tkinter es la mejor opción, pues se encuentra en una versión estable (5.2.2) y cuenta con un gran repertorio de personalización, 
+otro problema a socavar es la compatibilidad de las librerías, pues hay varias liberías que únicamente son compatibles con Windows, o no tienen acceso a bases de datos.
