@@ -1,3 +1,8 @@
+from components import (
+     NotificationWindow
+)
+
+
 import customtkinter as ctk
 import pandas as pd
 
@@ -102,6 +107,15 @@ class App(ctk.CTk):
         columnas_entrada = self.frame_entrada.get()
         columna_salida = self.frame_salida.get()
         
+        if len(columnas_entrada) == 0:
+            NotificationWindow(
+                app,
+                "Error de selección",
+                "Debe elegir al menos una columna de entrada",
+                "warning"
+            )
+
+
         print(f"\n--- Procesando Datos ---")
         print(f"Datos de Entrada: {columnas_entrada}")
         print(f"Datos de Salida: {columna_salida}")
