@@ -43,7 +43,7 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("my app")
+        self.title("Selector de datos")
         self.geometry("400x250")
         self.grid_columnconfigure((0, 1), weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -74,8 +74,10 @@ class App(customtkinter.CTk):
             self, 
             self.df  
         )
+        self.column_frame = customtkinter.CTkFrame(self)
         self.column_selector.grid(row=0, column=1, padx=(0, 10), pady=(10, 0), sticky="new")
-
+        self.column_frame.master = self.column_selector
+        self.column_selector.title = customtkinter.CTkLabel(self, text=self.title, fg_color="gray30", corner_radius=6)
         self.button = customtkinter.CTkButton(
             self, 
             text="Procesar Datos", 
