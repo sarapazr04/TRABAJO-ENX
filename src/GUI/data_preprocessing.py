@@ -83,7 +83,7 @@ class PreprocessingPanel(Panel):
 
         return preprocessing_panel
 
-    def _create_NA_table(self, master):
+    def _create_NA_stats(self, master):
         nas_stats = self._count_nan_df(self.df)
         nas_total = self._sum_nan(nas_stats)
         nas_columns = self._nan_columns(nas_stats)
@@ -120,6 +120,7 @@ class PreprocessingPanel(Panel):
         self._detect_nan(self.df[["ID", "Nombre", "Cantidad"]])
 
         choice = self.elements[1].get_button()
+        # Los 5 casos según el estado de selección al confirmar
         if choice == "":
             NotificationWindow(
                 self.master,
@@ -235,7 +236,7 @@ class PreprocessingPanel(Panel):
 if __name__ == "__main__":
 
     app = ctk.CTk()
-    app.geometry("800x350")
+    app.geometry("400x350")
 
     df = pd.DataFrame({
             'ID': [1, 2, 3, 4],
@@ -246,14 +247,7 @@ if __name__ == "__main__":
 
     a = PreprocessingPanel(app, df)
     b = a._create_preprocessing_panel()
-    c = a._create_preprocessing_panel()
     b.pack(
-                    side="left",
-                    fill="y",
-                    padx=AppConfig.PADDING,
-                    pady=(AppConfig.PADDING, 10))
-    c.pack(
-                    side="right",
                     padx=AppConfig.PADDING,
                     pady=(AppConfig.PADDING, 10))
 
