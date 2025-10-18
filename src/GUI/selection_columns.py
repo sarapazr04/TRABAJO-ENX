@@ -104,21 +104,23 @@ class App(ctk.CTk):
 
     def button_callback(self):
   
-        columnas_entrada = self.frame_entrada.get()
-        columna_salida = self.frame_salida.get()
-        
-        if len(columnas_entrada) == 0:
+            
+        columnas_entrada_inicial = self.frame_entrada.get()
+        if len(columnas_entrada_inicial) == 0:
             NotificationWindow(
                 app,
                 "Error de selección",
                 "Debe elegir al menos una columna de entrada",
                 "warning"
             )
+        else:
 
-
-        print(f"\n--- Procesando Datos ---")
-        print(f"Datos de Entrada: {columnas_entrada}")
-        print(f"Datos de Salida: {columna_salida}")
+            columnas_entrada = columnas_entrada_inicial
+            columna_salida = self.frame_salida.get()
+            
+            print(f"\n--- Procesando Datos ---")
+            print(f"Datos de Entrada: {columnas_entrada}")
+            print(f"Datos de Salida: {columna_salida}")
 
 
 # Ejemplo de uso
