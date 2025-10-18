@@ -26,8 +26,8 @@ class RadioButtonFrame(ctk.CTkFrame):
                             padx=10, pady=(10, 0),
                             sticky="ew")
 
-        for i, value in enumerate(self.values):
-            if i in self.input_box:
+        for i, value in enumerate(self.values):  # Crea los botones con values
+            if i in self.input_box:  # Añade entradas a las botones marcados
                 input_button_frame = ctk.CTkFrame(self, fg_color="transparent")
                 input_button_frame.grid(row=i + 1, column=0,
                                         sticky="w")
