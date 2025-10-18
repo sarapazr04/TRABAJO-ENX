@@ -1,3 +1,4 @@
+import pandas as pd
 import customtkinter as ctk
 import tkinter as tk
 from components import (
@@ -130,5 +131,44 @@ c.pack(
                 padx = AppConfig.PADDING,
                 pady=(AppConfig.PADDING, 10))
 
+df = pd.DataFrame({
+        'ID': [1, 2, 3, 4],
+        'Nombre': ['Azúcar', None, 'Leche', 'Té'],
+        'Precio': [28.5, 45.0, 32.0, 15.0],
+        'Cantidad': [34, None, 8, None]
+})
+
+def _detect_nan(datos):
+    nas_columns = []
+    
+    print("Col selec:\n",datos)
+    nans_indices = datos.columns[datos.isna().any()].tolist()
+    print("Indx w/ nan:\n",nans_indices)
+    nans = datos.loc[:,nans_indices]
+    print("Col w/ nan:\n",nans)
+    
+    for column in nans_indices: # Recorre columnas para contar NAs
+        na_col = [0, column]
+        for row in datos[column].isna():
+            if row:
+                na_col[0] += 1
+        nas_columns.append(na_col)
+    print("NAs in col:\n", nas_columns)
+    if nas_columns != []:
+        NotificationWindow(
+                app,
+                "Valores NaN detectados",
+                f"Hay {len(nas_columns)} columna(s) con valores NaN con un total de {_sum_nan(nas_columns)} NaNs.",
+                "warning"
+        )
+
+def _sum_nan(nan_list:list):
+    total = 0
+    for i in nan_list:
+        total += i[0]
+    return total
+
+    
+_detect_nan(df[["ID", "Nombre", "Cantidad"]])
 
 app.mainloop()
