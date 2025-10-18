@@ -54,8 +54,10 @@ class RadioButtonFrame(ctk.CTkFrame):
 
 class PreprocessingPanel(Panel):
 
-    def __init__(self, master):
+    def __init__(self, master, df):
+        self.master = master
         self.elements = []
+        self.df = df
         
 
     # def _create_preprocessing_panel(self,master):
@@ -67,8 +69,8 @@ class PreprocessingPanel(Panel):
     #     self._create_NA_table(preprocessing_panel)
     #     self._create_substitute_options(preprocessing_panel)
 
-    def _create_preprocessing_panel(self,master):
-        preprocessing_panel = Panel(master, "Preprocesamiento de datos")
+    def _create_preprocessing_panel(self):
+        preprocessing_panel = Panel(self.master, "Preprocesamiento de datos")
         
         self._create_NA_table(preprocessing_panel)
         self._create_substitute_options(preprocessing_panel)
@@ -76,11 +78,13 @@ class PreprocessingPanel(Panel):
 
 
     def _create_NA_table(self, master):
-        label = ctk.CTkLabel(master, text="Nº total de N/As:", fg_color="transparent")
+        nas_stats = self._count_nan(self.df)
+        nas_columns = self._nan_columns(nas_stats)
+        label = ctk.CTkLabel(master, 
+                             text = f"Nº total de N/As: {self._sum_nan(nas_stats)}\nColumnas: {nas_columns}",
+                             fg_color="transparent")
         self.elements.append(label)
         label.pack(expand=True)
-        table = tk.ttk.Treeview()
-        pass
 
     def _create_substitute_options(self,master):
         radiobutton_frame = RadioButtonFrame(master, "Opciones", values=["Eliminar", "Media", "Mediana", "Constante"], input_box= [3])
@@ -93,34 +97,122 @@ class PreprocessingPanel(Panel):
 
 
     def _confirm_button_callback(self):
+        self._detect_nan(self.df[["ID", "Nombre", "Cantidad"]])
         choice = self.elements[1].get_button()
         if choice == "":
             NotificationWindow(
-                app,
+                self.master,
                 "Error de confirmación",
                 "Tiene que eligir una opción.",
                 "warning"
             )
-        if choice == "Constante":
+        elif choice == "Constante":
             entry_val = self.elements[1].get_entry(0)
             try:
                 float(entry_val)
+                self.df = self.df.fillna(entry_val)
+                NotificationWindow(
+                self.master,
+                "Preprocesado terminado",
+                "El preprocesado se ha llevado a cabo sin problemas.",
+                "success")
+                print(self.df)
             except:
                 self.elements[1].del_entry(0)
                 NotificationWindow(
-                app,
+                self.master,
                 "Error de confirmación",
                 "La constante debe de ser un número! Ej: 4.25",
                 "warning"
             )
+        elif choice == "Eliminar":
+            self.df = self.df.dropna()
+            NotificationWindow(
+                self.master,
+                "Preprocesado terminado",
+                "El preprocesado se ha llevado a cabo sin problemas.",
+                "success")
+            print(self.df)
+            
+        elif choice == "Media":
+            result = pd.DataFrame()
 
+            for col in self.df.columns:
+                avg = self.df.loc[:, col].mean()
+                result = pd.concat([result,self.df[col].fillna(avg)], axis=1)
+            self.df = result
+            NotificationWindow(
+                self.master,
+                "Preprocesado terminado",
+                "El preprocesado se ha llevado a cabo sin problemas.",
+                "success")
+            print("Result:", result)
+
+        elif choice == "Mediana":
+            result = pd.DataFrame()
+
+            for col in self.df.columns:
+                median = self.df.loc[:, col].median()
+                result = pd.concat([result,self.df[col].fillna(median)], axis=1)
+            self.df = result
+            NotificationWindow(
+                self.master,
+                "Preprocesado terminado",
+                "El preprocesado se ha llevado a cabo sin problemas.",
+                "success")
+            print("Result:", result)
+            
+    def _count_nan(self, datos):
+        nas_columns = []
+        nans_indices = datos.columns[datos.isna().any()].tolist()
+
+        for column in nans_indices: # Recorre columnas para contar NAs
+            na_col = [0, column]
+            for row in datos[column].isna():
+                if row:
+                    na_col[0] += 1
+            nas_columns.append(na_col)
+        return nas_columns
+
+    def _detect_nan(self, datos):
+        
+        nas_columns = self._count_nan(datos)
+        
+        if nas_columns != []:
+            NotificationWindow(
+                    self.master,
+                    "Valores NaN detectados",
+                    f"Hay {len(nas_columns)} columna(s) con valores NaN con un total de {self._sum_nan(nas_columns)} NaNs.",
+                    "warning"
+            )
+            
+
+    def _sum_nan(self, nan_list:list):
+        total = 0
+        for i in nan_list:
+            total += i[0]
+        return total
+    
+    def _nan_columns(self, nan_list:list):
+        total = []
+        for i in nan_list:
+            total.append(i[1])
+        return total
 
 
 app = ctk.CTk()
 app.geometry("800x350")
-a = PreprocessingPanel(app)
-b = a._create_preprocessing_panel(app)
-c = a._create_preprocessing_panel(app)
+
+df = pd.DataFrame({
+        'ID': [1, 2, 3, 4],
+        'Nombre': [1, None, 6, 6],
+        'Precio': [28.5, 45.0, 32.0, 15.0],
+        'Cantidad': [34, None, 8, 8]
+})
+
+a = PreprocessingPanel(app, df)
+b = a._create_preprocessing_panel()
+c = a._create_preprocessing_panel()
 b.pack(
                 side = "left",
                 fill= "y",
@@ -131,44 +223,5 @@ c.pack(
                 padx = AppConfig.PADDING,
                 pady=(AppConfig.PADDING, 10))
 
-df = pd.DataFrame({
-        'ID': [1, 2, 3, 4],
-        'Nombre': ['Azúcar', None, 'Leche', 'Té'],
-        'Precio': [28.5, 45.0, 32.0, 15.0],
-        'Cantidad': [34, None, 8, None]
-})
-
-def _detect_nan(datos):
-    nas_columns = []
-    
-    print("Col selec:\n",datos)
-    nans_indices = datos.columns[datos.isna().any()].tolist()
-    print("Indx w/ nan:\n",nans_indices)
-    nans = datos.loc[:,nans_indices]
-    print("Col w/ nan:\n",nans)
-    
-    for column in nans_indices: # Recorre columnas para contar NAs
-        na_col = [0, column]
-        for row in datos[column].isna():
-            if row:
-                na_col[0] += 1
-        nas_columns.append(na_col)
-    print("NAs in col:\n", nas_columns)
-    if nas_columns != []:
-        NotificationWindow(
-                app,
-                "Valores NaN detectados",
-                f"Hay {len(nas_columns)} columna(s) con valores NaN con un total de {_sum_nan(nas_columns)} NaNs.",
-                "warning"
-        )
-
-def _sum_nan(nan_list:list):
-    total = 0
-    for i in nan_list:
-        total += i[0]
-    return total
-
-    
-_detect_nan(df[["ID", "Nombre", "Cantidad"]])
 
 app.mainloop()
