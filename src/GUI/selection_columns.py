@@ -1,5 +1,6 @@
 from components import (
-     NotificationWindow
+     NotificationWindow,
+     Panel
 )
 
 
@@ -60,25 +61,26 @@ class ColumnFrame(ctk.CTkFrame):
         self.option_menu.set(value)
 
 
-class App(ctk.CTk):
-    def __init__(self, dataframe):
-        super().__init__()
+class SelectorDatosPanel(Panel):
+    def __init__(self, master, dataframe, **kwargs):
 
-        self.title("Selector de datos")
-        self.geometry("500x400")
-        self.grid_columnconfigure((0, 1), weight=1)
-        self.grid_rowconfigure(0, weight=1)
+        super().__init__(master, "Selector de Datos", **kwargs)
         
         self.df = dataframe
         
-        self._crear_interfaz()
-
-    def _crear_interfaz(self):
+        # Crear el contenido del panel
+        self._crear_contenido()
+    def _crear_contenido(self):
         #Crea las cosas de la interfaz.
+        contenedor = ctk.CTkFrame(self, fg_color="transparent")
+        contenedor.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        contenedor.grid_columnconfigure((0, 1), weight=1)
+        contenedor.grid_rowconfigure(0, weight=1)
         
         # Frame izquierdo: Datos de Entrada 
         self.frame_entrada = ScrollableCheckboxFrame(
-            self, 
+            contenedor, 
             "Datos de Entrada",  
             self.df
         )
@@ -86,7 +88,7 @@ class App(ctk.CTk):
         
         #Frame derecho: Datos de Salida 
         self.frame_salida = ColumnFrame(
-            self,
+            contenedor,
             "Datos de Salida", 
             self.df
            
@@ -95,7 +97,7 @@ class App(ctk.CTk):
 
         # Botón 
         self.button = ctk.CTkButton(
-            self, 
+            contenedor, 
             text="Procesar Datos", 
             command=self.button_callback
         )
@@ -133,5 +135,10 @@ if __name__ == "__main__":
         'Cantidad': [34, 12, 8, 20]
     })
     
-    app = App(df)
+    app = ctk.CTk()
+    app.title("Aplicación Principal")
+    app.geometry("600x500")
+
+    selector_panel = SelectorDatosPanel(app, df)
+    selector_panel.pack(fill="both", expand=True, padx=20, pady=20)
     app.mainloop()
