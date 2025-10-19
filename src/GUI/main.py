@@ -7,13 +7,17 @@ import customtkinter as ctk
 from tkinter import filedialog
 import threading  # Para ejecutar código en segundo plano
 from pathlib import Path  # Para trabajar con rutas de archivos
+import pandas as pd
 
 from .components import (
     AppTheme, AppConfig, NotificationWindow,
     UploadButton, Panel, LoadingIndicator
 )
+from .data_preprocessing import PreprocessingPanel
+from .selection_columns import SelectionPanel
 from .data_display import DataDisplayManager
 from data_import.importer import import_data
+
 
 
 class DataLoaderApp(ctk.CTk):
@@ -40,6 +44,7 @@ class DataLoaderApp(ctk.CTk):
         self.configure(fg_color = AppTheme.PRIMARY_BACKGROUND)
         self._create_header()
         self._create_control_panel()
+        self._create_frame_sel_prep()
         self._create_data_panel()
 
 
@@ -265,6 +270,29 @@ class DataLoaderApp(ctk.CTk):
 
         stats_text = f"Filas: {rows:,}  |  Columnas: {cols}  |  Memoria: {memory_mb:.2f} MB"
         self.stats_label.configure(text = stats_text)
+
+    # ================================================================
+    # PANEL DE CONTROLES : Botón de carga y estadísticas
+    # ================================================================
+
+    def _create_frame_sel_prep(self):
+        df = pd.DataFrame({
+            'ID': [1, 2, 3, 4],
+            'Nombre': [1, None, 6, 6],
+            'Precio': [28.5, 45.0, 32.0, 15.0],
+            'Cantidad': [34, None, 8, 8]
+            })
+        frame_exterior = ctk.CTkFrame(self, fg_color="transparent")
+        frame_exterior.pack(fill="x", expand=True,padx=20, pady=(0, 20))
+
+        
+        prep_panel = PreprocessingPanel(frame_exterior, df, self)
+        
+        a = prep_panel._create_preprocessing_panel()
+        b = prep_panel._create_preprocessing_panel()
+
+        a.pack(fill="x", expand=True, side="right", padx=20, pady=0)
+        b.pack(fill="x", expand=True, side="left", padx=20, pady=0)
 
     # ================================================================
     # PANEL DE DATOS : Donde se muestra la tabla
