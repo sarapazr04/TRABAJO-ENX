@@ -1,6 +1,6 @@
 import pandas as pd
 import customtkinter as ctk
-from components import (
+from .components import (
     AppTheme, AppConfig, NotificationWindow,
     Panel
 )
@@ -70,15 +70,16 @@ class RadioButtonFrame(ctk.CTkFrame):
 
 class PreprocessingPanel(Panel):
 
-    def __init__(self, master, df):
+    def __init__(self, master, df, app):
         self.master = master
         self.elements = []
         self.df = df
+        self.app = app
 
     def _create_preprocessing_panel(self):
         preprocessing_panel = Panel(self.master, "Preprocesamiento de datos")
 
-        self._create_NA_table(preprocessing_panel)
+        self._create_NA_stats(preprocessing_panel)
         self._create_substitute_options(preprocessing_panel)
 
         return preprocessing_panel
@@ -123,7 +124,7 @@ class PreprocessingPanel(Panel):
         # Los 5 casos según el estado de selección al confirmar
         if choice == "":
             NotificationWindow(
-                self.master,
+                self.app,
                 "Error de confirmación",
                 "Tiene que eligir una opción.",
                 "warning")
@@ -136,7 +137,7 @@ class PreprocessingPanel(Panel):
 
                 self.df = self.df.fillna(entry_val)
                 NotificationWindow(
-                    self.master,
+                    self.app,
                     "Preprocesado terminado",
                     "El preprocesado se ha llevado a cabo sin problemas.",
                     "success")
@@ -146,7 +147,7 @@ class PreprocessingPanel(Panel):
                 self.elements[1].del_entry(0)  # Borra lo introducido
 
                 NotificationWindow(
-                    self.master,
+                    self.app,
                     "Error de confirmación",
                     "La constante debe de ser un número! Ej: 4.25",
                     "warning")
@@ -155,7 +156,7 @@ class PreprocessingPanel(Panel):
             self.df = self.df.dropna()
 
             NotificationWindow(
-                self.master,
+                self.app,
                 "Preprocesado terminado",
                 "El preprocesado se ha llevado a cabo sin problemas.",
                 "success")
@@ -170,7 +171,7 @@ class PreprocessingPanel(Panel):
             self.df = result
 
             NotificationWindow(
-                self.master,
+                self.app,
                 "Preprocesado terminado",
                 "El preprocesado se ha llevado a cabo sin problemas.",
                 "success")
@@ -188,7 +189,7 @@ class PreprocessingPanel(Panel):
             self.df = result
 
             NotificationWindow(
-                self.master,
+                self.app,
                 "Preprocesado terminado",
                 "El preprocesado se ha llevado a cabo sin problemas.",
                 "success")
@@ -214,10 +215,9 @@ class PreprocessingPanel(Panel):
 
         if nas_columns != []:
             NotificationWindow(
-                    self.master,
+                    self.app,
                     "Valores NaN detectados",
-                    f"Hay {len(nas_columns)} columna(s) con valores NaN con un\
-                         total de {nas_total} NaNs.",
+                    f"Hay {len(nas_columns)} columna(s) con valores NaN con un total de {nas_total} NaNs.",
                     "warning")
 
     def _sum_nan(self, nan_list: list):
@@ -235,8 +235,8 @@ class PreprocessingPanel(Panel):
 
 if __name__ == "__main__":
 
-    app = ctk.CTk()
-    app.geometry("400x350")
+    appl = ctk.CTk()
+    appl.geometry("400x350")
 
     df = pd.DataFrame({
             'ID': [1, 2, 3, 4],
@@ -245,10 +245,10 @@ if __name__ == "__main__":
             'Cantidad': [34, None, 8, 8]
     })
 
-    a = PreprocessingPanel(app, df)
+    a = PreprocessingPanel(appl, df, appl)
     b = a._create_preprocessing_panel()
     b.pack(
                     padx=AppConfig.PADDING,
                     pady=(AppConfig.PADDING, 10))
 
-    app.mainloop()
+    appl.mainloop()
