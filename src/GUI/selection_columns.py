@@ -1,5 +1,5 @@
 from components import (
-     NotificationWindow
+     NotificationWindow, Panel
 )
 
 
@@ -10,7 +10,7 @@ class ScrollableCheckboxFrame(ctk.CTkScrollableFrame):
     
     def __init__(self, master, title, dataframe):
         super().__init__(master, label_text=title)
-        self.grid_columnconfigure(0, weight=1)
+        #self.grid_columnconfigure(0, weight=1)
         
         self.dataframe = dataframe
         self.checkboxes = []
@@ -60,46 +60,47 @@ class ColumnFrame(ctk.CTkFrame):
         self.option_menu.set(value)
 
 
-class App(ctk.CTk):
-    def __init__(self, dataframe):
-        super().__init__()
-
-        self.title("Selector de datos")
-        self.geometry("500x400")
-        self.grid_columnconfigure((0, 1), weight=1)
-        self.grid_rowconfigure(0, weight=1)
-        
-        self.df = dataframe
-        
-        self._crear_interfaz()
+class SelectionPanel(Panel):
+    def __init__(self, master, df, app):
+        self.master = master
+        self.elements = []
+        self.df = df
+        self.app = app
 
     def _crear_interfaz(self):
-        #Crea las cosas de la interfaz.
-        
+        # Crea las cosas de la interfaz.
+        select_panel = Panel(self.master, "Selección de datos")
+
+        frame_in_out = ctk.CTkFrame(select_panel,fg_color="transparent")
+        frame_in_out.pack(expand=True, fill="x")
         # Frame izquierdo: Datos de Entrada 
-        self.frame_entrada = ScrollableCheckboxFrame(
-            self, 
+        frame_entrada = ScrollableCheckboxFrame(
+            frame_in_out, 
             "Datos de Entrada",  
             self.df
         )
-        self.frame_entrada.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        #frame_entrada.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        frame_entrada.pack(side="left", fill="both", expand=True, padx=10, pady=10)
         
         #Frame derecho: Datos de Salida 
-        self.frame_salida = ColumnFrame(
-            self,
+        frame_salida = ColumnFrame(
+            frame_in_out,
             "Datos de Salida", 
             self.df
            
         )
-        self.frame_salida.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+        #frame_salida.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+        frame_salida.pack(side="right", fill="both", expand=True, padx=20, pady=10)
 
         # Botón 
-        self.button = ctk.CTkButton(
-            self, 
+        button = ctk.CTkButton(
+            select_panel, 
             text="Procesar Datos", 
             command=self.button_callback
         )
-        self.button.grid(row=1, column=0, padx=10, pady=10, sticky="ew", columnspan=2)
+        #button.grid(row=1, column=0, padx=10, pady=10, sticky="ew", columnspan=2)
+        button.pack(fill="x", expand=True, padx=10, pady=10)
+        return select_panel
 
 
     def button_callback(self):
@@ -108,7 +109,7 @@ class App(ctk.CTk):
         columnas_entrada_inicial = self.frame_entrada.get()
         if len(columnas_entrada_inicial) == 0:
             NotificationWindow(
-                app,
+                self.app,
                 "Error de selección",
                 "Debe elegir al menos una columna de entrada",
                 "warning"
@@ -133,5 +134,15 @@ if __name__ == "__main__":
         'Cantidad': [34, 12, 8, 20]
     })
     
-    app = App(df)
+    app = ctk.CTk()
+    fuck = SelectionPanel(app,df,app)
+    a = fuck._crear_interfaz()
+    a2 = fuck._crear_interfaz()
+    a.pack(side="left", padx=10, pady=10)
+    a2.pack(side="right", padx=10, pady=10)
+    app.title("Selector de datos")
+    app.geometry("500x400")
+    #app.grid_columnconfigure((0, 1), weight=1)
+    #app.grid_rowconfigure(0, weight=1)
+
     app.mainloop()
