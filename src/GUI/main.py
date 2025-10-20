@@ -42,6 +42,9 @@ class DataLoaderApp(ctk.CTk):
         # Crear la interfaz
         self.configure(fg_color = AppTheme.PRIMARY_BACKGROUND)
         self._create_header()
+
+        self.ext_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
+        self.ext_frame.pack(fill="both", expand=True)
         self._create_control_panel()
         self._create_select_process_button()
         #self._create_frame_sel_prep()
@@ -88,7 +91,7 @@ class DataLoaderApp(ctk.CTk):
 
     def _create_control_panel(self):
         """Crear el panel con el botón de cargar y las estadísticas"""
-        control_panel = Panel(self, "Carga de datasets")
+        control_panel = Panel(self.ext_frame, "Carga de datasets")
         control_panel.pack(fill = "x", padx = 20, pady = (20, 10))
 
         self._create_button_section(control_panel)
@@ -278,7 +281,7 @@ class DataLoaderApp(ctk.CTk):
 
     def _create_select_process_button(self):
         self.select_process_button = ctk.CTkButton(
-            self,
+            self.ext_frame,
             text="Abrir ventana de selección y preprocesado",
             command=self._select_process_button_callback
             )
@@ -325,7 +328,7 @@ class DataLoaderApp(ctk.CTk):
 
     def _create_data_panel(self):
         """Crear el panel donde se mostrará la tabla de datos"""
-        data_panel = Panel(self, "Visualización de Datos")
+        data_panel = Panel(self.ext_frame, "Visualización de Datos")
         data_panel.pack(fill = "both", expand = True, padx = 20, pady = (0, 20))
 
         # Frame exterior (transparente, no se toca)
