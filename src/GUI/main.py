@@ -43,6 +43,7 @@ class DataLoaderApp(ctk.CTk):
         self.configure(fg_color = AppTheme.PRIMARY_BACKGROUND)
         self._create_header()
         self._create_control_panel()
+        self._create_select_process_button()
         #self._create_frame_sel_prep()
         self._create_data_panel()
 
@@ -275,18 +276,34 @@ class DataLoaderApp(ctk.CTk):
     # PANEL DE CONTROLES : Botón de carga y estadísticas
     # ================================================================
 
+    def _create_select_process_button(self):
+        self.select_process_button = ctk.CTkButton(
+            self,
+            text="Abrir ventana de selección y preprocesado",
+            command=self._select_process_button_callback
+            )
+        self.select_process_button.pack(fill="x", side="top", padx=10, pady=(0,10))
+
+    def _select_process_button_callback(self):
+        if self.toplevel is None or not self.toplevel.winfo_exists():
+            self._create_frame_sel_prep(self.current_dataframe)  # create window if its None or destroyed
+            self.toplevel.focus()
+        else:
+            self.toplevel.focus()  # if window exists focus it
+
     def _create_frame_sel_prep(self, df):
-        toplevel = ctk.CTkToplevel(self)
+        self.toplevel = ctk.CTkToplevel(self)
+
         df2 = pd.DataFrame({
             'ID': [1, 2, 3, 4],
             'Nombre': [1, None, 6, 6],
             'Precio': [28.5, 45.0, 32.0, 15.0],
             'Cantidad': [34, None, 8, 8]
             })
-        frame_exterior = ctk.CTkFrame(toplevel, fg_color="transparent")
+        frame_exterior = ctk.CTkFrame(self.toplevel, fg_color="transparent")
         frame_exterior.pack(fill="x", expand=True, padx=20, pady=(0, 20))
 
-        panel = SelectionPanel(frame_exterior, df, toplevel)
+        panel = SelectionPanel(frame_exterior, df, self.toplevel)
         a = panel._crear_interfaz()
         a.pack(fill="both", expand=True, side="left", padx=10, pady=10)
         panel._create_empty_panel()
