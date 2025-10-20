@@ -258,11 +258,12 @@ class RadioButtonFrame(ctk.CTkFrame):
 
 class PreprocessingPanel(ctk.CTkFrame):
 
-    def __init__(self, master, df, app):
+    def __init__(self, master, df, app, master_panel):
         self.master = master
         self.elements = []
         self.df = df
         self.app = app
+        self.master_panel = master_panel
 
     def _create_preprocessing_panel(self):
         preprocessing_panel = Panel(self.master, "Preprocesamiento de datos")
@@ -322,13 +323,13 @@ class PreprocessingPanel(ctk.CTkFrame):
             try:
                 float(entry_val)
 
-                self.df = self.df.fillna(entry_val)
+                self.master_panel.df = self.df.fillna(entry_val)
                 NotificationWindow(
                     self.app,
                     "Preprocesado terminado",
                     "El preprocesado se ha llevado a cabo sin problemas.",
                     "success")
-                print(self.df)
+                print(self.master_panel.df)
 
             except ValueError:
                 self.elements[1].del_entry(0)  # Borra lo introducido
@@ -340,14 +341,14 @@ class PreprocessingPanel(ctk.CTkFrame):
                     "warning")
 
         elif choice == "Eliminar":
-            self.df = self.df.dropna()
+            self.master_panel.df = self.df.dropna()
 
             NotificationWindow(
                 self.app,
                 "Preprocesado terminado",
                 "El preprocesado se ha llevado a cabo sin problemas.",
                 "success")
-            print(self.df)
+            print(self.master_panel.df)
 
         elif choice == "Media":
             result = pd.DataFrame()
@@ -355,14 +356,14 @@ class PreprocessingPanel(ctk.CTkFrame):
             for col in self.df.columns:
                 avg = self.df.loc[:, col].mean()
                 result = pd.concat([result, self.df[col].fillna(avg)], axis=1)
-            self.df = result
+            self.master_panel.df = result
 
             NotificationWindow(
                 self.app,
                 "Preprocesado terminado",
                 "El preprocesado se ha llevado a cabo sin problemas.",
                 "success")
-            print("Result:", result)
+            print("Result:",self. master_panel.df)
 
         elif choice == "Mediana":
             result = pd.DataFrame()
@@ -373,14 +374,14 @@ class PreprocessingPanel(ctk.CTkFrame):
                     result,
                     self.df[col].fillna(median)],
                     axis=1)
-            self.df = result
+            self.master_panel.df = result
 
             NotificationWindow(
                 self.app,
                 "Preprocesado terminado",
                 "El preprocesado se ha llevado a cabo sin problemas.",
                 "success")
-            print("Result:", result)
+            print("Result:", self.master_panel.df)
 
     def _count_nan_df(self, datos):
         nas_columns = []
@@ -572,7 +573,7 @@ class SelectionPanel(ctk.CTkFrame):
                 self.empty_state_label.place_forget()  # Ocultar (quitar del layout)
         except:
             pass  
-
+        
         # Recrear el contenedor (limpieza completa)
         self.table_container.destroy()  # Destruir el anterior
         try:
@@ -583,7 +584,7 @@ class SelectionPanel(ctk.CTkFrame):
         # Crear gestor de visualización y mostrar datos 
         self.preprocessing_panel = PreprocessingPanel(self.table_outer_frame,
                                self.df[self.col_entrada],
-                               self.app)
+                               self.app, self)
         self.preprocessing_options = self.preprocessing_panel._create_preprocessing_panel()
         self.preprocessing_options.pack(fill="both", expand=True, padx=10, pady=10)  
 
