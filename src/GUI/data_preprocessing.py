@@ -68,7 +68,7 @@ class RadioButtonFrame(ctk.CTkFrame):
         self.entries[index].delete(0, last_index)
 
 
-class PreprocessingPanel(Panel):
+class PreprocessingPanel(ctk.CTkFrame):
 
     def __init__(self, master, df, app):
         self.master = master
@@ -118,8 +118,7 @@ class PreprocessingPanel(Panel):
         button.pack(side="left", expand=False, padx=10, pady=10)
 
     def _confirm_button_callback(self):
-        self._detect_nan(self.df[["ID", "Nombre", "Cantidad"]])
-
+        # self._detect_nan(self.df[["ID", "Nombre", "Cantidad"]])
         choice = self.elements[1].get_button()
         # Los 5 casos según el estado de selección al confirmar
         if choice == "":
@@ -235,8 +234,8 @@ class PreprocessingPanel(Panel):
 
 if __name__ == "__main__":
 
-    appl = ctk.CTk()
-    appl.geometry("400x350")
+    app = ctk.CTk()
+    app.geometry("400x350")
 
     df = pd.DataFrame({
             'ID': [1, 2, 3, 4],
@@ -245,10 +244,12 @@ if __name__ == "__main__":
             'Cantidad': [34, None, 8, 8]
     })
 
-    a = PreprocessingPanel(appl, df, appl)
+    a = PreprocessingPanel(app,
+                           df[["ID", "Nombre", "Precio", "Cantidad"]],
+                           app)
     b = a._create_preprocessing_panel()
     b.pack(
                     padx=AppConfig.PADDING,
                     pady=(AppConfig.PADDING, 10))
 
-    appl.mainloop()
+    app.mainloop()
