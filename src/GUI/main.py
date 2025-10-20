@@ -13,7 +13,6 @@ from .components import (
     AppTheme, AppConfig, NotificationWindow,
     UploadButton, Panel, LoadingIndicator
 )
-from .data_preprocessing import PreprocessingPanel
 from .selection_columns import SelectionPanel
 from .data_display import DataDisplayManager
 from data_import.importer import import_data
@@ -44,7 +43,7 @@ class DataLoaderApp(ctk.CTk):
         self.configure(fg_color = AppTheme.PRIMARY_BACKGROUND)
         self._create_header()
         self._create_control_panel()
-        self._create_frame_sel_prep()
+        #self._create_frame_sel_prep()
         self._create_data_panel()
 
 
@@ -205,6 +204,7 @@ class DataLoaderApp(ctk.CTk):
         self._update_file_path_display(file_path)
         self._update_statistics(dataframe)
         self._display_data(dataframe)
+        self._create_frame_sel_prep(dataframe)
         self.upload_button.configure(state = "normal", text = "Cargar Archivo")
 
         # Mostrar notificación de éxito
@@ -275,24 +275,32 @@ class DataLoaderApp(ctk.CTk):
     # PANEL DE CONTROLES : Botón de carga y estadísticas
     # ================================================================
 
-    def _create_frame_sel_prep(self):
-        df = pd.DataFrame({
+    def _create_frame_sel_prep(self, df):
+        toplevel = ctk.CTkToplevel(self)
+        df2 = pd.DataFrame({
             'ID': [1, 2, 3, 4],
             'Nombre': [1, None, 6, 6],
             'Precio': [28.5, 45.0, 32.0, 15.0],
             'Cantidad': [34, None, 8, 8]
             })
-        frame_exterior = ctk.CTkFrame(self, fg_color="transparent")
-        frame_exterior.pack(fill="x", expand=True,padx=20, pady=(0, 20))
+        frame_exterior = ctk.CTkFrame(toplevel, fg_color="transparent")
+        frame_exterior.pack(fill="x", expand=True, padx=20, pady=(0, 20))
 
-        
-        prep_panel = PreprocessingPanel(frame_exterior, df, self)
-        
-        a = prep_panel._create_preprocessing_panel()
-        b = prep_panel._create_preprocessing_panel()
+        panel = SelectionPanel(frame_exterior, df, toplevel)
+        a = panel._crear_interfaz()
+        a.pack(fill="both", expand=True, side="left", padx=10, pady=10)
+        panel._create_empty_panel()
 
-        a.pack(fill="x", expand=True, side="right", padx=20, pady=0)
-        b.pack(fill="x", expand=True, side="left", padx=20, pady=0)
+        # select_panel = SelectorDatosPanel(frame_exterior, df, toplevel)
+        # select_panel.pack(fill="both", expand=True, side="left", padx=(0,10), pady=0)
+        # input_col = select_panel.columnas_entrada
+
+        # prep_panel = PreprocessingPanel(frame_exterior, df[input_col], toplevel)
+
+        # a = prep_panel._create_preprocessing_panel()
+    
+
+        # a.pack(fill="both", expand=True, side="right", padx=0, pady=0)
 
     # ================================================================
     # PANEL DE DATOS : Donde se muestra la tabla
