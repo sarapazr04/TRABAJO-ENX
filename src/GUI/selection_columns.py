@@ -1,203 +1,36 @@
-
-'''
 import customtkinter as ctk
 import pandas as pd
 
-from components import (
-     NotificationWindow,
-     Panel,
-     AppTheme)
-#from data_preprocessing import PreprocessingPanel
-
-class ScrollableCheckboxFrame(ctk.CTkScrollableFrame):
-    
-    def __init__(self, master, title, dataframe):
-        super().__init__(master, label_text=title)
-        self.grid_columnconfigure(0, weight=1)
-        
-        self.dataframe = dataframe
-        self.checkboxes = []
-        
-        self._crear_checkboxes_desde_columnas()
-
-    def _crear_checkboxes_desde_columnas(self):
-        for i, columna in enumerate(self.dataframe.columns):
-            checkbox = ctk.CTkCheckBox(self, text=columna)
-            checkbox.grid(row=i, column=0, padx=10, pady=(10, 0), sticky="w")
-            self.checkboxes.append(checkbox)
-
-    def get(self):
-        checked_checkboxes = []
-        for checkbox in self.checkboxes:
-            if checkbox.get() == 1:
-                checked_checkboxes.append(checkbox.cget("text"))
-        return checked_checkboxes
-
-
-class ColumnFrame(ctk.CTkFrame):
-    
-    def __init__(self, master, title, dataframe, command=None):
-        super().__init__(master)
-        
-        self.label = ctk.CTkLabel(
-            self, 
-            text=title,
-            font=("Segoe UI", 13, "bold")
-        )
-        self.label.pack(padx=10, pady=(10, 5))
-        
-        columnas = list(dataframe.columns)
-        self.option_menu = ctk.CTkOptionMenu(
-            self,
-            values=columnas,
-            command=command
-        )
-        self.option_menu.pack(padx=10, pady=(0, 10), fill="x")
-    
-    def get(self):
-        #Retorna la columna seleccionada.
-        return self.option_menu.get()
-    
-    def set(self, value):
-        #Establece el valor del OptionMenu.
-        self.option_menu.set(value)
-
-
-class SelectorDatosPanel(Panel):
-    def __init__(self, master, dataframe, app):
-
-        super().__init__(master, "Selector de Datos")
-        self.app = app
-        self.df = dataframe
-        self.col_entrada = []
-        
-        # Crear el contenido del panel
-        self._crear_contenido()
-        self._create_empty_panel()
-        
-    def _crear_contenido(self):
-        #Crea las cosas de la interfaz.
-        contenedor = Panel(self, "Selector de Datos")
-        contenedor.pack(fill="both", expand=True, padx=10, pady=10)
-        
-        contenedor.grid_columnconfigure((0, 1), weight=1)
-        contenedor.grid_rowconfigure(0, weight=1)
-        
-        # Frame izquierdo: Datos de Entrada 
-        self.frame_entrada = ScrollableCheckboxFrame(
-            contenedor, 
-            "Datos de Entrada",  
-            self.df
-        )
-        self.frame_entrada.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
-        
-        #Frame derecho: Datos de Salida 
-        self.frame_salida = ColumnFrame(
-            contenedor,
-            "Datos de Salida", 
-            self.df
-           
-        )
-        self.frame_salida.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
-
-        # Botón 
-        self.button = ctk.CTkButton(
-            contenedor, 
-            text="Procesar Datos", 
-            command=self.button_callback
-        )
-        self.button.grid(row=1, column=0, padx=10, pady=10, sticky="ew", columnspan=2)
-
-
-    def button_callback(self):
-  
-            
-        columnas_entrada_inicial = self.frame_entrada.get()
-        if len(columnas_entrada_inicial) == 0:
-            NotificationWindow(
-                self.app,
-                "Error de selección",
-                "Debe elegir al menos una columna de entrada",
-                "warning"
-            )
-        else:
-
-            columnas_entrada = columnas_entrada_inicial
-            columna_salida = self.frame_salida.get()
-            self.col_entrada = columnas_entrada
-            print(f"\n--- Procesando Datos ---")
-            print(f"Datos de Entrada: {columnas_entrada}")
-            print(f"Datos de Salida: {columna_salida}")
-
-    
-
-class FullPanel(ctk.CTkFrame):
-    def __init__(self, master):
-        self.app = app
-        self.master = master
-
-    def _create_full_panel(self):
-        selector_panel = SelectorDatosPanel(app, df, app)
-        selector_panel.pack(fill="both", expand=True, padx=20, pady=20)
-
-    def _create_empty_panel(self):
-
-        # Frame exterior (transparente, no se toca)
-        self.table_outer_frame = ctk.CTkFrame(self,fg_color = "transparent")
-        self.table_outer_frame.pack(fill="both", expand = True, padx = 15, pady = (10, 15))
-
-        # Contenedor de la tabla (este se puede destruir y recrear)
-        self.table_container = ctk.CTkFrame(
-            self.table_outer_frame,
-            fg_color = AppTheme.PRIMARY_BACKGROUND,
-            corner_radius = 6,
-            border_width = 1,
-            border_color = AppTheme.BORDER
-        )
-        self.table_container.pack(fill = "both", expand = True)
-
-        self.empty_state_label = ctk.CTkLabel(
-            self.table_container,
-            text = "Selecciona un archivo para visualizar los datos",
-            font = ("Segoe UI", 13),
-            text_color = AppTheme.DIM_TEXT
-        )
-        self.empty_state_label.place(relx = 0.5, rely = 0.5, anchor = "center")
-
-
-     
-
-# Ejemplo de uso
-if __name__ == "__main__":
-    # DataFrame de ejemplo
-    df = pd.DataFrame({
-        'ID': [1, 2, 3, 4],
-        'Nombre': ['Azúcar', 'Café', 'Leche', 'Té'],
-        'Precio': [28.5, 45.0, 32.0, 15.0],
-        'Cantidad': [34, 12, 8, 20]
-    })
-    
-    app = ctk.CTk()
-    app.title("Aplicación Principal")
-    app.geometry("600x500")
-
-    selector_panel = SelectorDatosPanel(app, df, app)
-    selector_panel.pack(fill="both", expand=True, padx=20, pady=20)
-    app.mainloop()
-'''
-#from .data_preprocessing import PreprocessingPanel
 from .components import (
-     NotificationWindow, Panel, AppTheme, AppConfig
+    NotificationWindow, Panel, AppTheme
 )
 
-import customtkinter as ctk
-import pandas as pd
+# ============================
+# Panel Preprocesado
+# ============================
 
 
 class RadioButtonFrame(ctk.CTkFrame):
+    '''
+    Crea un frame con radiobuttons con posibilidad para cajas de input.
+
+    Crea un frame con un título y con la lista values crea radiobuttons y con
+    el índice del botón en values que requiere input se les añade la caja a la
+    derecha.
+
+    Atributos
+    ---------
+    master: 
+    title : 
+    values : 
+    input_box
+
+    '''
+
     def __init__(self, master, title, values, input_box):
         super().__init__(master)
         self.grid_columnconfigure(0, weight=1)
+
         self.values = values
         self.title = title
         self.input_box = input_box
@@ -282,7 +115,7 @@ class PreprocessingPanel(ctk.CTkFrame):
             master,
             text=f"Nº total de N/As: {nas_total}\nColumnas: {nas_columns}",
             fg_color="transparent"
-            )
+        )
         self.elements.append(label)
         label.pack(expand=True)
 
@@ -292,7 +125,7 @@ class PreprocessingPanel(ctk.CTkFrame):
             title="Opciones",
             values=["Eliminar", "Media", "Mediana", "Constante"],
             input_box=[3]
-            )
+        )
         self.elements.append(radiobutton_frame)
         radiobutton_frame.entries[0].configure(
             placeholder_text="Introduzca constante")
@@ -302,14 +135,13 @@ class PreprocessingPanel(ctk.CTkFrame):
             master,
             text="Confirmar",
             command=self._confirm_button_callback
-            )
+        )
         self.elements.append(button)
         button.pack(side="left", expand=False, padx=10, pady=10)
 
     def _confirm_button_callback(self):
-        # self._detect_nan(self.df[["ID", "Nombre", "Cantidad"]])
         choice = self.elements[1].get_button()
-        # Los 5 casos según el estado de selección al confirmar
+        # Los 5 casos posibles según el estado de selección al confirmar
         if choice == "":
             NotificationWindow(
                 self.app,
@@ -363,7 +195,7 @@ class PreprocessingPanel(ctk.CTkFrame):
                 "Preprocesado terminado",
                 "El preprocesado se ha llevado a cabo sin problemas.",
                 "success")
-            print("Result:",self. master_panel.df)
+            print("Result:", self. master_panel.df)
 
         elif choice == "Mediana":
             result = pd.DataFrame()
@@ -403,10 +235,10 @@ class PreprocessingPanel(ctk.CTkFrame):
 
         if nas_columns != []:
             NotificationWindow(
-                    self.app,
-                    "Valores NaN detectados",
-                    f"Hay {len(nas_columns)} columna(s) con valores NaN con un total de {nas_total} NaNs.",
-                    "warning")
+                self.app,
+                "Valores NaN detectados",
+                f"Hay {len(nas_columns)} columna(s) con valores NaN con un total de {nas_total} NaNs.",
+                "warning")
 
     def _sum_nan(self, nan_list: list):
         total = 0
@@ -419,17 +251,20 @@ class PreprocessingPanel(ctk.CTkFrame):
         for i in nan_list:
             total.append(i[1])
         return total
-    
+
+# ============================
+# Panel Selección
+# ============================
+
 
 class ScrollableCheckboxFrame(ctk.CTkScrollableFrame):
-    
+
     def __init__(self, master, title, dataframe):
         super().__init__(master, label_text=title)
-        #self.grid_columnconfigure(0, weight=1)
-        
+
         self.dataframe = dataframe
         self.checkboxes = []
-        
+
         self._crear_checkboxes_desde_columnas()
 
     def _crear_checkboxes_desde_columnas(self):
@@ -447,17 +282,17 @@ class ScrollableCheckboxFrame(ctk.CTkScrollableFrame):
 
 
 class ColumnFrame(ctk.CTkFrame):
-    
+
     def __init__(self, master, title, dataframe, command=None):
         super().__init__(master)
-        
+
         self.label = ctk.CTkLabel(
-            self, 
+            self,
             text=title,
             font=("Segoe UI", 13, "bold")
         )
         self.label.pack(padx=10, pady=(10, 5))
-        
+
         columnas = list(dataframe.columns)
         self.option_menu = ctk.CTkOptionMenu(
             self,
@@ -465,13 +300,13 @@ class ColumnFrame(ctk.CTkFrame):
             command=command
         )
         self.option_menu.pack(padx=10, pady=(0, 10), fill="x")
-    
+
     def get(self):
-        #Retorna la columna seleccionada.
+        # Retorna la columna seleccionada.
         return self.option_menu.get()
-    
+
     def set(self, value):
-        #Establece el valor del OptionMenu.
+        # Establece el valor del OptionMenu.
         self.option_menu.set(value)
 
 
@@ -483,39 +318,37 @@ class SelectionPanel(ctk.CTkFrame):
         self.app = app
         self.processed_df = None
 
-
     def _crear_interfaz(self):
         # Crea las cosas de la interfaz.
         select_panel = Panel(self.master, "Selección de datos")
 
         frame_in_out = ctk.CTkFrame(select_panel, fg_color="transparent")
         frame_in_out.pack(expand=True, fill="x")
-        # Frame izquierdo: Datos de Entrada 
+        # Frame izquierdo: Datos de Entrada
         self.frame_entrada = ScrollableCheckboxFrame(
-            frame_in_out, 
-            "Datos de Entrada",  
+            frame_in_out,
+            "Datos de Entrada",
             self.df
         )
-        #frame_entrada.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
-        self.frame_entrada.pack(side="left", fill="both", expand=True, padx=10, pady=10)
-        
-        #Frame derecho: Datos de Salida 
+        self.frame_entrada.pack(side="left", fill="both",
+                                expand=True, padx=10, pady=10)
+
+        # Frame derecho: Datos de Salida
         self.frame_salida = ColumnFrame(
             frame_in_out,
-            "Datos de Salida", 
+            "Datos de Salida",
             self.df
-           
-        )
-        #frame_salida.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
-        self.frame_salida.pack(side="right", fill="both", expand=True, padx=20, pady=10)
 
-        # Botón 
+        )
+        self.frame_salida.pack(side="right", fill="both",
+                               expand=True, padx=20, pady=10)
+
+        # Botón
         self.button = ctk.CTkButton(
-            select_panel, 
-            text="Procesar Datos", 
+            select_panel,
+            text="Procesar Datos",
             command=self.button_callback
         )
-        #button.grid(row=1, column=0, padx=10, pady=10, sticky="ew", columnspan=2)
         self.button.pack(fill="x", expand=True, padx=10, pady=10)
         return select_panel
 
@@ -530,37 +363,37 @@ class SelectionPanel(ctk.CTkFrame):
             )
         else:
 
-            columnas_entrada = columnas_entrada_inicial
+            self.columnas_entrada = columnas_entrada_inicial
             columna_salida = self.frame_salida.get()
-            self.col_entrada = columnas_entrada
             self._display_data()
             print(f"\n--- Procesando Datos ---")
-            print(f"Datos de Entrada: {columnas_entrada}")
+            print(f"Datos de Entrada: {self.columnas_entrada}")
             print(f"Datos de Salida: {columna_salida}")
 
     def _create_empty_panel(self):
 
         # Frame exterior (transparente, no se toca)
-        self.table_outer_frame = ctk.CTkFrame(self.master, fg_color="transparent")
-        self.table_outer_frame.pack(fill="both", expand = True, padx = 15, pady = 0)
+        self.table_outer_frame = ctk.CTkFrame(
+            self.master, fg_color="transparent")
+        self.table_outer_frame.pack(fill="both", expand=True, padx=15, pady=0)
 
         # Contenedor de la tabla (este se puede destruir y recrear)
         self.table_container = ctk.CTkFrame(
             self.table_outer_frame,
-            fg_color = AppTheme.PRIMARY_BACKGROUND,
-            corner_radius = 6,
-            border_width = 1,
-            border_color = AppTheme.BORDER
+            fg_color=AppTheme.PRIMARY_BACKGROUND,
+            corner_radius=6,
+            border_width=1,
+            border_color=AppTheme.BORDER
         )
-        self.table_container.pack(fill = "both", expand = True)
+        self.table_container.pack(fill="both", expand=True)
 
         self.empty_state_label = ctk.CTkLabel(
             self.table_container,
-            text = "Selecciona columnas con N/As",
-            font = ("Segoe UI", 13),
-            text_color = AppTheme.DIM_TEXT
+            text="Selecciona columnas con N/As",
+            font=("Segoe UI", 13),
+            text_color=AppTheme.DIM_TEXT
         )
-        self.empty_state_label.place(relx = 0.5, rely = 0.5, anchor = "center")
+        self.empty_state_label.place(relx=0.5, rely=0.5, anchor="center")
 
     def _display_data(self):
         """
@@ -572,21 +405,22 @@ class SelectionPanel(ctk.CTkFrame):
             if self.empty_state_label.winfo_exists():  # winfo_exists() verifica si el widget existe
                 self.empty_state_label.place_forget()  # Ocultar (quitar del layout)
         except:
-            pass  
-        
+            pass
+
         # Recrear el contenedor (limpieza completa)
         self.table_container.destroy()  # Destruir el anterior
         try:
             if self.preprocessing_options.winfo_exists():  # winfo_exists() verifica si el widget existe
                 self.preprocessing_options.pack_forget()  # Ocultar (quitar del layout)
         except:
-            pass 
-        # Crear gestor de visualización y mostrar datos 
+            pass
+        # Crear gestor de visualización y mostrar datos
         self.preprocessing_panel = PreprocessingPanel(self.table_outer_frame,
-                               self.df[self.col_entrada],
-                               self.app, self)
+                                                      self.df[self.columnas_entrada],
+                                                      self.app, self)
         self.preprocessing_options = self.preprocessing_panel._create_preprocessing_panel()
-        self.preprocessing_options.pack(fill="both", expand=True, padx=10, pady=10)  
+        self.preprocessing_options.pack(
+            fill="both", expand=True, padx=10, pady=10)
 
 
 # Ejemplo de uso
@@ -598,11 +432,11 @@ if __name__ == "__main__":
         'Precio': [28.5, 45.0, 32.0, 15.0],
         'Cantidad': [34, 12, 8, 20]
     })
-    
+
     app = ctk.CTk()
     panel = SelectionPanel(app, df, app)
     a = panel._crear_interfaz()
-    a.pack(fill = "both", expand = True, side="left", padx=10, pady=10)
+    a.pack(fill="both", expand=True, side="left", padx=10, pady=10)
     panel._create_empty_panel()
     app.title("Selector de datos")
     app.geometry("800x400")
