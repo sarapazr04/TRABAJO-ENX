@@ -257,8 +257,7 @@ class DataLoaderApp(ctk.CTk):
 
     def _update_file_path_display(self, file_path):
         """Actualizar el texto que muestra la ruta del archivo"""
-        file_name = Path(file_path).name  # .name extrae solo el nombre del archivo
-        display_text = f"ARCHIVO: {file_name}\nRUTA: {file_path}"
+        display_text = f"RUTA: {file_path}"
 
         self.path_label.configure(
             text = display_text,
