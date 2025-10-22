@@ -101,14 +101,6 @@ class DataLoaderApp(ctk.CTk):
         button_frame = ctk.CTkFrame(parent, fg_color = "transparent")
         button_frame.pack(fill = "x", padx = 20, pady = (15, 10))
 
-        # Botón de cargar
-        self.upload_button = UploadButton(
-            button_frame,
-            text = "Cargar Archivo",
-            command = self._load_file  # Función a ejecutar al hacer clic
-        )
-        self.upload_button.pack(side = "left", padx = (0, 15))
-
         # Frame para mostrar la ruta
         self.path_frame = ctk.CTkFrame(
             button_frame,
@@ -127,6 +119,14 @@ class DataLoaderApp(ctk.CTk):
             text_color = AppTheme.DIM_TEXT
         )
         self.path_label.pack(pady = 10, padx = 15)
+
+        # Botón de cargar
+        self.upload_button = UploadButton(
+            button_frame,
+            text="Cargar Archivo",
+            command=self._load_file  # Función a ejecutar al hacer clic
+        )
+        self.upload_button.pack(side="left", padx=(15, 0))
 
     def _create_stats_section(self, parent):
         """Crear el área de estadísticas del dataset"""
