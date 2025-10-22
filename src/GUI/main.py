@@ -46,7 +46,7 @@ class DataLoaderApp(ctk.CTk):
         self.ext_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.ext_frame.pack(fill="both", expand=True)
         self._create_control_panel()
-        self._create_select_process_button()
+        #self._create_select_process_button()
         self._create_data_panel()
 
     # ================================================================
@@ -292,32 +292,14 @@ class DataLoaderApp(ctk.CTk):
             self.toplevel.focus()  # if window exists focus it
 
     def _create_frame_sel_prep(self, df):
-        self.toplevel = ctk.CTkToplevel(self)
 
-        df2 = pd.DataFrame({
-            'ID': [1, 2, 3, 4],
-            'Nombre': [1, None, 6, 6],
-            'Precio': [28.5, 45.0, 32.0, 15.0],
-            'Cantidad': [34, None, 8, 8]
-            })
-        frame_exterior = ctk.CTkFrame(self.toplevel, fg_color="transparent")
+        frame_exterior = ctk.CTkFrame(self.ext_frame, fg_color="transparent")
         frame_exterior.pack(fill="x", expand=True, padx=20, pady=(0, 20))
 
-        panel = SelectionPanel(frame_exterior, df, self.toplevel)
+        panel = SelectionPanel(frame_exterior, df, self)
         a = panel._crear_interfaz()
         a.pack(fill="both", expand=True, side="left", padx=10, pady=10)
         panel._create_empty_panel()
-
-        # select_panel = SelectorDatosPanel(frame_exterior, df, toplevel)
-        # select_panel.pack(fill="both", expand=True, side="left", padx=(0,10), pady=0)
-        # input_col = select_panel.columnas_entrada
-
-        # prep_panel = PreprocessingPanel(frame_exterior, df[input_col], toplevel)
-
-        # a = prep_panel._create_preprocessing_panel()
-    
-
-        # a.pack(fill="both", expand=True, side="right", padx=0, pady=0)
 
     # ================================================================
     # PANEL DE DATOS : Donde se muestra la tabla
