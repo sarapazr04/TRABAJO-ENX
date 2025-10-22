@@ -47,9 +47,7 @@ class DataLoaderApp(ctk.CTk):
         self.ext_frame.pack(fill="both", expand=True)
         self._create_control_panel()
         self._create_select_process_button()
-        #self._create_frame_sel_prep()
         self._create_data_panel()
-
 
     # ================================================================
     # HEADER : Barra superior con título
@@ -91,7 +89,7 @@ class DataLoaderApp(ctk.CTk):
 
     def _create_control_panel(self):
         """Crear el panel con el botón de cargar y las estadísticas"""
-        control_panel = Panel(self.ext_frame, "Carga de datasets")
+        control_panel = ctk.CTkFrame(self.ext_frame)
         control_panel.pack(fill = "x", padx = 20, pady = (20, 10))
 
         self._create_button_section(control_panel)
