@@ -30,7 +30,7 @@ class DataLoaderApp(ctk.CTk):
         super().__init__()  
 
         # Configurar la ventana
-        self.title("LUNEX v0.1.0")
+        self.title("LUNEX DATASETS LOADER")
         self.geometry("1400x800")
         ctk.set_appearance_mode("dark")
 
@@ -41,7 +41,7 @@ class DataLoaderApp(ctk.CTk):
 
         # Crear la interfaz
         self.configure(fg_color = AppTheme.PRIMARY_BACKGROUND)
-        self._create_header()
+
 
         self.ext_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.ext_frame.pack(fill="both", expand=True)
@@ -53,39 +53,6 @@ class DataLoaderApp(ctk.CTk):
     # HEADER : Barra superior con título
     # ================================================================
 
-    def _create_header(self):
-        """Crear la barra superior con el título"""
-        # Frame del header
-        header_frame = ctk.CTkFrame(
-            self,
-            height = 100,
-            corner_radius = 0,
-            fg_color = AppTheme.SECONDERY_BACKGROUND
-        )
-        header_frame.pack(fill = "x")  # fill = "x" = ocupa todo el ancho
-        header_frame.pack_propagate(False)  # Mantener altura fija (no ajustar al contenido)
-
-        # Título grande
-        title_label = ctk.CTkLabel(
-            header_frame,
-            text = "LUNEX DATASETS LOADER",
-            font = AppConfig.TITLE_FONT,
-            text_color = AppTheme.PRIMARY_TEXT
-        )
-        title_label.pack(pady = (25, 5))  # pady = (arriba, abajo)
-
-        # Subtítulo
-        subtitle_label = ctk.CTkLabel(
-            header_frame,
-            text = "Sprint 1 - Historia #14 | Visualización de datasets",
-            font = AppConfig.SMALL_FONT,
-            text_color = AppTheme.SECONDARY_TEXT
-        )
-        subtitle_label.pack()
-
-    # ================================================================
-    # PANEL DE CONTROLES : Botón de carga y estadísticas
-    # ================================================================
 
     def _create_control_panel(self):
         """Crear el panel con el botón de cargar y las estadísticas"""
