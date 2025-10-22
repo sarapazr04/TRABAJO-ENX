@@ -49,10 +49,10 @@ class DataLoaderApp(ctk.CTk):
         self._create_select_process_button()
         self._create_data_panel()
 
-    # ================================================================
-    # HEADER : Barra superior con título
-    # ================================================================
 
+    # ================================================================
+    # PANEL DE CONTROLES : Botón de carga y estadísticas
+    # ================================================================
 
     def _create_control_panel(self):
         """Crear el panel con el botón de cargar y las estadísticas"""
