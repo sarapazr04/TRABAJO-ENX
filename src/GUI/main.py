@@ -18,7 +18,6 @@ from .data_display import DataDisplayManager
 from data_import.importer import import_data
 
 
-
 class DataLoaderApp(ctk.CTk):
     """
     Ventana principal de la GUI.
@@ -27,7 +26,7 @@ class DataLoaderApp(ctk.CTk):
     """
 
     def __init__(self):
-        super().__init__()  
+        super().__init__()
 
         # Configurar la ventana
         self.title("LUNEX DATASETS LOADER")
@@ -40,15 +39,13 @@ class DataLoaderApp(ctk.CTk):
         self.display_manager = None      # Gestor de la tabla
 
         # Crear la interfaz
-        self.configure(fg_color = AppTheme.PRIMARY_BACKGROUND)
-
+        self.configure(fg_color=AppTheme.PRIMARY_BACKGROUND)
 
         self.ext_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.ext_frame.pack(fill="both", expand=True)
         self._create_control_panel()
-        #self._create_select_process_button()
+        # self._create_select_process_button()
         self._create_data_panel()
-
 
     # ================================================================
     # PANEL DE CONTROLES : Botón de carga y estadísticas
@@ -57,7 +54,7 @@ class DataLoaderApp(ctk.CTk):
     def _create_control_panel(self):
         """Crear el panel con el botón de cargar y las estadísticas"""
         control_panel = ctk.CTkFrame(self.ext_frame)
-        control_panel.pack(fill = "x", padx = 20, pady = (20, 10))
+        control_panel.pack(fill="x", padx=20, pady=(20, 10))
 
         self._create_button_section(control_panel)
         self._create_stats_section(control_panel)
@@ -65,27 +62,28 @@ class DataLoaderApp(ctk.CTk):
     def _create_button_section(self, parent):
         """Crear el botón de carga y mostrar la ruta del archivo"""
         # Frame contenedor
-        button_frame = ctk.CTkFrame(parent, fg_color = "transparent")
-        button_frame.pack(fill = "x", padx = 20, pady = (15, 10))
+        button_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        button_frame.pack(fill="x", padx=20, pady=(15, 10))
 
         # Frame para mostrar la ruta
         self.path_frame = ctk.CTkFrame(
             button_frame,
-            fg_color = AppTheme.PRIMARY_BACKGROUND,
-            corner_radius = 6,
-            border_width = 1,
-            border_color = AppTheme.BORDER
+            fg_color=AppTheme.PRIMARY_BACKGROUND,
+            corner_radius=6,
+            border_width=1,
+            border_color=AppTheme.BORDER
         )
-        self.path_frame.pack(side = "left", fill = "x", expand = True)  # expand = True = toma espacio extra
+        # expand = True = toma espacio extra
+        self.path_frame.pack(side="left", fill="x", expand=True)
 
         # Label con la ruta
         self.path_label = ctk.CTkLabel(
             self.path_frame,
-            text = "Ningún archivo seleccionado",
-            font = AppConfig.BODY_FONT,
-            text_color = AppTheme.DIM_TEXT
+            text="Ningún archivo seleccionado",
+            font=AppConfig.BODY_FONT,
+            text_color=AppTheme.DIM_TEXT
         )
-        self.path_label.pack(pady = 10, padx = 15)
+        self.path_label.pack(pady=10, padx=15)
 
         # Botón de cargar
         self.upload_button = UploadButton(
@@ -99,18 +97,18 @@ class DataLoaderApp(ctk.CTk):
         """Crear el área de estadísticas del dataset"""
         self.stats_frame = ctk.CTkFrame(
             parent,
-            fg_color = AppTheme.PRIMARY_BACKGROUND,
-            corner_radius = 6
+            fg_color=AppTheme.PRIMARY_BACKGROUND,
+            corner_radius=6
         )
-        self.stats_frame.pack(fill = "x", padx = 20, pady = (5, 15))
+        self.stats_frame.pack(fill="x", padx=20, pady=(5, 15))
 
         self.stats_label = ctk.CTkLabel(
             self.stats_frame,
-            text = "",  # Inicialmente vacio
-            font = AppConfig.MONO_FONT,
-            text_color = AppTheme.SECONDARY_TEXT
+            text="",  # Inicialmente vacio
+            font=AppConfig.MONO_FONT,
+            text_color=AppTheme.SECONDARY_TEXT
         )
-        self.stats_label.pack(pady = 8, padx = 15)
+        self.stats_label.pack(pady=8, padx=15)
 
     # ================================================================
     # CARGAR ARCHIVO : Con threading para no bloquear la ventana
@@ -123,23 +121,23 @@ class DataLoaderApp(ctk.CTk):
         """
         # Abrir diálogo para seleccionar archivo
         file_path = filedialog.askopenfilename(
-            title = "Seleccionar archivo de datos",
-            filetypes = AppConfig.ALLOWED_EXTENTIONS
+            title="Seleccionar archivo de datos",
+            filetypes=AppConfig.ALLOWED_EXTENTIONS
         )
 
         if not file_path:
             return
 
         self._show_loading_indicator()
-        self.upload_button.configure(state = "disabled", text = "Cargando...")
+        self.upload_button.configure(state="disabled", text="Cargando...")
 
         # Crear hilo para cargar en segundo plano (daemon = True = se cierra con la app)
         thread = threading.Thread(
-            target = self._load_file_thread,  # Función a ejecutar en segundo plano
-            args = (file_path,),  # Argumentos (IMPORTANTE: tupla con coma)
-            daemon = True
+            target=self._load_file_thread,  # Función a ejecutar en segundo plano
+            args=(file_path,),  # Argumentos (IMPORTANTE: tupla con coma)
+            daemon=True
         )
-        thread.start()  
+        thread.start()
 
     def _load_file_thread(self, file_path):
         """
@@ -155,7 +153,7 @@ class DataLoaderApp(ctk.CTk):
             # No puedes modificar la GUI desde un thread, por eso usamos .after()
             self.after(0, self._on_load_success, file_path, df)
 
-        except Exception as e:  
+        except Exception as e:
             # Si falla, llamar función de error en el hilo principal
             self.after(0, self._on_load_error, str(e))
 
@@ -174,21 +172,22 @@ class DataLoaderApp(ctk.CTk):
         self._update_statistics(dataframe)
         self._display_data(dataframe)
         self._create_frame_sel_prep(dataframe)
-        self.upload_button.configure(state = "normal", text = "Cargar Archivo")
+        self.upload_button.configure(state="normal", text="Cargar Archivo")
 
         # Mostrar notificación de éxito
         rows, cols = dataframe.shape  # .shape devuelve (filas, columnas)
         NotificationWindow(
             self,
             "Carga Exitosa",
-            f"Archivo cargado correctamente\n\n{rows:,} filas x {cols} columnas",  # :, = separador de miles
+            # :, = separador de miles
+            f"Archivo cargado correctamente\n\n{rows:,} filas x {cols} columnas",
             "success"
         )
 
     def _on_load_error(self, error_message):
         """Se ejecuta cuando hay un error al cargar el archivo"""
         self._hide_loading_indicator()
-        self.upload_button.configure(state = "normal", text = "Cargar Archivo")
+        self.upload_button.configure(state="normal", text="Cargar Archivo")
 
         NotificationWindow(
             self,
@@ -206,10 +205,10 @@ class DataLoaderApp(ctk.CTk):
         if self.loading_indicator is not None:  # Si ya existe, destruirlo primero
             self.loading_indicator.destroy()
 
-        self.loading_indicator = LoadingIndicator(self) 
+        self.loading_indicator = LoadingIndicator(self)
 
         # relx/rely = posición relativa (0.5 = 50% = centro)
-        self.loading_indicator.place(relx = 0.5, rely = 0.5, anchor = "center") 
+        self.loading_indicator.place(relx=0.5, rely=0.5, anchor="center")
 
     def _hide_loading_indicator(self):
         """Ocultar y destruir el círculo de carga"""
@@ -227,17 +226,18 @@ class DataLoaderApp(ctk.CTk):
         display_text = f"RUTA: {file_path}"
 
         self.path_label.configure(
-            text = display_text,
-            text_color = AppTheme.PRIMARY_ACCENT
+            text=display_text,
+            text_color=AppTheme.PRIMARY_ACCENT
         )
 
     def _update_statistics(self, dataframe):
         """Actualizar las estadísticas (filas, columnas, memoria)"""
         rows, cols = dataframe.shape  # Obtener dimensiones
-        memory_mb = dataframe.memory_usage(deep = True).sum() / 1024**2  # Calcular memoria en MB
+        memory_mb = dataframe.memory_usage(
+            deep=True).sum() / 1024**2  # Calcular memoria en MB
 
         stats_text = f"Filas: {rows:,}  |  Columnas: {cols}  |  Memoria: {memory_mb:.2f} MB"
-        self.stats_label.configure(text = stats_text)
+        self.stats_label.configure(text=stats_text)
 
     # ================================================================
     # PANEL DE CONTROLES : Botón de carga y estadísticas
@@ -248,12 +248,14 @@ class DataLoaderApp(ctk.CTk):
             self.ext_frame,
             text="Abrir ventana de selección y preprocesado",
             command=self._select_process_button_callback
-            )
-        self.select_process_button.pack(fill="x", side="top", padx=10, pady=(0,10))
+        )
+        self.select_process_button.pack(
+            fill="x", side="top", padx=10, pady=(0, 10))
 
     def _select_process_button_callback(self):
         if self.toplevel is None or not self.toplevel.winfo_exists():
-            self._create_frame_sel_prep(self.current_dataframe)  # create window if its None or destroyed
+            # create window if its None or destroyed
+            self._create_frame_sel_prep(self.current_dataframe)
             self.toplevel.focus()
         else:
             self.toplevel.focus()  # if window exists focus it
@@ -275,29 +277,31 @@ class DataLoaderApp(ctk.CTk):
     def _create_data_panel(self):
         """Crear el panel donde se mostrará la tabla de datos"""
         data_panel = Panel(self.ext_frame, "Visualización de Datos")
-        data_panel.pack(fill = "both", expand = True, padx = 20, pady = (0, 20))
+        data_panel.pack(fill="both", expand=True, padx=20, pady=(0, 20))
 
         # Frame exterior (transparente, no se toca)
-        self.table_outer_frame = ctk.CTkFrame(data_panel,fg_color = "transparent")
-        self.table_outer_frame.pack(fill="both", expand = True, padx = 15, pady = (10, 15))
+        self.table_outer_frame = ctk.CTkFrame(
+            data_panel, fg_color="transparent")
+        self.table_outer_frame.pack(
+            fill="both", expand=True, padx=15, pady=(10, 15))
 
         # Contenedor de la tabla (este se puede destruir y recrear)
         self.table_container = ctk.CTkFrame(
             self.table_outer_frame,
-            fg_color = AppTheme.PRIMARY_BACKGROUND,
-            corner_radius = 6,
-            border_width = 1,
-            border_color = AppTheme.BORDER
+            fg_color=AppTheme.PRIMARY_BACKGROUND,
+            corner_radius=6,
+            border_width=1,
+            border_color=AppTheme.BORDER
         )
-        self.table_container.pack(fill = "both", expand = True)
+        self.table_container.pack(fill="both", expand=True)
 
         self.empty_state_label = ctk.CTkLabel(
             self.table_container,
-            text = "Selecciona un archivo para visualizar los datos",
-            font = ("Segoe UI", 13),
-            text_color = AppTheme.DIM_TEXT
+            text="Selecciona un archivo para visualizar los datos",
+            font=("Segoe UI", 13),
+            text_color=AppTheme.DIM_TEXT
         )
-        self.empty_state_label.place(relx = 0.5, rely = 0.5, anchor = "center") 
+        self.empty_state_label.place(relx=0.5, rely=0.5, anchor="center")
 
     def _display_data(self, dataframe):
         """
@@ -309,33 +313,33 @@ class DataLoaderApp(ctk.CTk):
             if self.empty_state_label.winfo_exists():  # winfo_exists() verifica si el widget existe
                 self.empty_state_label.place_forget()  # Ocultar (quitar del layout)
         except:
-            pass  
+            pass
 
         # Recrear el contenedor (limpieza completa)
         self.table_container.destroy()  # Destruir el anterior
         # Crear uno nuevo
-        self.table_container = ctk.CTkFrame(  
+        self.table_container = ctk.CTkFrame(
             self.table_outer_frame,
-            fg_color = AppTheme.PRIMARY_BACKGROUND,
-            corner_radius = 6,
-            border_width = 1,
-            border_color = AppTheme.BORDER
+            fg_color=AppTheme.PRIMARY_BACKGROUND,
+            corner_radius=6,
+            border_width=1,
+            border_color=AppTheme.BORDER
         )
-        self.table_container.pack(fill = "both", expand = True)
+        self.table_container.pack(fill="both", expand=True)
 
-        # Crear gestor de visualización y mostrar datos 
+        # Crear gestor de visualización y mostrar datos
         self.display_manager = DataDisplayManager(
             self.table_container,
             dataframe
         )
         # Este método hace todo el trabajo
-        self.display_manager.display()  
+        self.display_manager.display()
 
 
 def main():
     app = DataLoaderApp()
-    app.mainloop()  
+    app.mainloop()
 
 
-if __name__ == "__main__":  
+if __name__ == "__main__":
     main()

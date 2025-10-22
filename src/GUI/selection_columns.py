@@ -366,7 +366,7 @@ class SelectionPanel(ctk.CTkFrame):
             self.columnas_entrada = columnas_entrada_inicial
             columna_salida = self.frame_salida.get()
             self._display_data()
-            print(f"\n--- Procesando Datos ---")
+            print("\n--- Procesando Datos ---")
             print(f"Datos de Entrada: {self.columnas_entrada}")
             print(f"Datos de Salida: {columna_salida}")
 
@@ -401,25 +401,24 @@ class SelectionPanel(ctk.CTkFrame):
         Delega todo el trabajo al DataDisplayManager.
         """
         # Ocultar mensaje de "sin datos"
-        try:
-            if self.empty_state_label.winfo_exists():  # winfo_exists() verifica si el widget existe
-                self.empty_state_label.place_forget()  # Ocultar (quitar del layout)
-        except:
-            pass
+        # winfo_exists() verifica si el widget existe
+        if self.empty_state_label.winfo_exists():
+            # Ocultar (quitar del layout)
+            self.empty_state_label.place_forget()
 
         # Recrear el contenedor (limpieza completa)
         self.table_container.destroy()  # Destruir el anterior
         try:
-            if self.preprocessing_options.winfo_exists():  # winfo_exists() verifica si el widget existe
-                self.preprocessing_options.pack_forget()  # Ocultar (quitar del layout)
-        except:
+            if self.pre_options.winfo_exists():
+                self.pre_options.pack_forget()
+        except AttributeError:
             pass
         # Crear gestor de visualización y mostrar datos
-        self.preprocessing_panel = PreprocessingPanel(self.table_outer_frame,
-                                                      self.df[self.columnas_entrada],
-                                                      self.app, self)
-        self.preprocessing_options = self.preprocessing_panel._create_preprocessing_panel()
-        self.preprocessing_options.pack(
+        self.pre_panel = PreprocessingPanel(self.table_outer_frame,
+                                            self.df[self.columnas_entrada],
+                                            self.app, self)
+        self.pre_options = self.pre_panel._create_preprocessing_panel()
+        self.pre_options.pack(
             fill="both", expand=True, padx=10, pady=10)
 
 
