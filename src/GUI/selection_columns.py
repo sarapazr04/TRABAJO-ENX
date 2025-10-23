@@ -198,7 +198,7 @@ class PreprocessingPanel(ctk.CTkFrame):
         Panel padre que contiene el DataFrame procesado.
     """
 
-    def __init__(self, master, df, app, master_panel):
+    def __init__(self, master, selected_columns, app, master_panel):
         """
         Inicializa el PreprocessingPanel.
 
@@ -215,7 +215,7 @@ class PreprocessingPanel(ctk.CTkFrame):
         """
         self.master = master
         self.elements = []
-        self.df = df
+        self.selected_columns = selected_columns
         self.app = app
         self.master_panel = master_panel
 
@@ -244,9 +244,9 @@ class PreprocessingPanel(ctk.CTkFrame):
         master : ctk.CTkFrame
             Frame padre donde mostrar las estadísticas.
         """
-        nas_stats = self._count_nan_df(self.df)
-        nas_total = self._sum_nan(nas_stats)
-        nas_columns = self._nan_columns(nas_stats)
+        self.nas_stats = self._count_nan_df(self.master_panel.df[self.selected_columns])
+        nas_total = self._sum_nan(self.nas_stats)
+        nas_columns = self._nan_columns(self.nas_stats)
 
         label = ctk.CTkLabel(
             master,
@@ -297,12 +297,14 @@ class PreprocessingPanel(ctk.CTkFrame):
         """
         choice = self.elements[1].get_button()
         if choice == "":
-            NotificationWindow(
-                self.app,
-                "Error de confirmación",
-                "Tiene que eligir una opción.",
-                "warning"
-            )
+
+            if self.nas_stats != []:
+                NotificationWindow(
+                    self.app,
+                    "Error de confirmación",
+                    "Tiene que eligir una opción.",
+                    "warning"
+                )
 
         elif choice == "Constante":
             entry_val = self.elements[1].get_entry(0)
@@ -310,7 +312,9 @@ class PreprocessingPanel(ctk.CTkFrame):
             try:
                 float(entry_val)
 
-                self.master_panel.df = self.df.fillna(entry_val)
+                for col in self.selected_columns:
+                    self.master_panel.df[col] = self.master_panel.df[col].fillna(entry_val)
+
                 NotificationWindow(
                     self.app,
                     "Preprocesado terminado",
@@ -330,7 +334,7 @@ class PreprocessingPanel(ctk.CTkFrame):
                 )
 
         elif choice == "Eliminar":
-            self.master_panel.df = self.df.dropna()
+            self.master_panel.df = self.master_panel.df.dropna(subset=self.selected_columns)
 
             NotificationWindow(
                 self.app,
@@ -341,12 +345,10 @@ class PreprocessingPanel(ctk.CTkFrame):
             print(self.master_panel.df)
 
         elif choice == "Media":
-            result = pd.DataFrame()
 
-            for col in self.df.columns:
-                avg = self.df.loc[:, col].mean()
-                result = pd.concat([result, self.df[col].fillna(avg)], axis=1)
-            self.master_panel.df = result
+            for col in self.selected_columns:
+                avg = self.master_panel.df.loc[:, col].mean()
+                self.master_panel.df[col] = self.master_panel.df[col].fillna(avg)
 
             NotificationWindow(
                 self.app,
@@ -357,15 +359,10 @@ class PreprocessingPanel(ctk.CTkFrame):
             print("Result:", self.master_panel.df)
 
         elif choice == "Mediana":
-            result = pd.DataFrame()
 
             for col in self.df.columns:
                 median = self.df.loc[:, col].median()
-                result = pd.concat(
-                    [result, self.df[col].fillna(median)],
-                    axis=1
-                )
-            self.master_panel.df = result
+                self.master_panel.df[col] = self.master_panel.df[col].fillna(median)
 
             NotificationWindow(
                 self.app,
@@ -769,7 +766,7 @@ class SelectionPanel(ctk.CTkFrame):
         # Crear gestor de visualización y mostrar datos
         self.pre_panel = PreprocessingPanel(
             self.table_outer_frame,
-            self.df[columnas_procesar],
+            columnas_procesar,
             self.app,
             self
         )
