@@ -46,6 +46,7 @@ class DataLoaderApp(ctk.CTk):
         self._create_control_panel()
         # self._create_select_process_button()
         self._create_data_panel()
+        self._create_stats_section()
 
     # ================================================================
     # PANEL DE CONTROLES : Botón de carga y estadísticas
@@ -57,7 +58,7 @@ class DataLoaderApp(ctk.CTk):
         control_panel.pack(fill="x", padx=20, pady=(20, 10))
 
         self._create_button_section(control_panel)
-        self._create_stats_section(control_panel)
+        # self._create_stats_section(control_panel)
 
     def _create_button_section(self, parent):
         """Crear el botón de carga y mostrar la ruta del archivo"""
@@ -93,22 +94,17 @@ class DataLoaderApp(ctk.CTk):
         )
         self.upload_button.pack(side="left", padx=(15, 0))
 
-    def _create_stats_section(self, parent):
+    def _create_stats_section(self):
         """Crear el área de estadísticas del dataset"""
-        self.stats_frame = ctk.CTkFrame(
-            parent,
-            fg_color=AppTheme.PRIMARY_BACKGROUND,
-            corner_radius=6
-        )
-        self.stats_frame.pack(fill="x", padx=20, pady=(5, 15))
+        
 
         self.stats_label = ctk.CTkLabel(
-            self.stats_frame,
+            self,
             text="",  # Inicialmente vacio
             font=AppConfig.MONO_FONT,
             text_color=AppTheme.SECONDARY_TEXT
         )
-        self.stats_label.pack(pady=8, padx=15)
+        self.stats_label.pack(side="left", pady=0, padx=15)
 
     # ================================================================
     # CARGAR ARCHIVO : Con threading para no bloquear la ventana
