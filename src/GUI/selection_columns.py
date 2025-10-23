@@ -763,8 +763,9 @@ class SelectionPanel(ctk.CTkFrame):
                 self.pre_options.pack_forget()
         except AttributeError:
             pass
-        columnas_procesar = self.columnas_entrada + [self.columna_salida]
-
+        columnas_procesar = self.columnas_entrada.copy()
+        if self.columna_salida not in columnas_procesar:
+            columnas_procesar.append(self.columna_salida)
         # Crear gestor de visualización y mostrar datos
         self.pre_panel = PreprocessingPanel(
             self.table_outer_frame,
