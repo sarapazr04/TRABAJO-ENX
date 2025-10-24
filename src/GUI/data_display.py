@@ -129,8 +129,8 @@ class DataDisplayManager:
             foreground = AppTheme.PRIMARY_TEXT,
             fieldbackground = AppTheme.SECONDERY_BACKGROUND,
             borderwidth = 0,
-            font = ("Segoe UI", 12),
-            rowheight = 24
+            font = ("Segoe UI", 14),
+            rowheight = 30
         )
 
         # Estilo de los encabezados
@@ -140,7 +140,7 @@ class DataDisplayManager:
             foreground = AppTheme.PRIMARY_TEXT,
             borderwidth = 1,
             relief = "flat",  # Sin efecto 3D
-            font = ("Segoe UI", 13, "bold")
+            font = ("Segoe UI", 15, "bold")
         )
 
         # Colores cuando seleccionas una fila (style.map = estilos dinamicos)
@@ -217,7 +217,10 @@ class DataDisplayManager:
 
     def _setup_mouse_wheel_scroll(self):
         """
-        Configurar scroll con la rueda del ratón.
+        Configurar scroll inteligente con la rueda del ratón.
+        
+        El scroll solo afecta al Treeview si puede seguir scrolleando.
+        Si llega al límite, permite que el scroll se propague a la ventana principal.
         
         Compatible con:
         - Windows (event.delta)
@@ -225,12 +228,33 @@ class DataDisplayManager:
         - Linux (event.num con botones 4 y 5)
         """
         def on_mousewheel(event):
-            # Scroll hacia abajo (event.num = 5 en Linux, event.delta < 0 en Windows/Mac)
-            if event.num == 5 or event.delta < 0:
-                self.tree.yview_scroll(1, "units")  # Desplazar 1 unidad hacia abajo
-            # Scroll hacia arriba (event.num = 4 en Linux, event.delta > 0 en Windows/Mac)
-            elif event.num == 4 or event.delta > 0:
-                self.tree.yview_scroll(-1, "units")  # Desplazar 1 unidad hacia arriba
+            # Obtener posición actual del scroll (tupla con [inicio, fin])
+            yview = self.tree.yview()
+            current_top = yview[0]
+            current_bottom = yview[1]
+            
+            # Determinar dirección del scroll
+            if hasattr(event, 'delta'):
+                scroll_up = event.delta > 0
+            else:
+                scroll_up = event.num == 4
+            
+            # Verificar si podemos seguir scrolleando
+            can_scroll_up = current_top > 0.0
+            can_scroll_down = current_bottom < 1.0
+            
+            # Solo bloquear propagación si podemos seguir scrolleando
+            if scroll_up and can_scroll_up:
+                # Podemos scrollear arriba
+                self.tree.yview_scroll(-1, "units")
+                return "break"
+            elif not scroll_up and can_scroll_down:
+                # Podemos scrollear abajo
+                self.tree.yview_scroll(1, "units")
+                return "break"
+            else:
+                # Llegamos al límite, permitir propagación
+                return
 
         # Vincular eventos (bind = conectar evento con función)
         self.tree.bind("<MouseWheel>", on_mousewheel)  # Windows/Mac
