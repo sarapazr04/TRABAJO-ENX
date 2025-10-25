@@ -359,9 +359,8 @@ class PreprocessingPanel(ctk.CTkFrame):
             print("Result:", self.master_panel.df)
 
         elif choice == "Mediana":
-
-            for col in self.df.columns:
-                median = self.df.loc[:, col].median()
+            for col in self.selected_columns:
+                median = self.master_panel.df.loc[:, col].median()
                 self.master_panel.df[col] = self.master_panel.df[col].fillna(median)
 
             NotificationWindow(
