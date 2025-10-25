@@ -16,6 +16,7 @@ from .components import (
 from .selection_columns import SelectionPanel
 from .data_display import DataDisplayManager
 from data_import.importer import import_data
+from .data_split import DataSplitPanel
 
 
 class DataLoaderApp(ctk.CTk):
@@ -37,6 +38,12 @@ class DataLoaderApp(ctk.CTk):
         self.current_dataframe = None    # Los datos (DataFrame)
         self.loading_indicator = None    # Círculo de carga
         self.display_manager = None      # Gestor de la tabla
+        self.is_preprocessed = False
+        self.preprocessed_df = None
+        self.train_df = None
+        self.test_df = None
+        self._split_panel_frame = None  # contenedor para recrear el panel
+
 
         # Crear la interfaz
         self.configure(fg_color=AppTheme.PRIMARY_BACKGROUND)
@@ -162,6 +169,16 @@ class DataLoaderApp(ctk.CTk):
         self.current_file_path = file_path
         self.current_dataframe = dataframe
 
+        # Reset de estado de procesamiento y split
+        self.is_preprocessed = False
+        self.preprocessed_df = None
+        self.train_df = None
+        self.test_df = None
+        if self._split_panel_frame is not None and self._split_panel_frame.winfo_exists():
+            self._split_panel_frame.destroy()
+            self._split_panel_frame = None
+
+
         # Actualizar interfaz
         self._hide_loading_indicator()
         self._update_file_path_display(file_path)
@@ -265,6 +282,26 @@ class DataLoaderApp(ctk.CTk):
         a = panel._crear_interfaz()
         a.pack(fill="both", expand=True, side="left", padx=10, pady=10)
         panel._create_empty_panel()
+    
+    def set_preprocessed_df(self, df):
+        """Registrar el dataframe preprocesado y mostrar el panel de división."""
+        self.is_preprocessed = True
+        self.preprocessed_df = df
+        self._create_split_panel()
+
+    def _create_split_panel(self):
+        """Crear y mostrar el panel para dividir el dataset en train/test."""
+        # Destruir/recrear si ya existe (por si se vuelve a preprocesar)
+        if self._split_panel_frame is not None and self._split_panel_frame.winfo_exists():
+            self._split_panel_frame.destroy()
+
+        self._split_panel_frame = ctk.CTkFrame(self.ext_frame, fg_color="transparent")
+        self._split_panel_frame.pack(fill="x", expand=True, padx=20, pady=(0, 20))
+
+        split_panel = DataSplitPanel(self._split_panel_frame, self)
+        split_panel.pack(fill="both", expand=True, padx=10, pady=10)
+
+
 
     # ================================================================
     # PANEL DE DATOS : Donde se muestra la tabla

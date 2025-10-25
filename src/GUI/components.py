@@ -91,17 +91,17 @@ class AppConfig:
     
     Atributos
     ---------
-    FONT_FAMILY : str
+    FAMILY_FONT : str
         Familia de fuente principal.
-    FONT_TITLE : tuple
+    TITLE_FONT : tuple
         Configuración de fuente para titulos (familia, tamaño, peso).
-    FONT_SUBTITLE : tuple
+    SUBTITLE_FONT : tuple
         Configuración de fuente para subtitulos.
-    FONT_BODY : tuple
+    BODY_FONT : tuple
         Configuración de fuente para texto de cuerpo.
-    FONT_SMALL : tuple
+    SMALL_FONT  : tuple
         Configuración de fuente para texto pequeño.
-    FONT_MONO : tuple
+    MONO_FONT : tuple
         Configuración de fuente monoespaciada.
     WINDOW_WIDTH : int
         Ancho predeterminado de la ventana en pixeles.

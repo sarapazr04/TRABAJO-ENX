@@ -372,6 +372,7 @@ class PreprocessingPanel(ctk.CTkFrame):
             )
             print("Result:", self.master_panel.df)
         self.app._display_data(self.master_panel.df)
+        self.app.set_preprocessed_df(self.master_panel.df)
 
     def _count_nan_df(self, datos):
         """
