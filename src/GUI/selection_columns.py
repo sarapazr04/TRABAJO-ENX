@@ -1,729 +1,800 @@
 """
-Módulo de preprocesamiento y selección de datos.
+Módulo de selección de columnas y preprocesamiento.
 
-Este módulo proporciona componentes GUI para el preprocesamiento de datos
-y la selección de columnas de entrada/salida en un DataFrame de pandas.
-Utiliza customtkinter para crear una interfaz de usuario moderna.
+Proporciona interfaz para seleccionar columnas de entrada/salida
+y preprocesar datos con valores faltantes.
 """
 
 import customtkinter as ctk
 import pandas as pd
 
 from .components import (
-    NotificationWindow, Panel, AppTheme
+    NotificationWindow, Panel, AppTheme, AppConfig, UploadButton
 )
 
 
-# ============================
-# Panel Preprocesado
-# ============================
-
-
-class RadioButtonFrame(ctk.CTkFrame):
-    """
-    Frame con radiobuttons y cajas de entrada opcionales.
-
-    Crea un frame con un título y una lista de radiobuttons. Permite añadir
-    cajas de entrada de texto junto a radiobuttons específicos según los
-    índices proporcionados.
-
-    Attributes
-    ----------
-    master : ctk.CTk o ctk.CTkFrame
-        Widget padre que contiene este frame.
-    title : str o None
-        Título del frame. Si es None, no se muestra título.
-    values : list[str]
-        Lista de valores para crear los radiobuttons.
-    input_box : list[int]
-        Índices de los radiobuttons que deben tener cajas de entrada.
-    variable : ctk.StringVar
-        Variable que almacena el valor del radiobutton seleccionado.
-    radiobuttons : list[ctk.CTkRadioButton]
-        Lista de todos los radiobuttons creados.
-    entries : list[ctk.CTkEntry]
-        Lista de las cajas de entrada creadas.
-    """
-
-    def __init__(self, master, title, values, input_box):
-        """
-        Inicializa el RadioButtonFrame.
-
-        Parameters
-        ----------
-        master : ctk.CTk o ctk.CTkFrame
-            Widget padre que contiene este frame.
-        title : str o None
-            Título del frame.
-        values : list[str]
-            Lista de valores para los radiobuttons.
-        input_box : list[int]
-            Índices de radiobuttons que requieren cajas de entrada.
-        """
-        super().__init__(master)
-        self.grid_columnconfigure(0, weight=1)
-
-        self.values = values
-        self.title = title
-        self.input_box = input_box
-        self.radiobuttons = []
-        self.entries = []
-        self.variable = ctk.StringVar(value="")
-
-        if title is not None:
-            self.title = ctk.CTkLabel(
-                self,
-                text=self.title,
-                fg_color=AppTheme.TERTIARY_BACKGROUND,
-                corner_radius=6
-            )
-            self.title.grid(
-                row=0, column=0,
-                padx=10, pady=(10, 0),
-                sticky="ew"
-            )
-
-        for i, value in enumerate(self.values):
-            if i in self.input_box:
-                # Añade entrada a los botones marcados
-                input_button_frame = ctk.CTkFrame(
-                    self, fg_color="transparent"
-                )
-                input_button_frame.grid(row=i + 1, column=0, sticky="w")
-
-                radiobutton = ctk.CTkRadioButton(
-                    input_button_frame,
-                    text=value,
-                    value=value,
-                    variable=self.variable
-                )
-                radiobutton.grid(
-                    row=i + 1, column=0,
-                    padx=10, pady=(10, 0),
-                    sticky="w"
-                )
-                self.radiobuttons.append(radiobutton)
-
-                entry = ctk.CTkEntry(input_button_frame, placeholder_text="")
-                entry.grid(
-                    row=i+1, column=1,
-                    padx=10, pady=(10, 0),
-                    sticky="w"
-                )
-                self.entries.append(entry)
-            else:
-                radiobutton = ctk.CTkRadioButton(
-                    self,
-                    text=value,
-                    value=value,
-                    variable=self.variable
-                )
-                radiobutton.grid(
-                    row=i + 1, column=0,
-                    padx=10, pady=(10, 0),
-                    sticky="w"
-                )
-                self.radiobuttons.append(radiobutton)
-
-    def get_button(self):
-        """
-        Obtiene el valor del radiobutton seleccionado.
-
-        Returns
-        -------
-        str
-            Valor del radiobutton seleccionado, o cadena vacía si ninguno
-            está seleccionado.
-        """
-        return self.variable.get()
-
-    def set_button(self, value):
-        """
-        Establece el radiobutton seleccionado.
-
-        Parameters
-        ----------
-        value : str
-            Valor del radiobutton a seleccionar.
-        """
-        self.variable.set(value)
-
-    def get_entry(self, index):
-        """
-        Obtiene el texto de una caja de entrada específica.
-
-        Parameters
-        ----------
-        index : int
-            Índice de la caja de entrada en la lista de entries.
-
-        Returns
-        -------
-        str
-            Texto contenido en la caja de entrada.
-        """
-        return self.entries[index].get()
-
-    def del_entry(self, index):
-        """
-        Borra el contenido de una caja de entrada específica.
-
-        Parameters
-        ----------
-        index : int
-            Índice de la caja de entrada a limpiar.
-        """
-        last_index = len(self.entries[index].get())
-        self.entries[index].delete(0, last_index)
-
-
-class PreprocessingPanel(ctk.CTkFrame):
-    """
-    Panel para el preprocesamiento de datos con valores faltantes.
-
-    Proporciona una interfaz para visualizar estadísticas de valores N/A
-    y opciones para su tratamiento (eliminar, media, mediana, constante).
-
-    Attributes
-    ----------
-    master : ctk.CTk o ctk.CTkFrame
-        Widget padre que contiene este panel.
-    elements : list
-        Lista de elementos GUI del panel.
-    df : pd.DataFrame
-        DataFrame a preprocesar.
-    app : ctk.CTk
-        Instancia principal de la aplicación.
-    master_panel : object
-        Panel padre que contiene el DataFrame procesado.
-    """
-
-    def __init__(self, master, selected_columns, app, master_panel):
-        """
-        Inicializa el PreprocessingPanel.
-
-        Parameters
-        ----------
-        master : ctk.CTk o ctk.CTkFrame
-            Widget padre.
-        df : pd.DataFrame
-            DataFrame a preprocesar.
-        app : ctk.CTk
-            Instancia principal de la aplicación.
-        master_panel : object
-            Panel padre con acceso al DataFrame.
-        """
-        self.master = master
-        self.elements = []
-        self.selected_columns = selected_columns
-        self.app = app
-        self.master_panel = master_panel
-
-    def _create_preprocessing_panel(self):
-        """
-        Crea el panel completo de preprocesamiento.
-
-        Returns
-        -------
-        Panel
-            Panel con estadísticas de N/A y opciones de sustitución.
-        """
-        preprocessing_panel = Panel(self.master, "Preprocesamiento de datos")
-
-        self._create_NA_stats(preprocessing_panel)
-        self._create_substitute_options(preprocessing_panel)
-
-        return preprocessing_panel
-
-    def _create_NA_stats(self, master):
-        """
-        Crea y muestra estadísticas de valores N/A.
-
-        Parameters
-        ----------
-        master : ctk.CTkFrame
-            Frame padre donde mostrar las estadísticas.
-        """
-        self.nas_stats = self._count_nan_df(self.master_panel.df[self.selected_columns])
-        nas_total = self._sum_nan(self.nas_stats)
-        nas_columns = self._nan_columns(self.nas_stats)
-
-        label = ctk.CTkLabel(
-            master,
-            text=f"Nº total de N/As: {nas_total}\nColumnas: {nas_columns}",
-            fg_color="transparent"
-        )
-        self.elements.append(label)
-        label.pack(expand=True)
-
-    def _create_substitute_options(self, master):
-        """
-        Crea opciones para sustituir valores N/A.
-
-        Parameters
-        ----------
-        master : ctk.CTkFrame
-            Frame padre donde mostrar las opciones.
-        """
-        radiobutton_frame = RadioButtonFrame(
-            master,
-            title="Opciones",
-            values=["Eliminar", "Media", "Mediana", "Constante"],
-            input_box=[3]
-        )
-        self.elements.append(radiobutton_frame)
-        radiobutton_frame.entries[0].configure(
-            placeholder_text="Introduzca constante"
-        )
-        radiobutton_frame.pack(
-            fill="both", expand=True, padx=10, pady=(10, 0)
-        )
-
-        button = ctk.CTkButton(
-            master,
-            text="Confirmar",
-            command=self._confirm_button_callback
-        )
-        self.elements.append(button)
-        button.pack(side="left", expand=False, padx=10, pady=10)
-
-    def _confirm_button_callback(self):
-        """
-        Callback del botón de confirmación de preprocesamiento.
-
-        Procesa el DataFrame según la opción seleccionada: eliminar filas,
-        rellenar con media, mediana o constante. Valida la entrada del
-        usuario y muestra notificaciones de éxito o error.
-        """
-        choice = self.elements[1].get_button()
-        if choice == "":
-
-            if self.nas_stats != []:
-                NotificationWindow(
-                    self.app,
-                    "Error de confirmación",
-                    "Tiene que eligir una opción.",
-                    "warning"
-                )
-
-        elif choice == "Constante":
-            entry_val = self.elements[1].get_entry(0)
-
-            try:
-                float(entry_val)
-
-                for col in self.selected_columns:
-                    self.master_panel.df[col] = self.master_panel.df[col].fillna(entry_val)
-
-                NotificationWindow(
-                    self.app,
-                    "Preprocesado terminado",
-                    "El preprocesado se ha llevado a cabo sin problemas.",
-                    "success"
-                )
-                print(self.master_panel.df)
-
-            except ValueError:
-                self.elements[1].del_entry(0)
-
-                NotificationWindow(
-                    self.app,
-                    "Error de confirmación",
-                    "La constante debe de ser un número! Ej: 4.25",
-                    "warning"
-                )
-
-        elif choice == "Eliminar":
-            self.master_panel.df = self.master_panel.df.dropna(subset=self.selected_columns)
-
-            NotificationWindow(
-                self.app,
-                "Preprocesado terminado",
-                "El preprocesado se ha llevado a cabo sin problemas.",
-                "success"
-            )
-            print(self.master_panel.df)
-
-        elif choice == "Media":
-
-            for col in self.selected_columns:
-                avg = self.master_panel.df.loc[:, col].mean()
-                self.master_panel.df[col] = self.master_panel.df[col].fillna(avg)
-
-            NotificationWindow(
-                self.app,
-                "Preprocesado terminado",
-                "El preprocesado se ha llevado a cabo sin problemas.",
-                "success"
-            )
-            print("Result:", self.master_panel.df)
-
-        elif choice == "Mediana":
-            for col in self.selected_columns:
-                median = self.master_panel.df.loc[:, col].median()
-                self.master_panel.df[col] = self.master_panel.df[col].fillna(median)
-
-            NotificationWindow(
-                self.app,
-                "Preprocesado terminado",
-                "El preprocesado se ha llevado a cabo sin problemas.",
-                "success"
-            )
-            print("Result:", self.master_panel.df)
-        self.app._display_data(self.master_panel.df)
-        self.app.set_preprocessed_df(self.master_panel.df)
-
-    def _count_nan_df(self, datos):
-        """
-        Cuenta los valores N/A por columna.
-
-        Parameters
-        ----------
-        datos : pd.DataFrame
-            DataFrame a analizar.
-
-        Returns
-        -------
-        list[list]
-            Lista de listas [número_de_NAs, nombre_columna] para cada columna
-            con valores faltantes.
-        """
-        nas_columns = []
-        columns_indices = datos.columns[datos.isna().any()].tolist()
-
-        for column in columns_indices:
-            nas_column = [0, column]
-
-            for row in datos[column].isna():
-                if row:
-                    nas_column[0] += 1
-            nas_columns.append(nas_column)
-
-        return nas_columns
-
-    def _detect_nan(self, datos):
-        """
-        Detecta y notifica la presencia de valores N/A.
-
-        Parameters
-        ----------
-        datos : pd.DataFrame
-            DataFrame a analizar.
-        """
-        nas_columns = self._count_nan_df(datos)
-        nas_total = self._sum_nan(nas_columns)
-
-        if nas_columns != []:
-            NotificationWindow(
-                self.app,
-                "Valores NaN detectados",
-                f"Hay {len(nas_columns)} columna(s) con valores NaN "
-                f"con un total de {nas_total} NaNs.",
-                "warning"
-            )
-
-    def _sum_nan(self, nan_list):
-        """
-        Suma el total de valores N/A.
-
-        Parameters
-        ----------
-        nan_list : list[list]
-            Lista de listas [cantidad_NAs, nombre_columna].
-
-        Returns
-        -------
-        int
-            Número total de valores N/A.
-        """
-        total = 0
-        for i in nan_list:
-            total += i[0]
-        return total
-
-    def _nan_columns(self, nan_list):
-        """
-        Extrae los nombres de columnas con valores N/A.
-
-        Parameters
-        ----------
-        nan_list : list[list]
-            Lista de listas [cantidad_NAs, nombre_columna].
-
-        Returns
-        -------
-        list[str]
-            Lista con nombres de columnas que contienen N/A.
-        """
-        total = []
-        for i in nan_list:
-            total.append(i[1])
-        return total
-
-
-# ============================
-# Panel Selección
-# ============================
-
+# ================================================================
+# FRAME DE CHECKBOXES SCROLLABLE
+# ================================================================
 
 class ScrollableCheckboxFrame(ctk.CTkScrollableFrame):
     """
-    Frame scrollable con checkboxes para cada columna del DataFrame.
-
-    Crea un conjunto de checkboxes basado en las columnas de un DataFrame,
-    permitiendo la selección múltiple de columnas.
-
-    Attributes
+    Frame scrollable con checkboxes para selección múltiple de columnas.
+    
+    Parámetros
     ----------
+    master : widget
+        Widget padre
+    title : str
+        Título del frame
     dataframe : pd.DataFrame
-        DataFrame del que se extraen las columnas.
-    checkboxes : list[ctk.CTkCheckBox]
-        Lista de checkboxes creados.
+        DataFrame del que extraer las columnas
     """
-
+    
     def __init__(self, master, title, dataframe):
-        """
-        Inicializa el ScrollableCheckboxFrame.
-
-        Parameters
-        ----------
-        master : ctk.CTk o ctk.CTkFrame
-            Widget padre.
-        title : str
-            Título del frame scrollable.
-        dataframe : pd.DataFrame
-            DataFrame del que extraer las columnas.
-        """
-        super().__init__(master, label_text=title)
-
+        super().__init__(
+            master,
+            fg_color=AppTheme.PRIMARY_BACKGROUND,
+            corner_radius=6,
+            border_width=1,
+            border_color=AppTheme.BORDER
+        )
+        
+        self.checkboxes = {}
         self.dataframe = dataframe
-        self.checkboxes = []
-
-        self._crear_checkboxes_desde_columnas()
-
-    def _crear_checkboxes_desde_columnas(self):
-        """Crea un checkbox por cada columna del DataFrame."""
-        for i, columna in enumerate(self.dataframe.columns):
-            checkbox = ctk.CTkCheckBox(self, text=columna)
-            checkbox.grid(row=i, column=0, padx=10, pady=(10, 0), sticky="w")
-            self.checkboxes.append(checkbox)
-
+        self.has_title = bool(title)
+        
+        # Título (opcional)
+        if title:
+            title_label = ctk.CTkLabel(
+                self,
+                text=title,
+                font=("Orbitron", 13, "bold"),
+                text_color=AppTheme.PRIMARY_TEXT
+            )
+            title_label.pack(pady=(15, 10), padx=15, anchor="w")
+        
+        # Crear checkboxes para cada columna
+        for i, column in enumerate(dataframe.columns):
+            # Si no hay título, agregar padding extra al primer checkbox
+            pady_top = 15 if (not self.has_title and i == 0) else 5
+            self._create_checkbox(column, pady_top)
+        
+    
+    def _create_checkbox(self, column, pady_top=5):
+        """Crear un checkbox para una columna"""
+        var = ctk.BooleanVar(value=False)
+        
+        checkbox = ctk.CTkCheckBox(
+            self,
+            text=column,
+            variable=var,
+            font=AppConfig.BODY_FONT,
+            fg_color=AppTheme.PRIMARY_ACCENT,
+            hover_color=AppTheme.HOVER_ACCENT,
+            border_color=AppTheme.BORDER
+        )
+        checkbox.pack(pady=(pady_top, 5), padx=20, anchor="w")
+        
+        self.checkboxes[column] = var
+    
     def get(self):
         """
-        Obtiene las columnas seleccionadas.
-
+        Obtener lista de columnas seleccionadas.
+        
         Returns
         -------
-        list[str]
-            Lista con los nombres de las columnas seleccionadas.
+        list
+            Lista con nombres de columnas seleccionadas
         """
-        checked_checkboxes = []
-        for checkbox in self.checkboxes:
-            if checkbox.get() == 1:
-                checked_checkboxes.append(checkbox.cget("text"))
-        return checked_checkboxes
+        return [col for col, var in self.checkboxes.items() if var.get()]
+    
+    def set(self, columns):
+        """
+        Establecer columnas seleccionadas.
+        
+        Parameters
+        ----------
+        columns : list
+            Lista de columnas a seleccionar
+        """
+        for col, var in self.checkboxes.items():
+            var.set(col in columns)
 
+
+# ================================================================
+# FRAME DE SELECCIÓN SIMPLE DE COLUMNA
+# ================================================================
 
 class ColumnFrame(ctk.CTkFrame):
     """
-    Frame con un menú desplegable de columnas del DataFrame.
-
-    Proporciona un OptionMenu para seleccionar una única columna del
-    DataFrame proporcionado.
-
-    Attributes
+    Frame con menú desplegable para seleccionar una columna.
+    
+    Parámetros
     ----------
-    label : ctk.CTkLabel
-        Etiqueta con el título del frame.
-    option_menu : ctk.CTkOptionMenu
-        Menú desplegable con las columnas.
+    master : widget
+        Widget padre
+    title : str
+        Título del frame
+    dataframe : pd.DataFrame
+        DataFrame del que extraer las columnas
+    command : callable, opcional
+        Función callback cuando se selecciona una columna
     """
-
+    
     def __init__(self, master, title, dataframe, command=None):
-        """
-        Inicializa el ColumnFrame.
-
-        Parameters
-        ----------
-        master : ctk.CTk o ctk.CTkFrame
-            Widget padre.
-        title : str
-            Título del frame.
-        dataframe : pd.DataFrame
-            DataFrame del que extraer las columnas.
-        command : callable, optional
-            Función callback cuando se selecciona una columna.
-        """
-        super().__init__(master)
-
-        self.label = ctk.CTkLabel(
-            self,
-            text=title,
-            font=("Segoe UI", 13, "bold")
+        super().__init__(
+            master,
+            fg_color=AppTheme.PRIMARY_BACKGROUND,
+            corner_radius=6,
+            border_width=1,
+            border_color=AppTheme.BORDER
         )
-        self.label.pack(padx=10, pady=(10, 5))
-
+        
+        # Título (opcional)
+        if title:
+            self.label = ctk.CTkLabel(
+                self,
+                text=title,
+                font=("Orbitron", 13, "bold"),
+                text_color=AppTheme.PRIMARY_TEXT
+            )
+            self.label.pack(padx=15, pady=(15, 10), anchor="w")
+        
+        # Menú desplegable
         columnas = list(dataframe.columns)
         self.option_menu = ctk.CTkOptionMenu(
             self,
             values=columnas,
-            command=command
+            command=command,
+            font=AppConfig.BODY_FONT,
+            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            button_color=AppTheme.PRIMARY_ACCENT,
+            button_hover_color=AppTheme.HOVER_ACCENT,
+            dropdown_fg_color=AppTheme.SECONDERY_BACKGROUND,
+            dropdown_hover_color=AppTheme.TERTIARY_BACKGROUND
         )
-        self.option_menu.pack(padx=10, pady=(0, 10), fill="x")
-
+        pady_top = 0 if title else 15  # Si no hay título, agregar padding arriba
+        self.option_menu.pack(padx=15, pady=(pady_top, 15), fill="x")
+    
     def get(self):
-        """
-        Obtiene la columna seleccionada.
-
-        Returns
-        -------
-        str
-            Nombre de la columna seleccionada.
-        """
+        """Obtener la columna seleccionada"""
         return self.option_menu.get()
-
+    
     def set(self, value):
-        """
-        Establece la columna seleccionada.
-
-        Parameters
-        ----------
-        value : str
-            Nombre de la columna a seleccionar.
-        """
+        """Establecer la columna seleccionada"""
         self.option_menu.set(value)
 
 
-class SelectionPanel(ctk.CTkFrame):
+# ================================================================
+# PANEL DE PREPROCESAMIENTO
+# ================================================================
+
+class PreprocessingPanel:
     """
-    Panel para la selección de columnas de entrada y salida.
-
-    Permite al usuario seleccionar múltiples columnas de entrada y una
-    columna de salida del DataFrame. Incluye funcionalidad para mostrar
-    y preprocesar los datos seleccionados.
-
-    Attributes
+    Panel para preprocesar datos con valores faltantes.
+    
+    Parámetros
     ----------
-    master : ctk.CTk o ctk.CTkFrame
-        Widget padre.
-    col_entrada : list
-        Lista de columnas de entrada seleccionadas.
-    df : pd.DataFrame
-        DataFrame original con todos los datos.
-    app : ctk.CTk
-        Instancia principal de la aplicación.
-    processed_df : pd.DataFrame o None
-        DataFrame procesado después de aplicar filtros.
-    frame_entrada : ScrollableCheckboxFrame
-        Frame con checkboxes de columnas de entrada.
-    frame_salida : ColumnFrame
-        Frame con selector de columna de salida.
-    button : ctk.CTkButton
-        Botón para procesar los datos.
+    master : widget
+        Widget padre
+    selected_columns : list
+        Lista de columnas seleccionadas para preprocesar
+    app : DataLoaderApp
+        Referencia a la aplicación principal
+    master_panel : SelectionPanel
+        Panel padre con acceso al DataFrame
     """
-
-    def __init__(self, master, df, app):
-        """
-        Inicializa el SelectionPanel.
-
-        Parameters
-        ----------
-        master : ctk.CTk o ctk.CTkFrame
-            Widget padre.
-        df : pd.DataFrame
-            DataFrame a visualizar y procesar.
-        app : ctk.CTk
-            Instancia principal de la aplicación.
-        """
+    
+    def __init__(self, master, selected_columns, app, master_panel):
         self.master = master
-        self.col_entrada = []
+        self.selected_columns = selected_columns
+        self.app = app
+        self.master_panel = master_panel
+        self.elements = []
+        self.nas_stats = None
+    
+    def _create_preprocessing_panel(self):
+        """Crear el panel principal de preprocesamiento"""
+        preprocessing_panel = Panel(self.master, "Preprocesamiento de Datos")
+        
+        # Primero crear la sección de estadísticas (esto calcula self.nas_stats)
+        self._create_na_stats_section(preprocessing_panel)
+        
+        # AHORA verificar si hay valores faltantes (después de calcular)
+        nas_total = self._sum_nan(self.nas_stats) if self.nas_stats else 0
+        
+        # Solo mostrar opciones y botones de preprocesamiento si hay NaN
+        if nas_total > 0:
+            self._create_options_section(preprocessing_panel)
+            self._create_action_buttons(preprocessing_panel)
+        else:
+            # Si no hay NaN, mostrar botón para continuar directamente
+            self._create_continue_button(preprocessing_panel)
+        
+        return preprocessing_panel
+    
+    def _create_na_stats_section(self, master):
+        """Crear sección con estadísticas de valores faltantes"""
+        stats_frame = ctk.CTkFrame(
+            master,
+            fg_color=AppTheme.PRIMARY_BACKGROUND,
+            corner_radius=6,
+            border_width=1,
+            border_color=AppTheme.BORDER
+        )
+        stats_frame.pack(fill="x", padx=15, pady=(10, 10))
+        
+        # Calcular estadísticas
+        self.nas_stats = self._count_nan_df(
+            self.master_panel.df[self.selected_columns]
+        )
+        nas_total = self._sum_nan(self.nas_stats)
+        nas_columns = self._nan_columns(self.nas_stats)
+        
+        # Título
+        title_label = ctk.CTkLabel(
+            stats_frame,
+            text="Estadísticas de Valores Faltantes",
+            font=("Orbitron", 13, "bold"),
+            text_color=AppTheme.PRIMARY_TEXT
+        )
+        title_label.pack(pady=(12, 8), padx=15, anchor="w")
+        
+        # Información
+        if nas_total > 0:
+            info_text = (
+                f"Total de N/A: {nas_total}\n"
+                f"Columnas afectadas: {', '.join(nas_columns)}"
+            )
+            color = AppTheme.WARNING
+        else:
+            info_text = "✓ No hay valores faltantes en las columnas seleccionadas"
+            color = AppTheme.SUCCES
+        
+        self.stats_label = ctk.CTkLabel(
+            stats_frame,
+            text=info_text,
+            font=AppConfig.BODY_FONT,
+            text_color=color,
+            justify="left"
+        )
+        self.stats_label.pack(pady=(0, 12), padx=15, anchor="w")
+        self.elements.append(self.stats_label)
+    
+    def _create_options_section(self, master):
+        """Crear sección con opciones de preprocesamiento"""
+        options_frame = ctk.CTkFrame(
+            master,
+            fg_color=AppTheme.PRIMARY_BACKGROUND,
+            corner_radius=6,
+            border_width=1,
+            border_color=AppTheme.BORDER
+        )
+        options_frame.pack(fill="x", padx=15, pady=(0, 10))
+        
+        # Título
+        title_label = ctk.CTkLabel(
+            options_frame,
+            text="⚙️ Seleccione una opción",
+            font=("Orbitron", 13, "bold"),
+            text_color=AppTheme.PRIMARY_TEXT
+        )
+        title_label.pack(pady=(15, 10), padx=15, anchor="w")
+        
+        # Variable para radio buttons
+        self.option_var = ctk.StringVar(value="")
+        
+        # Opciones
+        optiones = [
+            ("Eliminar filas", "drop"),
+            ("Rellenar con Media", "mean"),
+            ("Rellenar con Mediana", "median"),
+            ("Rellenar con Constante", "constant")
+        ]
+        
+        for text, value in optiones:
+            radio = ctk.CTkRadioButton(
+                options_frame,
+                text=text,
+                value=value,
+                variable=self.option_var,
+                font=AppConfig.BODY_FONT,
+                fg_color=AppTheme.PRIMARY_ACCENT,
+                hover_color=AppTheme.HOVER_ACCENT,
+                border_color=AppTheme.BORDER
+            )
+            radio.pack(pady=5, padx=20, anchor="w")
+        
+        # Campo de entrada para constante
+        self.constant_entry = ctk.CTkEntry(
+            options_frame,
+            placeholder_text="Valor constante (ej: 0)",
+            font=AppConfig.BODY_FONT,
+            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            border_color=AppTheme.BORDER,
+            height=32
+        )
+        self.constant_entry.pack(pady=(5, 15), padx=40, fill="x")
+    
+    def _create_action_buttons(self, master):
+        """Crear botones de acción"""
+        button_frame = ctk.CTkFrame(master, fg_color="transparent")
+        button_frame.pack(fill="x", padx=15, pady=(0, 15))
+        
+        # Botón Aplicar
+        apply_button = UploadButton(
+            button_frame,
+            text="Aplicar",
+            command=self._apply_preprocessing
+        )
+        apply_button.pack(side="right", padx=(10, 0))
+        
+        # Botón Resetear
+        reset_button = ctk.CTkButton(
+            button_frame,
+            text="Cancelar",
+            command=self._cancel_preprocessing,
+            font=("Orbitron", 11, "bold"),
+            height=AppConfig.BUTTON_HEIGHT,
+            corner_radius=6,
+            fg_color=AppTheme.TERTIARY_BACKGROUND,
+            hover_color=AppTheme.HOVER_ACCENT,
+            text_color=AppTheme.PRIMARY_TEXT
+        )
+        reset_button.pack(side="right")
+    
+    def _create_continue_button(self, master):
+        """Crear botón de continuar cuando no hay valores faltantes"""
+        button_frame = ctk.CTkFrame(master, fg_color="transparent")
+        button_frame.pack(fill="x", padx=15, pady=(10, 15))
+        
+        # Mensaje informativo
+        info_label = ctk.CTkLabel(
+            button_frame,
+            text="✓ Los datos están listos. \nPorfavor Haz clic en 'Continuar' para dividir el dataset",
+            font=AppConfig.BODY_FONT,
+            text_color=AppTheme.SECONDARY_TEXT
+        )
+        info_label.pack(pady=(0, 10))
+        
+        # Botón Continuar
+        continue_button = UploadButton(
+            button_frame,
+            text="Continuar",
+            command=self._continue_without_preprocessing
+        )
+        continue_button.pack(anchor="center")
+    
+    def _continue_without_preprocessing(self):
+        """Continuar cuando no hay valores faltantes e ir directo a división"""
+        # Registrar el dataframe como preprocesado (aunque no se modificó)
+        self.app.set_preprocessed_df(self.master_panel.df)
+        
+        NotificationWindow(
+            self.app,
+            "Datos Listos",
+            "No se requiere preprocesamiento.\nPuede proceder a dividir el dataset.",
+            "success"
+        )
+    
+    def _apply_preprocessing(self):
+        """Aplicar el preprocesamiento según la opción seleccionada"""
+        option = self.option_var.get()
+        
+        # Validar selección
+        if not option:
+            NotificationWindow(
+                self.app,
+                "Error de Validación",
+                "Debe seleccionar una opción de preprocesamiento.",
+                "warning"
+            )
+            return
+        
+        # Verificar valores faltantes
+        df_subset = self.master_panel.df[self.selected_columns]
+        if not df_subset.isnull().any().any():
+            NotificationWindow(
+                self.app,
+                "Sin Valores Faltantes",
+                "Las columnas seleccionadas no contienen valores faltantes.",
+                "info"
+            )
+            return
+        
+        try:
+            if option == "drop":
+                self._drop_na()
+            elif option == "mean":
+                self._fill_with_mean()
+            elif option == "median":
+                self._fill_with_median()
+            elif option == "constant":
+                self._fill_with_constant()
+        except Exception as e:
+            NotificationWindow(
+                self.app,
+                "Error en Preprocesado",
+                f"Ocurrió un error:\n\n{str(e)}",
+                "error"
+            )
+    
+    def _drop_na(self):
+        """Eliminar filas con valores faltantes"""
+        rows_before = len(self.master_panel.df)
+        self.master_panel.df = self.master_panel.df.dropna(
+            subset=self.selected_columns
+        )
+        rows_after = len(self.master_panel.df)
+        rows_deleted = rows_before - rows_after
+        
+        # Actualizar aplicación principal
+        self.app.current_dataframe = self.master_panel.df
+        self.app._display_data(self.master_panel.df)
+        self.app._update_statistics(self.master_panel.df)
+        
+        
+        NotificationWindow(
+            self.app,
+            "Preprocesado Completado",
+            f"Se eliminaron {rows_deleted} fila(s) con valores faltantes.\n\n"
+            f"Filas restantes: {rows_after:,}",
+            "success"
+        )
+        
+        # Actualizar estadísticas
+        self._update_stats()
+        self.app.set_preprocessed_df(self.master_panel.df)
+    
+    def _fill_with_mean(self):
+        """Rellenar valores faltantes con la media"""
+        df = self.master_panel.df
+        numeric_cols = df[self.selected_columns].select_dtypes(
+            include=['number']
+        ).columns.tolist()
+        
+        if not numeric_cols:
+            NotificationWindow(
+                self.app,
+                "Error",
+                "No hay columnas numéricas en la selección para calcular la media.",
+                "warning"
+            )
+            return
+        
+        for col in numeric_cols:
+            if df[col].isnull().any():
+                mean_value = df[col].mean()
+                df[col] = df[col].fillna(mean_value)
+        
+        # Actualizar aplicación principal
+        self.app.current_dataframe = df
+        self.app._display_data(df)
+        self.app._update_statistics(df)
+        
+        
+        NotificationWindow(
+            self.app,
+            "Preprocesado Completado",
+            f"Se rellenaron valores faltantes con la media en {len(numeric_cols)} columna(s).",
+            "success"
+        )
+        
+        # Actualizar estadísticas
+        self._update_stats()
+        self.app.set_preprocessed_df(self.master_panel.df)
+    
+    def _fill_with_median(self):
+        """Rellenar valores faltantes con la mediana"""
+        df = self.master_panel.df
+        numeric_cols = df[self.selected_columns].select_dtypes(
+            include=['number']
+        ).columns.tolist()
+        
+        if not numeric_cols:
+            NotificationWindow(
+                self.app,
+                "Error",
+                "No hay columnas numéricas en la selección para calcular la mediana.",
+                "warning"
+            )
+            return
+        
+        for col in numeric_cols:
+            if df[col].isnull().any():
+                median_value = df[col].median()
+                df[col] = df[col].fillna(median_value)
+        
+        # Actualizar aplicación principal
+        self.app.current_dataframe = df
+        self.app._display_data(df)
+        self.app._update_statistics(df)
+        
+        
+        NotificationWindow(
+            self.app,
+            "Preprocesado Completado",
+            f"Se rellenaron valores faltantes con la mediana en {len(numeric_cols)} columna(s).",
+            "success"
+        )
+        
+        # Actualizar estadísticas
+        self._update_stats()
+        self.app.set_preprocessed_df(self.master_panel.df)
+    
+    def _fill_with_constant(self):
+        """Rellenar valores faltantes con una constante"""
+        constant = self.constant_entry.get().strip()
+        
+        if not constant:
+            NotificationWindow(
+                self.app,
+                "Error de Validación",
+                "Debe introducir un valor constante.",
+                "warning"
+            )
+            return
+        
+        df = self.master_panel.df
+        
+        # Intentar convertir a número
+        try:
+            constant = float(constant)
+        except ValueError:
+            pass  # Usar como string
+        
+        # Rellenar solo columnas seleccionadas
+        for col in self.selected_columns:
+            if df[col].isnull().any():
+                df[col] = df[col].fillna(constant)
+        
+        # Actualizar aplicación principal
+        self.app.current_dataframe = df
+        self.app._display_data(df)
+        self.app._update_statistics(df)
+        
+        
+        NotificationWindow(
+            self.app,
+            "Preprocesado Completado",
+            f"Se rellenaron valores faltantes con: '{constant}'",
+            "success"
+        )
+        
+        # Actualizar estadísticas
+        self._update_stats()
+        self.app.set_preprocessed_df(self.master_panel.df)
+    
+    def _cancel_preprocessing(self):
+        """Cancelar el preprocesamiento"""
+        self.option_var.set("")
+        self.constant_entry.delete(0, 'end')
+    
+    def _update_stats(self):
+        """Actualizar las estadísticas mostradas"""
+        self.nas_stats = self._count_nan_df(
+            self.master_panel.df[self.selected_columns]
+        )
+        nas_total = self._sum_nan(self.nas_stats)
+        nas_columns = self._nan_columns(self.nas_stats)
+        
+        if nas_total > 0:
+            info_text = (
+                f"Total de N/A: {nas_total}\n"
+                f"Columnas afectadas: {', '.join(nas_columns)}"
+            )
+            color = AppTheme.WARNING
+        else:
+            info_text = "✓ No hay valores faltantes en las columnas seleccionadas"
+            color = AppTheme.SUCCES
+        
+        self.stats_label.configure(text=info_text, text_color=color)
+    
+    def _detect_nan(self, df):
+        """Detectar y notificar valores NaN"""
+        nas_columns = self._count_nan_df(df)
+        nas_total = self._sum_nan(nas_columns)
+        
+        if nas_columns:
+            NotificationWindow(
+                self.app,
+                "Valores NaN Detectados",
+                f"Hay {len(nas_columns)} columna(s) con valores NaN.\n"
+                f"Total de NaNs: {nas_total}",
+                "warning"
+            )
+    
+    # Métodos auxiliares
+    def _count_nan_df(self, df):
+        """Contar valores NaN por columna"""
+        nas_columns = []
+        columns_with_nas = df.columns[df.isna().any()].tolist()
+        
+        for column in columns_with_nas:
+            nan_count = df[column].isna().sum()
+            nas_columns.append([nan_count, column])
+        
+        return nas_columns
+    
+    def _sum_nan(self, nan_list):
+        """Sumar total de NaN"""
+        return sum(item[0] for item in nan_list)
+    
+    def _nan_columns(self, nan_list):
+        """Obtener nombres de columnas con NaN"""
+        return [item[1] for item in nan_list]
+
+
+# ================================================================
+# PANEL DE SELECCIÓN
+# ================================================================
+
+class SelectionPanel:
+    """
+    Panel principal para selección de columnas y preprocesamiento.
+    
+    Parámetros
+    ----------
+    master : widget
+        Widget padre
+    df : pd.DataFrame
+        DataFrame a procesar
+    app : DataLoaderApp
+        Referencia a la aplicación principal
+    """
+    
+    def __init__(self, master, df, app):
+        self.master = master
         self.df = df
         self.app = app
+        self.col_entrada = []
         self.processed_df = None
-
+    
     def _crear_interfaz(self):
-        """
-        Crea la interfaz de selección de datos.
-
-        Returns
-        -------
-        Panel
-            Panel con la interfaz de selección de entrada/salida.
-        """
-        select_panel = Panel(self.master, "Selección de datos")
-
-        frame_in_out = ctk.CTkFrame(select_panel, fg_color="transparent")
-        frame_in_out.pack(expand=True, fill="x")
-
-        # Frame izquierdo: Datos de Entrada
+        """Crear la interfaz de selección de datos"""
+        select_panel = Panel(self.master, "Selección de Datos")
+        
+        # Contenedor principal con altura fija
+        main_container = ctk.CTkFrame(
+            select_panel,
+            fg_color="transparent",
+            height=350  
+        )
+        main_container.pack(fill="x", padx=10, pady=10)
+        main_container.pack_propagate(False)  
+        
+        # Contenedor para paneles lado a lado
+        frame_in_out = ctk.CTkFrame(main_container, fg_color="transparent")
+        frame_in_out.pack(expand=True, fill="both")
+        frame_in_out.grid_columnconfigure(0, weight=1)
+        frame_in_out.grid_columnconfigure(1, weight=1)
+        
+        # ═══════════════════════════════════════════════════════════
+        # PANEL IZQUIERDO: Datos de Entrada
+        # ═══════════════════════════════════════════════════════════
+        entrada_container = ctk.CTkFrame(
+            frame_in_out,
+            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            corner_radius=8,
+            border_width=1,
+            border_color=AppTheme.BORDER
+        )
+        entrada_container.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
+        
+        # Título del panel de entrada
+        entrada_title = ctk.CTkLabel(
+            entrada_container,
+            text="Datos de Entrada",
+            font=("Orbitron", 14, "bold"),
+            text_color=AppTheme.PRIMARY_TEXT,
+            fg_color=AppTheme.TERTIARY_BACKGROUND,
+            corner_radius=6
+        )
+        entrada_title.pack(fill="x", padx=8, pady=8)
+        
+        # Frame scrollable de checkboxes (con aislamiento de scroll incorporado)
         self.frame_entrada = ScrollableCheckboxFrame(
-            frame_in_out,
-            "Datos de Entrada",
+            entrada_container,
+            "",  # Sin título porque ya lo tiene el contenedor
             self.df
         )
-        self.frame_entrada.pack(
-            side="left", fill="both",
-            expand=True, padx=10, pady=10
+        self.frame_entrada.pack(fill="both", expand=True, padx=8, pady=(0, 8))
+        
+        # ═══════════════════════════════════════════════════════════
+        # PANEL DERECHO: Datos de Salida
+        # ═══════════════════════════════════════════════════════════
+        salida_container = ctk.CTkFrame(
+            frame_in_out,
+            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            corner_radius=8,
+            border_width=1,
+            border_color=AppTheme.BORDER
         )
-
-        # Frame derecho: Datos de Salida
+        salida_container.grid(row=0, column=1, sticky="nsew", padx=(5, 0))
+        
+        # Título del panel de salida
+        salida_title = ctk.CTkLabel(
+            salida_container,
+            text="Datos de Salida",
+            font=("Orbitron", 14, "bold"),
+            text_color=AppTheme.PRIMARY_TEXT,
+            fg_color=AppTheme.TERTIARY_BACKGROUND,
+            corner_radius=6
+        )
+        salida_title.pack(fill="x", padx=8, pady=8)
+        
+        # Selector de columna de salida
         self.frame_salida = ColumnFrame(
-            frame_in_out,
-            "Datos de Salida",
+            salida_container,
+            "",  # Sin título porque ya lo tiene el contenedor
             self.df
         )
-        self.frame_salida.pack(
-            side="right", fill="both",
-            expand=True, padx=20, pady=10
+        self.frame_salida.pack(fill="x", padx=8, pady=(0, 8))
+        
+        # Espacio para información adicional
+        info_frame = ctk.CTkFrame(
+            salida_container,
+            fg_color=AppTheme.PRIMARY_BACKGROUND,
+            corner_radius=6
         )
-
-        # Botón de confirmación
-        self.button = ctk.CTkButton(
+        info_frame.pack(fill="both", expand=True, padx=8, pady=(0, 8))
+        
+        info_label = ctk.CTkLabel(
+            info_frame,
+            text="Información:\n\n"
+                 "1.Seleccione las columnas que\n"
+                 "  desea usar como entrada\n\n"
+                 "2.Seleccione la columna de\n"
+                 "  salida (objetivo)\n\n"
+                 "3.Haga clic en 'Procesar Datos'\n"
+                 "  para continuar",
+            font=("Segoe UI", 12),
+            text_color=AppTheme.SECONDARY_TEXT
+        )
+        info_label.pack(expand=True, padx=15, pady=15)
+        
+        # ═══════════════════════════════════════════════════════════
+        # BOTÓN DE CONFIRMACIÓN
+        # ═══════════════════════════════════════════════════════════
+        self.button = UploadButton(
             select_panel,
             text="Procesar Datos",
             command=self.button_callback
         )
-        self.button.pack(fill="x", expand=True, padx=10, pady=10)
+        self.button.pack(fill="x", padx=15, pady=(10, 15))
+        
         return select_panel
-
+    
     def button_callback(self):
-        """
-        Callback del botón de procesar datos.
-
-        Valida que se hayan seleccionado columnas de entrada y procede
-        a mostrar los datos seleccionados.
-        """
-        columnas_entrada_inicial = self.frame_entrada.get()
-        if len(columnas_entrada_inicial) == 0:
+        """Callback del botón de procesar datos"""
+        columnas_entrada = self.frame_entrada.get()
+        
+        if not columnas_entrada:
             NotificationWindow(
                 self.app,
-                "Error de selección",
-                "Debe elegir al menos una columna de entrada",
+                "Error de Selección",
+                "Debe seleccionar al menos una columna de entrada.",
                 "warning"
             )
-        else:
-            self.columnas_entrada = columnas_entrada_inicial
-
-            self.columna_salida = self.frame_salida.get()
-            self._display_data()
-            print("\n--- Procesando Datos ---")
-            print(f"Datos de Entrada: {self.columnas_entrada}")
-            print(f"Datos de Salida: {self.columna_salida}")
-
+            return
+        
+        self.columnas_entrada = columnas_entrada
+        self.columna_salida = self.frame_salida.get()
+        
+        print("\n--- Procesando Datos ---")
+        print(f"Datos de Entrada: {self.columnas_entrada}")
+        print(f"Datos de Salida: {self.columna_salida}")
+        
+        self._display_data()
+    
     def _create_empty_panel(self):
-        """
-        Crea un panel vacío con mensaje de estado inicial.
-
-        Muestra un mensaje indicando que se deben seleccionar columnas
-        antes de visualizar datos.
-        """
-        # Frame exterior (transparente, no se toca)
+        """Crear panel vacío con mensaje de estado inicial"""
         self.table_outer_frame = ctk.CTkFrame(
             self.master, fg_color="transparent"
         )
-        self.table_outer_frame.pack(fill="both", expand=True, padx=15, pady=0)
-
-        # Contenedor de la tabla (este se puede destruir y recrear)
+        self.table_outer_frame.pack(fill="both", expand=True, padx=(10, 0))
+        
         self.table_container = ctk.CTkFrame(
             self.table_outer_frame,
             fg_color=AppTheme.PRIMARY_BACKGROUND,
@@ -732,66 +803,75 @@ class SelectionPanel(ctk.CTkFrame):
             border_color=AppTheme.BORDER
         )
         self.table_container.pack(fill="both", expand=True)
-
+        
         self.empty_state_label = ctk.CTkLabel(
             self.table_container,
-            text="Selecciona columnas con N/As",
+            text="Seleccione columnas \n para Procesar Datos",
             font=("Segoe UI", 13),
             text_color=AppTheme.DIM_TEXT
         )
         self.empty_state_label.place(relx=0.5, rely=0.5, anchor="center")
-
+    
     def _display_data(self):
-        """
-        Muestra los datos seleccionados y el panel de preprocesamiento.
-
-        Oculta el mensaje de estado vacío, destruye el contenedor anterior
-        y crea un nuevo panel de preprocesamiento con las columnas
-        seleccionadas.
-        """
-
-        # Ocultar mensaje de "sin datos"
-        if self.empty_state_label.winfo_exists():
-            self.empty_state_label.place_forget()
-
-        # Recrear el contenedor (limpieza completa)
-        self.table_container.destroy()
+        """Mostrar panel de preprocesamiento con las columnas seleccionadas"""
+        # Ocultar mensaje
         try:
-            if self.pre_options.winfo_exists():
-                self.pre_options.pack_forget()
-        except AttributeError:
+            if self.empty_state_label.winfo_exists():
+                self.empty_state_label.place_forget()
+        except:
             pass
+        
+        # Destruir contenedor anterior
+        self.table_container.destroy()
+        
+        # Destruir panel de preprocesamiento anterior si existe
+        try:
+            if hasattr(self, 'pre_options') and self.pre_options.winfo_exists():
+                self.pre_options.pack_forget()
+                self.pre_options.destroy()
+        except:
+            pass
+        
+        # Preparar columnas a procesar
         columnas_procesar = self.columnas_entrada.copy()
         if self.columna_salida not in columnas_procesar:
             columnas_procesar.append(self.columna_salida)
-        # Crear gestor de visualización y mostrar datos
+        
+        # Crear panel de preprocesamiento
         self.pre_panel = PreprocessingPanel(
             self.table_outer_frame,
             columnas_procesar,
             self.app,
             self
         )
+        
+        # Detectar NaN y crear panel
         self.pre_panel._detect_nan(self.df[columnas_procesar])
         self.pre_options = self.pre_panel._create_preprocessing_panel()
-        self.pre_options.pack(fill="both", expand=True, padx=10, pady=10)
+        self.pre_options.pack(fill="both", expand=True)
 
 
-# Ejemplo de uso
+# ================================================================
+# TESTING
+# ================================================================
+
 if __name__ == "__main__":
-    # DataFrame de ejemplo
+    # DataFrame de prueba
     df = pd.DataFrame({
-        'ID': [1, 2, 3, 4],
-        'Nombre': ['Azúcar', 'Café', 'Leche', 'Té'],
-        'Precio': [28.5, 45.0, 32.0, 15.0],
-        'Cantidad': [34, 12, 8, 20]
+        'ID': [1, 2, 3, 4, 5],
+        'Nombre': ['Azúcar', 'Café', None, 'Té', 'Sal'],
+        'Precio': [28.5, 45.0, 32.0, None, 20.0],
+        'Cantidad': [34, 12, None, 20, 15]
     })
-
+    
     app = ctk.CTk()
+    app.title("Selector de Datos")
+    app.geometry("1200x700")
+    ctk.set_appearance_mode("dark")
+    
     panel = SelectionPanel(app, df, app)
-    a = panel._crear_interfaz()
-    a.pack(fill="both", expand=True, side="left", padx=10, pady=10)
+    interface = panel._crear_interfaz()
+    interface.pack(fill="both", expand=True, side="left", padx=20, pady=20)
     panel._create_empty_panel()
-    app.title("Selector de datos")
-    app.geometry("800x400")
-
+    
     app.mainloop()

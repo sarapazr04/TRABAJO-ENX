@@ -51,7 +51,17 @@ class DataSplitPanel(ctk.CTkFrame):
         self.seed_entry.pack(side="left")
 
         # Botón dividir
-        self.split_button = ctk.CTkButton(panel, text="Dividir Dataset", command=self._split_dataset)
+        self.split_button = ctk.CTkButton(
+            panel, 
+            text="Dividir Dataset", 
+            command=self._split_dataset,
+            font=("Orbitron", 11, "bold"),
+            height=AppConfig.BUTTON_HEIGHT,
+            corner_radius=6,
+            fg_color=AppTheme.PRIMARY_ACCENT,
+            hover_color=AppTheme.HOVER_ACCENT,
+            text_color="#ffffff",
+        )
         self.split_button.pack(pady=12)
 
         # Resultado

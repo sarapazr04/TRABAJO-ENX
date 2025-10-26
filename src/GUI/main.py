@@ -6,9 +6,6 @@ Este archivo controla la ventana principal y la carga de archivos.
 import customtkinter as ctk
 from tkinter import filedialog
 import threading  # Para ejecutar código en segundo plano
-from pathlib import Path  # Para trabajar con rutas de archivos
-import pandas as pd
-
 from .components import (
     AppTheme, AppConfig, NotificationWindow,
     UploadButton, Panel, LoadingIndicator
@@ -43,17 +40,18 @@ class DataLoaderApp(ctk.CTk):
         self.train_df = None
         self.test_df = None
         self._split_panel_frame = None  # contenedor para recrear el panel
-
+        self.selection_panel = None
+        self.selection_frame = None  # Frame exterior del panel de seleccion
 
         # Crear la interfaz
         self.configure(fg_color=AppTheme.PRIMARY_BACKGROUND)
 
         self.ext_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.ext_frame.pack(fill="both", expand=True)
+
         self._create_control_panel()
-        # self._create_select_process_button()
         self._create_data_panel()
-        self._create_stats_section()
+        self._create_status_bar()
 
     # ================================================================
     # PANEL DE CONTROLES : Botón de carga y estadísticas
@@ -61,17 +59,39 @@ class DataLoaderApp(ctk.CTk):
 
     def _create_control_panel(self):
         """Crear el panel con el botón de cargar y las estadísticas"""
-        control_panel = ctk.CTkFrame(self.ext_frame)
+        control_panel = ctk.CTkFrame(
+            self.ext_frame,
+            corner_radius=8,
+            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            border_width=1,
+            border_color=AppTheme.BORDER
+        )
         control_panel.pack(fill="x", padx=20, pady=(20, 10))
 
         self._create_button_section(control_panel)
-        # self._create_stats_section(control_panel)
 
     def _create_button_section(self, parent):
         """Crear el botón de carga y mostrar la ruta del archivo"""
         # Frame contenedor
         button_frame = ctk.CTkFrame(parent, fg_color="transparent")
-        button_frame.pack(fill="x", padx=20, pady=(15, 10))
+        button_frame.pack(fill="x", padx=20, pady=(15, 15))
+        
+        # Botón de cargar
+        self.upload_button = UploadButton(
+            button_frame,
+            text="Cargar Archivo",
+            command=self._load_file  # Función a ejecutar al hacer clic
+        )
+        self.upload_button.pack(side="right", padx=(15, 0))
+
+        # Label de la etiqueta "RUTA:"
+        self.tag_label = ctk.CTkLabel(
+           button_frame,
+            text = "RUTA :",
+            font = ("Orbitron", 15, "bold"),
+            text_color = AppTheme.PRIMARY_TEXT
+        )
+        self.tag_label.pack(side="left", padx=(0,10))
 
         # Frame para mostrar la ruta
         self.path_frame = ctk.CTkFrame(
@@ -93,23 +113,26 @@ class DataLoaderApp(ctk.CTk):
         )
         self.path_label.pack(pady=10, padx=15)
 
-        # Botón de cargar
-        self.upload_button = UploadButton(
-            button_frame,
-            text="Cargar Archivo",
-            command=self._load_file  # Función a ejecutar al hacer clic
-        )
-        self.upload_button.pack(side="left", padx=(15, 0))
-
-    def _create_stats_section(self):
+    def _create_status_bar(self):
         """Crear el área de estadísticas del dataset"""
-        
+        self.status_bar = ctk.CTkFrame(
+            self, 
+            height = 35,
+            corner_radius = 0,
+            fg_color = AppTheme.SECONDERY_BACKGROUND,
+            border_color = AppTheme.BORDER,
+            border_width = 1 
+        )
+
+        self.status_bar.pack(side="bottom", fill="x")
+        self.status_bar.pack_propagate(False)
 
         self.stats_label = ctk.CTkLabel(
-            self,
-            text="",  # Inicialmente vacio
-            font=AppConfig.MONO_FONT,
-            text_color=AppTheme.SECONDARY_TEXT
+            self.status_bar,
+            text="Ningún archivo cargado",
+            font=("Segoe UI", 11),
+            text_color=AppTheme.SECONDARY_TEXT,
+            anchor = "w"
         )
         self.stats_label.pack(side="left", pady=0, padx=15)
 
@@ -184,7 +207,7 @@ class DataLoaderApp(ctk.CTk):
         self._update_file_path_display(file_path)
         self._update_statistics(dataframe)
         self._display_data(dataframe)
-        self._create_frame_sel_prep(dataframe)
+        self._create_selection_panel(dataframe)
         self.upload_button.configure(state="normal", text="Cargar Archivo")
 
         # Mostrar notificación de éxito
@@ -236,7 +259,7 @@ class DataLoaderApp(ctk.CTk):
 
     def _update_file_path_display(self, file_path):
         """Actualizar el texto que muestra la ruta del archivo"""
-        display_text = f"RUTA: {file_path}"
+        display_text = f"{file_path}"
 
         self.path_label.configure(
             text=display_text,
@@ -256,32 +279,38 @@ class DataLoaderApp(ctk.CTk):
     # PANEL DE CONTROLES : Botón de carga y estadísticas
     # ================================================================
 
-    def _create_select_process_button(self):
-        self.select_process_button = ctk.CTkButton(
-            self.ext_frame,
-            text="Abrir ventana de selección y preprocesado",
-            command=self._select_process_button_callback
-        )
-        self.select_process_button.pack(
-            fill="x", side="top", padx=10, pady=(0, 10))
-
-    def _select_process_button_callback(self):
-        if self.toplevel is None or not self.toplevel.winfo_exists():
-            # create window if its None or destroyed
-            self._create_frame_sel_prep(self.current_dataframe)
-            self.toplevel.focus()
-        else:
-            self.toplevel.focus()  # if window exists focus it
-
-    def _create_frame_sel_prep(self, df):
-
-        frame_exterior = ctk.CTkFrame(self.ext_frame, fg_color="transparent")
-        frame_exterior.pack(fill="x", expand=True, padx=20, pady=(0, 20))
-
-        panel = SelectionPanel(frame_exterior, df, self)
-        a = panel._crear_interfaz()
-        a.pack(fill="both", expand=True, side="left", padx=10, pady=10)
-        panel._create_empty_panel()
+    def _create_selection_panel(self, dataframe):
+        """
+        Crea el panel de seleccion de columnas.
+        
+        Si ya existe un panel previo, lo destruye para evitar duplicados.
+        
+        Parameters
+        ----------
+        dataframe : pd.DataFrame
+            DataFrame con los datos cargados.
+        """
+        # Destruir frame anterior completo si existe
+        if self.selection_frame is not None:
+            try:
+                self.selection_frame.destroy()
+            except:
+                pass
+        
+        # Crear nuevo frame exterior
+        self.selection_frame = ctk.CTkFrame(self.ext_frame, fg_color="transparent")
+        self.selection_frame.pack(fill="x", expand=True, padx=20, pady=(0, 20))
+        
+        # Crear panel de seleccion con orden correcto de parametros
+        # Nota: SelectionPanel espera (master, df, app) en el archivo original
+        self.selection_panel = SelectionPanel(self.selection_frame, dataframe, self)
+        
+        # Crear y mostrar interfaz usando el metodo original _crear_interfaz()
+        selection_interface = self.selection_panel._crear_interfaz()
+        selection_interface.pack(fill="both", expand=True, side="left", padx=10, pady=10)
+        
+        # Crear panel vacio inicial
+        self.selection_panel._create_empty_panel()
     
     def set_preprocessed_df(self, df):
         """Registrar el dataframe preprocesado y mostrar el panel de división."""
