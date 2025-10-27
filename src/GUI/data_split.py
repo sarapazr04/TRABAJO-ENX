@@ -11,6 +11,7 @@ class DataSplitPanel(ctk.CTkFrame):
     - Guarda los subconjuntos en la app: app.train_df y app.test_df
     - Muestra tamaños y notificaciones
     """
+
     def __init__(self, master, app):
         super().__init__(master)
         self.app = app
@@ -33,11 +34,15 @@ class DataSplitPanel(ctk.CTkFrame):
         info.pack(pady=(10, 0))
 
         # Slider % train
-        self.slider_label = ctk.CTkLabel(panel, text="Porcentaje de entrenamiento: 80%")
+        self.slider_label = ctk.CTkLabel(
+            panel, text="Porcentaje de entrenamiento: 80%")
         self.slider_label.pack(pady=(12, 6))
 
         self.slider = ctk.CTkSlider(
-            panel, from_=50, to=95, number_of_steps=45, command=self._update_label
+            panel, from_=50,
+            to=95,
+            number_of_steps=45,
+            command=self._update_label
         )
         self.slider.set(80)
         self.slider.pack(fill="x", padx=20)
@@ -45,15 +50,16 @@ class DataSplitPanel(ctk.CTkFrame):
         # Semilla
         seed_frame = ctk.CTkFrame(panel, fg_color="transparent")
         seed_frame.pack(pady=12)
-        ctk.CTkLabel(seed_frame, text="Semilla aleatoria:").pack(side="left", padx=6)
+        ctk.CTkLabel(seed_frame, text="Semilla aleatoria:").pack(
+            side="left", padx=6)
         self.seed_entry = ctk.CTkEntry(seed_frame, width=100)
         self.seed_entry.insert(0, "42")
         self.seed_entry.pack(side="left")
 
         # Botón dividir
         self.split_button = ctk.CTkButton(
-            panel, 
-            text="Dividir Dataset", 
+            panel,
+            text="Dividir Dataset",
             command=self._split_dataset,
             font=("Orbitron", 11, "bold"),
             height=AppConfig.BUTTON_HEIGHT,
@@ -65,11 +71,13 @@ class DataSplitPanel(ctk.CTkFrame):
         self.split_button.pack(pady=12)
 
         # Resultado
-        self.result_label = ctk.CTkLabel(panel, text="", text_color=AppTheme.SECONDARY_TEXT)
+        self.result_label = ctk.CTkLabel(
+            panel, text="", text_color=AppTheme.SECONDARY_TEXT)
         self.result_label.pack(pady=(4, 12))
 
     def _update_label(self, value):
-        self.slider_label.configure(text=f"Porcentaje de entrenamiento: {int(value)}%")
+        self.slider_label.configure(
+            text=f"Porcentaje de entrenamiento: {int(value)}%")
 
     # --------------- LÓGICA ---------------
     def _split_dataset(self):
@@ -85,7 +93,11 @@ class DataSplitPanel(ctk.CTkFrame):
 
         df = getattr(self.app, "preprocessed_df", None)
         if df is None:
-            NotificationWindow(self.app, "Error", "No hay dataset preprocesado disponible.", "error")
+            NotificationWindow(
+                self.app,
+                "Error",
+                "No hay dataset preprocesado disponible.",
+                "error")
             return
 
         if len(df) < 5:
@@ -102,7 +114,11 @@ class DataSplitPanel(ctk.CTkFrame):
         try:
             random_state = int(self.seed_entry.get())
         except ValueError:
-            NotificationWindow(self.app, "Error", "La semilla debe ser un número entero.", "error")
+            NotificationWindow(
+                self.app,
+                "Error",
+                "La semilla debe ser un número entero.",
+                "error")
             return
 
         # División aleatoria reproducible

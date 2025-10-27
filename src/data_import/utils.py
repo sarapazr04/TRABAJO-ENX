@@ -1,12 +1,14 @@
 """
 Función auxiliar para el módulo 'data_import'.
 
-Es utilizado para convertir automáticamente columnas de un DataFrame a tipos adecuados (numéricos o fechas),
-garantizando la consistencia de los datos importados.
+Es utilizado para convertir automáticamente columnas de un DataFrame
+ a tipos adecuados (numéricos o fechas), garantizando la
+ consistencia de los datos importados.
 """
 
 
 import pandas as pd
+
 
 def coerce_dtypes(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()

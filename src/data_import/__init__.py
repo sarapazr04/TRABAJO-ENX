@@ -1,8 +1,8 @@
 """
 Paquete data_import
 -------------------
-Módulo encargado de la importación y previsualización de datos desde diferentes formatos:
-CSV, Excel y SQLite.
+Módulo encargado de la importación y previsualización de datos
+desde diferentes formatos: CSV, Excel y SQLite.
 
 Módulos:
 - importer.py: lógica principal de carga y validación de archivos.

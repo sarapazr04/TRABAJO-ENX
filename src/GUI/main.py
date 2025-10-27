@@ -19,7 +19,7 @@ from .data_split import DataSplitPanel
 class DataLoaderApp(ctk.CTk):
     """
     Ventana principal de la GUI.
-    
+
     Esta clase crea la interfaz y gestiona la carga de archivos.
     """
 
@@ -75,7 +75,7 @@ class DataLoaderApp(ctk.CTk):
         # Frame contenedor
         button_frame = ctk.CTkFrame(parent, fg_color="transparent")
         button_frame.pack(fill="x", padx=20, pady=(15, 15))
-        
+
         # Botón de cargar
         self.upload_button = UploadButton(
             button_frame,
@@ -86,12 +86,12 @@ class DataLoaderApp(ctk.CTk):
 
         # Label de la etiqueta "RUTA:"
         self.tag_label = ctk.CTkLabel(
-           button_frame,
-            text = "RUTA :",
-            font = ("Orbitron", 15, "bold"),
-            text_color = AppTheme.PRIMARY_TEXT
+            button_frame,
+            text="RUTA :",
+            font=("Orbitron", 15, "bold"),
+            text_color=AppTheme.PRIMARY_TEXT
         )
-        self.tag_label.pack(side="left", padx=(0,10))
+        self.tag_label.pack(side="left", padx=(0, 10))
 
         # Frame para mostrar la ruta
         self.path_frame = ctk.CTkFrame(
@@ -116,12 +116,12 @@ class DataLoaderApp(ctk.CTk):
     def _create_status_bar(self):
         """Crear el área de estadísticas del dataset"""
         self.status_bar = ctk.CTkFrame(
-            self, 
-            height = 35,
-            corner_radius = 0,
-            fg_color = AppTheme.SECONDERY_BACKGROUND,
-            border_color = AppTheme.BORDER,
-            border_width = 1 
+            self,
+            height=35,
+            corner_radius=0,
+            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            border_color=AppTheme.BORDER,
+            border_width=1
         )
 
         self.status_bar.pack(side="bottom", fill="x")
@@ -132,7 +132,7 @@ class DataLoaderApp(ctk.CTk):
             text="Ningún archivo cargado",
             font=("Segoe UI", 11),
             text_color=AppTheme.SECONDARY_TEXT,
-            anchor = "w"
+            anchor="w"
         )
         self.stats_label.pack(side="left", pady=0, padx=15)
 
@@ -157,10 +157,12 @@ class DataLoaderApp(ctk.CTk):
         self._show_loading_indicator()
         self.upload_button.configure(state="disabled", text="Cargando...")
 
-        # Crear hilo para cargar en segundo plano (daemon = True = se cierra con la app)
+        # Crear hilo para cargar en segundo plano
         thread = threading.Thread(
-            target=self._load_file_thread,  # Función a ejecutar en segundo plano
-            args=(file_path,),  # Argumentos (IMPORTANTE: tupla con coma)
+            # Función a ejecutar en segundo plano
+            target=self._load_file_thread,
+            # Argumentos (IMPORTANTE: tupla con coma)
+            args=(file_path,),
             daemon=True
         )
         thread.start()
@@ -176,7 +178,8 @@ class DataLoaderApp(ctk.CTk):
 
             # Si funciona, llamar función de éxito en el hilo principal
             # self.after(0, ...) ejecuta la función en el hilo principal
-            # No puedes modificar la GUI desde un thread, por eso usamos .after()
+            # No puedes modificar la GUI desde un thread.
+            # Poara eso usamos .after()
             self.after(0, self._on_load_success, file_path, df)
 
         except Exception as e:
@@ -200,7 +203,6 @@ class DataLoaderApp(ctk.CTk):
         if self._split_panel_frame is not None and self._split_panel_frame.winfo_exists():
             self._split_panel_frame.destroy()
             self._split_panel_frame = None
-
 
         # Actualizar interfaz
         self._hide_loading_indicator()
@@ -238,7 +240,8 @@ class DataLoaderApp(ctk.CTk):
 
     def _show_loading_indicator(self):
         """Mostrar el círculo de carga en el centro"""
-        if self.loading_indicator is not None:  # Si ya existe, destruirlo primero
+        # Si ya existe, destruirlo primero
+        if self.loading_indicator is not None:
             self.loading_indicator.destroy()
 
         self.loading_indicator = LoadingIndicator(self)
@@ -282,9 +285,9 @@ class DataLoaderApp(ctk.CTk):
     def _create_selection_panel(self, dataframe):
         """
         Crea el panel de seleccion de columnas.
-        
+
         Si ya existe un panel previo, lo destruye para evitar duplicados.
-        
+
         Parameters
         ----------
         dataframe : pd.DataFrame
@@ -294,26 +297,29 @@ class DataLoaderApp(ctk.CTk):
         if self.selection_frame is not None:
             try:
                 self.selection_frame.destroy()
-            except:
+            except Exception:
                 pass
-        
+
         # Crear nuevo frame exterior
-        self.selection_frame = ctk.CTkFrame(self.ext_frame, fg_color="transparent")
+        self.selection_frame = ctk.CTkFrame(
+            self.ext_frame, fg_color="transparent")
         self.selection_frame.pack(fill="x", expand=True, padx=20, pady=(0, 20))
-        
+
         # Crear panel de seleccion con orden correcto de parametros
         # Nota: SelectionPanel espera (master, df, app) en el archivo original
-        self.selection_panel = SelectionPanel(self.selection_frame, dataframe, self)
-        
+        self.selection_panel = SelectionPanel(
+            self.selection_frame, dataframe, self)
+
         # Crear y mostrar interfaz usando el metodo original _crear_interfaz()
         selection_interface = self.selection_panel._crear_interfaz()
-        selection_interface.pack(fill="both", expand=True, side="left", padx=10, pady=10)
-        
+        selection_interface.pack(
+            fill="both", expand=True, side="left", padx=10, pady=10)
+
         # Crear panel vacio inicial
         self.selection_panel._create_empty_panel()
-    
+
     def set_preprocessed_df(self, df):
-        """Registrar el dataframe preprocesado y mostrar el panel de división."""
+        """Registrar el dataframe preprocesado y mostrar el panel"""
         self.is_preprocessed = True
         self.preprocessed_df = df
         self._create_split_panel()
@@ -324,13 +330,13 @@ class DataLoaderApp(ctk.CTk):
         if self._split_panel_frame is not None and self._split_panel_frame.winfo_exists():
             self._split_panel_frame.destroy()
 
-        self._split_panel_frame = ctk.CTkFrame(self.ext_frame, fg_color="transparent")
-        self._split_panel_frame.pack(fill="x", expand=True, padx=20, pady=(0, 20))
+        self._split_panel_frame = ctk.CTkFrame(
+            self.ext_frame, fg_color="transparent")
+        self._split_panel_frame.pack(
+            fill="x", expand=True, padx=20, pady=(0, 20))
 
         split_panel = DataSplitPanel(self._split_panel_frame, self)
         split_panel.pack(fill="both", expand=True, padx=10, pady=10)
-
-
 
     # ================================================================
     # PANEL DE DATOS : Donde se muestra la tabla
@@ -372,9 +378,11 @@ class DataLoaderApp(ctk.CTk):
         """
         # Ocultar mensaje de "sin datos"
         try:
-            if self.empty_state_label.winfo_exists():  # winfo_exists() verifica si el widget existe
-                self.empty_state_label.place_forget()  # Ocultar (quitar del layout)
-        except:
+            # winfo_exists() verifica si el widget existe
+            if self.empty_state_label.winfo_exists():
+                # Ocultar (quitar del layout)
+                self.empty_state_label.place_forget()
+        except Exception:
             pass
 
         # Recrear el contenedor (limpieza completa)
