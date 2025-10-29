@@ -420,6 +420,38 @@ class DataLoaderApp(ctk.CTk):
         self._model_panel_frame.pack(fill="x", expand=True, padx=20, pady=(0, 20))
         model_panel = LinearModelPanel(self._model_panel_frame, self)
         model_panel.pack(fill="both", expand=True, padx=10, pady=10)
+    
+    # ================================================================
+    # REINICIAR ESTADO: Eliminar paneles previos
+    # ================================================================
+
+    def reset_panels(self):
+        """
+        Reiniciar el estado interno de la aplicación y eliminar paneles previos.
+        Se usa cuando el usuario quiere procesar un nuevo modelo desde cero.
+        """
+        #  Destruir el panel de división (train/test) si existe
+        if hasattr(self, "_split_panel_frame") and self._split_panel_frame:
+            try:
+                self._split_panel_frame.destroy()
+            except Exception:
+                pass
+            self._split_panel_frame = None
+
+        #  Destruir el panel del modelo lineal si existe
+        if hasattr(self, "_model_panel_frame") and self._model_panel_frame:
+            try:
+                self._model_panel_frame.destroy()
+            except Exception:
+                pass
+            self._model_panel_frame = None
+
+        #  Reiniciar estado interno
+        self.train_df = None
+        self.test_df = None
+        self.is_preprocessed = False
+        self.preprocessed_df = None
+
 
 
 

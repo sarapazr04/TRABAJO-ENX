@@ -778,6 +778,10 @@ class SelectionPanel:
         self.columnas_entrada = columnas_entrada
         self.columna_salida = self.frame_salida.get()
 
+        # Reiniciar paneles previos si existen
+        if hasattr(self.app, "reset_panels"):
+            self.app.reset_panels()
+
         print("\n--- Procesando Datos ---")
         print(f"Datos de Entrada: {self.columnas_entrada}")
         print(f"Datos de Salida: {self.columna_salida}")
