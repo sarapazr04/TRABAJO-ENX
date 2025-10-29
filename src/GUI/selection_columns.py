@@ -774,6 +774,22 @@ class SelectionPanel:
                 "warning"
             )
             return
+        
+        # Limpiar paneles previos (split y modelo)
+        if hasattr(self.app, "_split_panel_frame") and self.app._split_panel_frame:
+            try:
+                self.app._split_panel_frame.destroy()
+                self.app._split_panel_frame = None
+            except Exception:
+                pass
+
+        if hasattr(self.app, "_model_panel_frame") and self.app._model_panel_frame:
+            try:
+                self.app._model_panel_frame.destroy()
+                self.app._model_panel_frame = None
+            except Exception:
+                pass
+
 
         self.columnas_entrada = columnas_entrada
         self.columna_salida = self.frame_salida.get()
