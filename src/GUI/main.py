@@ -14,6 +14,7 @@ from .selection_columns import SelectionPanel
 from .data_display import DataDisplayManager
 from data_import.importer import import_data
 from .data_split import DataSplitPanel
+from .model_linear import LinearModelPanel
 
 
 class DataLoaderApp(ctk.CTk):
@@ -404,6 +405,22 @@ class DataLoaderApp(ctk.CTk):
         )
         # Este método hace todo el trabajo
         self.display_manager.display()
+
+    # ================================================================
+    # PANEL DEL MODELO LINEAL
+    # ================================================================
+
+    def set_split_completed(self):
+        """Llamado tras dividir datos para habilitar creación del modelo."""
+        self._create_model_panel()
+
+    def _create_model_panel(self):
+        """Crear el panel para entrenar y evaluar modelo lineal."""
+        self._model_panel_frame = ctk.CTkFrame(self.ext_frame, fg_color="transparent")
+        self._model_panel_frame.pack(fill="x", expand=True, padx=20, pady=(0, 20))
+        model_panel = LinearModelPanel(self._model_panel_frame, self)
+        model_panel.pack(fill="both", expand=True, padx=10, pady=10)
+
 
 
 def main():

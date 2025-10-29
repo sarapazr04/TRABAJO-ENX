@@ -143,3 +143,6 @@ class DataSplitPanel(ctk.CTkFrame):
             f"Entrenamiento: {len(train_df)} filas\nTest: {len(test_df)} filas",
             "success"
         )
+
+        self.app.set_split_completed()
+
