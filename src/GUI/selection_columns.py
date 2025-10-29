@@ -7,6 +7,7 @@ y preprocesar datos con valores faltantes.
 
 import customtkinter as ctk
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 
 from .components import (
     NotificationWindow, Panel, AppTheme, AppConfig, UploadButton
@@ -777,6 +778,23 @@ class SelectionPanel:
 
         self.columnas_entrada = columnas_entrada
         self.columna_salida = self.frame_salida.get()
+
+        # Validar que todas las columnas sean numéricas
+        columnas_invalidas = [
+            col for col in self.columnas_entrada + [self.columna_salida]
+            if not is_numeric_dtype(self.df[col])
+        ]
+
+        if columnas_invalidas:
+            NotificationWindow(
+                self.app,
+                "Error de Tipo de Datos",
+                f"Las siguientes columnas contienen valores no numéricos:\n\n"
+                f"{', '.join(columnas_invalidas)}\n\n"
+                "Solo se permiten columnas numéricas para crear el modelo lineal.",
+                "error"
+            )
+            return
 
         # Reiniciar paneles previos si existen
         if hasattr(self.app, "reset_panels"):
