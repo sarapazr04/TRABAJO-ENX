@@ -344,6 +344,16 @@ class DataLoaderApp(ctk.CTk):
     # PANEL DE DESCRIPCIÓN : Cuadro de texto
     # ================================================================
     def _create_description_panel(self):
+        """
+        Crea el panel de descripción del modelo.
+
+        Si ya existe un panel previo, lo destruye para evitar duplicados.
+
+        Parameters
+        ----------
+
+        """
+        # Destruir frame anterior completo si existe
         if self.description_frame is not None:
             try:
                 self.description_frame.destroy()
