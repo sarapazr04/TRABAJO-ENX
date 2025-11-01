@@ -229,7 +229,6 @@ class DataLoaderApp(ctk.CTk):
         self._display_data(dataframe)
         self._create_selection_panel(dataframe)
         self.upload_button.configure(state="normal", text="Cargar Archivo")
-        self._create_description_panel()
         # Mostrar notificación de éxito
         rows, cols = dataframe.shape  # .shape devuelve (filas, columnas)
         NotificationWindow(

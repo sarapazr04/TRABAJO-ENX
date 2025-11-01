@@ -6,6 +6,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 import pandas as pd
 from .components import Panel, UploadButton, NotificationWindow, AppTheme, AppConfig
+from .desc_model import DescriptBox 
 
 
 class LinearModelPanel(ctk.CTkFrame):
@@ -122,6 +123,26 @@ class LinearModelPanel(ctk.CTkFrame):
             )
 
         NotificationWindow(self.app, "Éxito", "Modelo creado y evaluado correctamente.", "success")
+        
+        # =============================
+        # PANEL DE DESCRIPCIÓN DEL MODELO
+        # ============================= 
+
+        # Crear panel debajo del gráfico
+        self.desc_box = DescriptBox(self.graph_frame)
+        description_panel = self.desc_box._create_description_panel()
+        description_panel.pack(fill="both", expand=True, padx=20, pady=(10, 20))
+
+        # Texto inicial orientativo
+        descripcion_inicial = (
+            f"Modelo creado correctamente.\n\n"
+            f"Interpretación inicial:\n"
+            f"- Pendientes (coeficientes): indican el cambio medio en "
+            f"{self.app.selection_panel.columna_salida} por unidad de cada variable.\n"
+            f"- R²={r2_test:.2f} muestra la capacidad de generalización del modelo.\n"
+            f"Escribe aquí tus observaciones adicionales..."
+        )
+        self.desc_box.set(descripcion_inicial)
 
     # ============================================================
     # GRÁFICO: PUNTOS Y RECTA DE AJUSTE

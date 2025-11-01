@@ -114,7 +114,7 @@ class DescriptBox:
                           expand=True,
                           padx=10,
                           pady=10,)
-        custom_font = tkfont.Font(family="Inter", size=13)
+        custom_font = tkfont.Font(family="Inter", size=15)
         self.textbox._textbox.configure(font=custom_font)
 
     def _create_description_panel(self):
