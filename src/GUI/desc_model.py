@@ -22,8 +22,6 @@ from .components import (
     ----------
     master : ctk.CTk o ctk.CTkFrame
         Widget padre que contiene este componente.
-    app : ctk.CTk
-        Instancia principal de la aplicación.
     textbox : ctk.CTkTextbox o None
         Widget de texto donde el usuario puede escribir la descripción.
         Es None hasta que se llama a create_textbox().
@@ -31,7 +29,7 @@ from .components import (
 
 
 class DescriptBox:
-    def __init__(self, master, app):
+    def __init__(self, master):
         """
         Inicializa el DescriptBox.
 
@@ -39,13 +37,9 @@ class DescriptBox:
         ----------
         master : ctk.CTk o ctk.CTkFrame
             Widget padre que contendrá este componente.
-        app : ctk.CTk
-            Instancia principal de la aplicación, utilizada para
-            referencias y notificaciones.
         """
 
         self.master = master
-        self.app = app
 
     def get(self):
         """
@@ -156,7 +150,7 @@ if __name__ == "__main__":
     ctk.set_appearance_mode("dark")
 
     # Instanciar la clase
-    panel = DescriptBox(app, app)  # Crear instancia
+    panel = DescriptBox(app)  # Crear instancia
 
     # Crear y obtener el panel
     interface = panel._create_description_panel()  # Llamar al método

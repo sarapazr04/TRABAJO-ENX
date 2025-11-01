@@ -14,6 +14,7 @@ from .selection_columns import SelectionPanel
 from .data_display import DataDisplayManager
 from data_import.importer import import_data
 from .data_split import DataSplitPanel
+from .desc_model import DescriptBox
 
 
 class DataLoaderApp(ctk.CTk):
@@ -42,6 +43,7 @@ class DataLoaderApp(ctk.CTk):
         self._split_panel_frame = None  # contenedor para recrear el panel
         self.selection_panel = None
         self.selection_frame = None  # Frame exterior del panel de seleccion
+        self.description_frame = None
 
         # Crear la interfaz
         self.configure(fg_color=AppTheme.PRIMARY_BACKGROUND)
@@ -211,7 +213,7 @@ class DataLoaderApp(ctk.CTk):
         self._display_data(dataframe)
         self._create_selection_panel(dataframe)
         self.upload_button.configure(state="normal", text="Cargar Archivo")
-
+        self._create_description_panel()
         # Mostrar notificación de éxito
         rows, cols = dataframe.shape  # .shape devuelve (filas, columnas)
         NotificationWindow(
@@ -337,6 +339,29 @@ class DataLoaderApp(ctk.CTk):
 
         split_panel = DataSplitPanel(self._split_panel_frame, self)
         split_panel.pack(fill="both", expand=True, padx=10, pady=10)
+
+    # ================================================================
+    # PANEL DE DESCRIPCIÓN : Cuadro de texto
+    # ================================================================
+    def _create_description_panel(self):
+        if self.description_frame is not None:
+            try:
+                self.description_frame.destroy()
+            except Exception:
+                pass
+        self.description_panel = ctk.CTkFrame(
+            self.ext_frame, fg_color="transparent")
+        self.description_panel.pack(fill="x",
+                                    expand=True,
+                                    padx=20,
+                                    pady=(0, 20))
+        # Crear y obtener el panel
+        self.description_panel = DescriptBox(self.description_panel)
+
+        interface = self.description_panel._create_description_panel()
+
+        # Empaquetar el panel para que sea visible
+        interface.pack(fill="both", expand=True, padx=10, pady=10)
 
     # ================================================================
     # PANEL DE DATOS : Donde se muestra la tabla
