@@ -24,60 +24,106 @@ class DataSplitPanel(ctk.CTkFrame):
         panel = Panel(self, "División de Datos en Entrenamiento y Test")
         panel.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Nota informativa
-        info = ctk.CTkLabel(
-            panel,
-            text="Usa el dataset PREPROCESADO. (Obligatorio haber confirmado el preprocesado)",
-            font=AppConfig.SMALL_FONT,
-            text_color=AppTheme.SECONDARY_TEXT
-        )
-        info.pack(pady=(10, 0))
-
-        # Slider % train
+        # Label del slider 
         self.slider_label = ctk.CTkLabel(
-            panel, text="Porcentaje de entrenamiento: 80%")
-        self.slider_label.pack(pady=(12, 6))
+            panel, 
+            text="Porcentaje de entrenamiento: 80%",
+            font=("Orbitron", 12, "bold")
+            )
+        self.slider_label.pack(pady=(15, 10))
 
-        self.slider = ctk.CTkSlider(
-            panel, from_=50,
-            to=95,
-            number_of_steps=45,
-            command=self._update_label
+        controls_frame = ctk.CTkFrame(panel, fg_color="transparent")
+        controls_frame.pack(fill="x", padx=20, pady=(0, 10))
+
+        # Semilla aleatoria
+        seed_container = ctk.CTkFrame(controls_frame, fg_color="transparent")
+        seed_container.pack(side="left", padx=(0, 15))
+
+        seed_label = ctk.CTkLabel(
+            seed_container,
+            text="Semilla :",
+            font=AppConfig.BODY_FONT
         )
-        self.slider.set(80)
-        self.slider.pack(fill="x", padx=20)
+        seed_label.pack(side="left", padx=(0, 8))
 
-        # Semilla
-        seed_frame = ctk.CTkFrame(panel, fg_color="transparent")
-        seed_frame.pack(pady=12)
-        ctk.CTkLabel(seed_frame, text="Semilla aleatoria:").pack(
-            side="left", padx=6)
-        self.seed_entry = ctk.CTkEntry(seed_frame, width=100)
+        self.seed_entry = ctk.CTkEntry(
+            seed_container, 
+            width=100, 
+            height=32,
+            font=AppConfig.BODY_FONT,
+            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            border_color=AppTheme.BORDER
+        )
         self.seed_entry.insert(0, "42")
         self.seed_entry.pack(side="left")
 
         # Botón dividir
         self.split_button = ctk.CTkButton(
-            panel,
+            controls_frame,
             text="Dividir Dataset",
             command=self._split_dataset,
             font=("Orbitron", 11, "bold"),
             height=AppConfig.BUTTON_HEIGHT,
+            width=150,
             corner_radius=6,
             fg_color=AppTheme.PRIMARY_ACCENT,
             hover_color=AppTheme.HOVER_ACCENT,
             text_color="#ffffff",
         )
-        self.split_button.pack(pady=12)
+        self.split_button.pack(side="right")
 
+        # Slider 
+        slider_container = ctk.CTkFrame(
+            controls_frame,
+            fg_color="transparent",
+        )
+        slider_container.pack(side="left", fill="x", expand=True, padx=(0, 15))
+
+        self.slider = ctk.CTkSlider(
+            slider_container,
+            from_=50,
+            to=95,
+            command=self._update_label,
+            height=16,
+            fg_color=AppTheme.TERTIARY_BACKGROUND,
+            progress_color=AppTheme.PRIMARY_ACCENT,
+            button_color=AppTheme.PRIMARY_ACCENT,
+            button_hover_color=AppTheme.HOVER_ACCENT
+        )
+        self.slider.set(80)
+        self.slider.pack(fill="x", pady=6)
+
+        # Etiquetas de rango (50% - 95%)
+        range_frame = ctk.CTkFrame(slider_container, fg_color="transparent")
+        range_frame.pack(fill="x")
+
+        ctk.CTkLabel(
+            range_frame,
+            text="50%",
+            font=("Segoe UI", 10),
+            text_color=AppTheme.DIM_TEXT,
+            ).pack(side="left")
+        
+        ctk.CTkLabel(
+            range_frame,
+            text="95%",
+            font=("Segoe UI", 10),
+            text_color=AppTheme.DIM_TEXT,
+            ).pack(side="right")
+    
         # Resultado
         self.result_label = ctk.CTkLabel(
-            panel, text="", text_color=AppTheme.SECONDARY_TEXT)
+            panel,
+            text="", 
+            text_color=AppTheme.SECONDARY_TEXT,
+            font=AppConfig.BODY_FONT
+            )
         self.result_label.pack(pady=(4, 12))
 
     def _update_label(self, value):
+        """Actualizar el label con el porcentaje actual"""
         self.slider_label.configure(
-            text=f"Porcentaje de entrenamiento: {int(value)}%")
+            text=f"Porcentaje de entrenamiento: {value:.1f}%")
 
     # --------------- LÓGICA ---------------
     def _split_dataset(self):
