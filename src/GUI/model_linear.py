@@ -10,19 +10,37 @@ from .components import Panel, UploadButton, NotificationWindow, AppTheme, AppCo
 
 class LinearModelPanel(ctk.CTkFrame):
     """
-    Panel para crear un modelo lineal, mostrar la recta y métricas.
+    Panel para la creación y evaluación de un modelo de regresión lineal.
+    Permite entrenar el modelo con los datos de entrenamiento, evaluar con test
+    y mostrar fórmula, métricas y representación gráfica si procede.
     """
 
     def __init__(self, master, app):
+        """
+        Inicializa el panel y su interfaz.
+
+        Parameters
+        ----------
+        master : tk.Widget
+            Contenedor padre del panel.
+        app : DataLoaderApp
+            Instancia principal de la aplicación (para acceder a datos y estado).
+        """
         super().__init__(master)
         self.app = app
         self._create_ui()
 
+    # ============================================================
+    # INTERFAZ GRÁFICA
+    # ============================================================
+    
     def _create_ui(self):
+        """Crea la estructura visual del panel (botón, resultados y gráfico)."""
+
         panel = Panel(self, "Creación y Evaluación del Modelo Lineal")
         panel.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Botón para crear el modelo
+        # # Botón principal: entrenar y evaluar modelo lineal
         self.train_button = UploadButton(
             panel, text="Crear Modelo Lineal", command=self._train_model)
         self.train_button.pack(pady=15)
@@ -35,8 +53,20 @@ class LinearModelPanel(ctk.CTkFrame):
         self.graph_frame = ctk.CTkFrame(panel, fg_color=AppTheme.PRIMARY_BACKGROUND)
         self.graph_frame.pack(fill="both", expand=True, padx=20, pady=10)
 
+    # ============================================================
+    # ENTRENAMIENTO Y EVALUACIÓN DEL MODELO
+    # ============================================================
+
     def _train_model(self):
-        # Verificaciones
+        """
+        Entrena el modelo de regresión lineal y muestra resultados.
+
+        - Ajusta el modelo solo con el conjunto de entrenamiento.
+        - Calcula predicciones y métricas en train y test.
+        - Muestra fórmula y resultados numéricos.
+        - Dibuja la recta si solo hay una variable de entrada.
+        """
+        # Verificar que los datos están cargados y divididos
         if self.app.train_df is None or self.app.test_df is None:
             NotificationWindow(self.app, "Error", "Primero divide el dataset.", "error")
             return
@@ -93,11 +123,31 @@ class LinearModelPanel(ctk.CTkFrame):
 
         NotificationWindow(self.app, "Éxito", "Modelo creado y evaluado correctamente.", "success")
 
+    # ============================================================
+    # GRÁFICO: PUNTOS Y RECTA DE AJUSTE
+    # ============================================================
+
     def _plot_graph(self, X_train, y_train, X_test, y_test, model, y_label):
-        """Mostrar gráfico con recta de ajuste"""
+        """
+        Dibuja los puntos de entrenamiento y test junto con la recta de ajuste.
+
+        Parameters
+        ----------
+        X_train, X_test : pd.DataFrame
+            Variables de entrada.
+        y_train, y_test : pd.Series
+            Variable de salida.
+        model : LinearRegression
+            Modelo entrenado.
+        y_label : str
+            Nombre de la variable dependiente (para el eje Y).
+        """
+
+        # Eliminar gráfico previo si lo hubiera
         for widget in self.graph_frame.winfo_children():
             widget.destroy()
 
+        # Crear figura
         fig, ax = plt.subplots(figsize=(6, 4))
         ax.scatter(X_train, y_train, color="blue", label="Entrenamiento")
         ax.scatter(X_test, y_test, color="orange", label="Test")
