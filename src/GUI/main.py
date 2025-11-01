@@ -15,6 +15,7 @@ from .data_display import DataDisplayManager
 from data_import.importer import import_data
 from .data_split import DataSplitPanel
 from .desc_model import DescriptBox
+from .model_linear import LinearModelPanel
 
 
 class DataLoaderApp(ctk.CTk):
@@ -193,6 +194,21 @@ class DataLoaderApp(ctk.CTk):
         Se ejecuta cuando el archivo se carga correctamente.
         Actualiza toda la interfaz con los nuevos datos.
         """
+        # Limpiar paneles antiguos (split y modelo) si existen
+        if hasattr(self, "_split_panel_frame") and self._split_panel_frame:
+            try:
+                self._split_panel_frame.destroy()
+            except Exception:
+                pass
+            self._split_panel_frame = None
+
+        if hasattr(self, "_model_panel_frame") and self._model_panel_frame:
+            try:
+                self._model_panel_frame.destroy()
+            except Exception:
+                pass
+            self._model_panel_frame = None
+
         # Guardar los datos en variables de instancia
         self.current_file_path = file_path
         self.current_dataframe = dataframe
@@ -439,6 +455,54 @@ class DataLoaderApp(ctk.CTk):
         )
         # Este método hace todo el trabajo
         self.display_manager.display()
+
+    # ================================================================
+    # PANEL DEL MODELO LINEAL
+    # ================================================================
+
+    def set_split_completed(self):
+        """Llamado tras dividir datos para habilitar creación del modelo."""
+        self._create_model_panel()
+
+    def _create_model_panel(self):
+        """Crear el panel para entrenar y evaluar modelo lineal."""
+        self._model_panel_frame = ctk.CTkFrame(self.ext_frame, fg_color="transparent")
+        self._model_panel_frame.pack(fill="x", expand=True, padx=20, pady=(0, 20))
+        model_panel = LinearModelPanel(self._model_panel_frame, self)
+        model_panel.pack(fill="both", expand=True, padx=10, pady=10)
+    
+    # ================================================================
+    # REINICIAR ESTADO: Eliminar paneles previos
+    # ================================================================
+
+    def reset_panels(self):
+        """
+        Reiniciar el estado interno de la aplicación y eliminar paneles previos.
+        Se usa cuando el usuario quiere procesar un nuevo modelo desde cero.
+        """
+        #  Destruir el panel de división (train/test) si existe
+        if hasattr(self, "_split_panel_frame") and self._split_panel_frame:
+            try:
+                self._split_panel_frame.destroy()
+            except Exception:
+                pass
+            self._split_panel_frame = None
+
+        #  Destruir el panel del modelo lineal si existe
+        if hasattr(self, "_model_panel_frame") and self._model_panel_frame:
+            try:
+                self._model_panel_frame.destroy()
+            except Exception:
+                pass
+            self._model_panel_frame = None
+
+        #  Reiniciar estado interno
+        self.train_df = None
+        self.test_df = None
+        self.is_preprocessed = False
+        self.preprocessed_df = None
+
+
 
 
 def main():
