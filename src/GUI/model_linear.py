@@ -68,13 +68,15 @@ class LinearModelPanel(ctk.CTkFrame):
 
         # Mostrar resultados en el cuadro de texto
         self.result_text.delete("1.0", "end")
-        self.result_text.insert("end", f"📘 Fórmula del Modelo:\n{formula}\n\n")
+        self.result_text.insert("end", f" Fórmula del Modelo:\n{formula}\n\n")
         self.result_text.insert(
             "end",
-            f"📊 Métricas:\n"
+            f" Métricas:\n"
             f"Entrenamiento → R²={r2_train:.4f}, ECM={mse_train:.4f}\n"
             f"Test → R²={r2_test:.4f}, ECM={mse_test:.4f}\n",
         )
+
+        self.result_text.configure(state="disabled")
 
         # Si es representable gráficamente
         if X_train.shape[1] == 1:

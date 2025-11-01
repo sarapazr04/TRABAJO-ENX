@@ -192,6 +192,21 @@ class DataLoaderApp(ctk.CTk):
         Se ejecuta cuando el archivo se carga correctamente.
         Actualiza toda la interfaz con los nuevos datos.
         """
+        # Limpiar paneles antiguos (split y modelo) si existen
+        if hasattr(self, "_split_panel_frame") and self._split_panel_frame:
+            try:
+                self._split_panel_frame.destroy()
+            except Exception:
+                pass
+            self._split_panel_frame = None
+
+        if hasattr(self, "_model_panel_frame") and self._model_panel_frame:
+            try:
+                self._model_panel_frame.destroy()
+            except Exception:
+                pass
+            self._model_panel_frame = None
+
         # Guardar los datos en variables de instancia
         self.current_file_path = file_path
         self.current_dataframe = dataframe
