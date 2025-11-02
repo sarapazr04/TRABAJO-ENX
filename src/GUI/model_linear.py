@@ -323,25 +323,99 @@ class LinearModelPanel(ctk.CTkFrame):
         # Eliminar gráfico previo si lo hubiera
         for widget in self.graph_frame.winfo_children():
             widget.destroy()
+        # ═══════════════════════════════════════════════════════════
+        # CONTENEDOR DEL GRAFICO CON EL TITULO
+        # ═══════════════════════════════════════════════════════════
+        # Frame principal con bordes
+        graph_container = ctk.CTkFrame(
+            self.graph_frame,
+            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            corner_radius=8,
+            border_width=1,
+            border_color=AppTheme.BORDER
+        )
+        graph_container.pack(fill="both", expand=True)
 
-        # Crear figura
-        fig, ax = plt.subplots(figsize=(6, 4))
-        ax.scatter(X_train, y_train, color="blue", label="Entrenamiento")
-        ax.scatter(X_test, y_test, color="orange", label="Test")
+        # Título del gráfico
+        graph_title = ctk.CTkLabel(
+            graph_container,
+            text="Gráfica",
+            font=("Orbitron", 13, "bold"),
+            text_color=AppTheme.PRIMARY_TEXT,
+            fg_color=AppTheme.TERTIARY_BACKGROUND,
+            corner_radius=6
+        )
+        graph_title.pack(pady=(12, 8), padx=15, anchor="w")
 
+        # Separador
+        separator = ctk.CTkFrame(
+            graph_container,
+            height=1,
+            fg_color=AppTheme.BORDER
+        )
+        separator.pack(fill="x", padx=15, pady=(0, 12))
+
+        # Frame interno para el graqfico
+        plot_frame = ctk.CTkFrame(
+            graph_container,
+            fg_color=AppTheme.PRIMARY_BACKGROUND,
+            corner_radius=6
+        )
+        plot_frame.pack(fill="both", expand=True, padx=15, pady=(0, 15))
+        
+        # Crear figura 
+        fig, ax = plt.subplots(figsize=(10, 6))
+        
+        # Datos de entrenamiento
+        ax.scatter(
+            X_train, 
+            y_train, 
+            color="#2ea88c",
+            label="Entrenamiento",
+            s=40,
+            alpha=0.7
+        )
+        
+        # Datos de test
+        ax.scatter(
+            X_test, 
+            y_test, 
+            color="#dc5539",
+            label="Test",
+            s=40,
+            alpha=0.7
+        )
+
+        # Recta de ajuste
         x_range = np.linspace(
             min(X_train.values.min(), X_test.values.min()),
             max(X_train.values.max(), X_test.values.max()),
             100
-        ).reshape(-1, 1)
-        y_line = model.predict(x_range)
-        ax.plot(x_range, y_line, color="red", label="Recta de ajuste")
+        )
+        x_range_df = pd.DataFrame(x_range, columns=X_train.columns)
+        y_line = model.predict(x_range_df)
+        
+        ax.plot(
+            x_range, 
+            y_line, 
+            color="red",
+            label="Recta de ajuste",
+            linewidth=2.5
+        )
 
-        ax.set_xlabel(X_train.columns[0])
-        ax.set_ylabel(y_label)
-        ax.legend()
+        # Etiquetas y estilo
+        ax.set_xlabel(X_train.columns[0], fontsize=11)
+        ax.set_ylabel(y_label, fontsize=11)
+        ax.legend(loc='best', fontsize=10)
         ax.grid(True)
+        
+        # Ajustar layout para evitar recortes
+        plt.tight_layout()
 
-        canvas = FigureCanvasTkAgg(fig, master=self.graph_frame)
+        # Integrar grafico en tkinkter
+        canvas = FigureCanvasTkAgg(fig, master=plot_frame)
         canvas.draw()
-        canvas.get_tk_widget().pack(fill="both", expand=True)
+        canvas.get_tk_widget().pack(fill="both", expand=True, padx=5, pady=5)
+
+        # IMPORTANTE: Cerrar la figura para liberar recursos
+        plt.close(fig)

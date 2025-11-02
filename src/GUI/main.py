@@ -56,6 +56,9 @@ class DataLoaderApp(ctk.CTk):
         self._create_data_panel()
         self._create_status_bar()
 
+        # Configurar protocolo de cierre para limpiar recursos
+        self.protocol("WM_DELETE_WINDOW", self._on_closing)
+
     # ================================================================
     # PANEL DE CONTROLES : Botón de carga y estadísticas
     # ================================================================
@@ -501,7 +504,23 @@ class DataLoaderApp(ctk.CTk):
         self.is_preprocessed = False
         self.preprocessed_df = None
 
+    # ================================================================
+    # LIMPIEZA AL CERRAR LA GUI
+    # ================================================================
 
+    def _on_closing(self):
+        """
+        Limpia los recursos antes de cerrar la aplicación.
+        """
+        try:
+            # Cerrar todas las figuras de matplotlib
+            import matplotlib.pyplot as plt
+            plt.close("all")
+        except Exception:
+            pass
+        
+        # Destruir la ventana principal
+        self.destroy()
 
 
 def main():
