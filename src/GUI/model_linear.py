@@ -335,11 +335,18 @@ class LinearModelPanel(ctk.CTkFrame):
         # Construir fórmula con símbolos matemáticos
         coef_terms = []
         for coef, col in zip(model.coef_, X_train.columns):
-            coef_terms.append(f"{coef:.4f} · {col}")
+            # Determinar el signo y formatear correctamente
+            if coef >= 0:
+                coef_terms.append(f"{coef:.4f} * {col}")
+            else:
+                coef_terms.append(f"{coef:.4f} * {col}")
 
-        # Mostrar fórmula
-        coefs_str = " + ".join(coef_terms)
-        formula = f"{self.app.selection_panel.columna_salida} = {coefs_str} + {model.intercept_:.4f}"
+        # Mostrar fórmula con manejo correcto de signos
+        intercept = model.intercept_
+        if intercept >= 0:
+            formula = f"{self.app.selection_panel.columna_salida} = {' + '.join(coef_terms)} + {intercept:.4f}"
+        else:
+            formula = f"{self.app.selection_panel.columna_salida} = {' + '.join(coef_terms)} - {abs(intercept):.4f}"
 
         self._display_results(formula, r2_train, r2_test, mse_train, mse_test)
 

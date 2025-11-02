@@ -352,6 +352,17 @@ class DataLoaderApp(ctk.CTk):
         """Registrar el dataframe preprocesado y mostrar el panel"""
         self.is_preprocessed = True
         self.preprocessed_df = df
+        
+        # IMPORTANTE: Destruir el panel del modelo si existe
+        # (porque al cambiar el preprocesamiento, el modelo anterior ya no es válido)
+        if hasattr(self, '_model_panel_frame') and self._model_panel_frame:
+            try:
+                if self._model_panel_frame.winfo_exists():
+                    self._model_panel_frame.destroy()
+                    self._model_panel_frame = None
+            except Exception:
+                pass
+        
         self._create_split_panel()
 
     def _create_split_panel(self):
@@ -478,6 +489,15 @@ class DataLoaderApp(ctk.CTk):
 
     def _create_model_panel(self):
         """Crear el panel para entrenar y evaluar modelo lineal."""
+        # IMPORTANTE: Destruir panel anterior si existe para evitar duplicados
+        if hasattr(self, '_model_panel_frame') and self._model_panel_frame:
+            try:
+                if self._model_panel_frame.winfo_exists():
+                    self._model_panel_frame.destroy()
+            except Exception:
+                pass
+        
+        # Crear nuevo panel
         self._model_panel_frame = ctk.CTkFrame(self.ext_frame, fg_color="transparent")
         self._model_panel_frame.pack(fill="x", expand=True, padx=20, pady=(0, 20))
         model_panel = LinearModelPanel(self._model_panel_frame, self)
