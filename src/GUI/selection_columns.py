@@ -720,7 +720,7 @@ class SelectionPanel:
 
         self.button = UploadButton(
             button_container,
-            text="Procesar Datos",
+            text="Confirmar",
             command=self.button_callback
         )
         self.button.place(relx=0.5, rely=0.6, anchor="center")
