@@ -52,9 +52,15 @@ class DataLoaderApp(ctk.CTk):
         self.ext_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.ext_frame.pack(fill="both", expand=True)
 
+        # Esto reduce el lag cuando hay graficos de matplotlib
+        self.ext_frame._parent_canvas.configure(scrollregion=(0, 0, 0, 2000))
+
         self._create_control_panel()
         self._create_data_panel()
         self._create_status_bar()
+
+        # Configurar protocolo de cierre para limpiar recursos
+        self.protocol("WM_DELETE_WINDOW", self._on_closing)
 
     # ================================================================
     # PANEL DE CONTROLES : Botón de carga y estadísticas
@@ -501,7 +507,60 @@ class DataLoaderApp(ctk.CTk):
         self.is_preprocessed = False
         self.preprocessed_df = None
 
+    # ================================================================
+    # LIMPIEZA AL CERRAR LA GUI
+    # ================================================================
 
+    def _on_closing(self):
+        """
+        Limpia los recursos antes de cerrar la aplicación.
+        """
+        try:
+            # Cerrar todas las figuras de matplotlib
+            import matplotlib.pyplot as plt
+            plt.close('all')
+        except Exception:
+            pass
+        
+        try:
+            # Destruir paneles específicos que pueden tener recursos
+            if hasattr(self, '_split_panel_frame') and self._split_panel_frame:
+                self._split_panel_frame.destroy()
+                
+            if hasattr(self, '_model_panel_frame') and self._model_panel_frame:
+                self._model_panel_frame.destroy()
+                
+            if hasattr(self, 'selection_frame') and self.selection_frame:
+                self.selection_frame.destroy()
+        except Exception:
+            pass
+        
+        try:
+            # Limpiar referencias a dataframes
+            self.current_dataframe = None
+            self.preprocessed_df = None
+            self.train_df = None
+            self.test_df = None
+        except Exception:
+            pass
+        
+        try:
+            # Forzar recolección de basura antes de cerrar
+            import gc
+            gc.collect()
+        except Exception:
+            pass
+        
+        try:
+            self.quit()
+        except Exception:
+            pass
+        
+        try:
+            # Destruir la ventana después de salir del mainloop
+            self.destroy()
+        except Exception:
+            pass
 
 
 def main():

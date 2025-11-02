@@ -303,12 +303,24 @@ class NotificationWindow(ctk.CTkToplevel):
     def __init__(self, parent, title, message, notification_type="info"):
         super().__init__(parent)
 
+        # CRÍTICO: Ocultar ventana durante construcción para evitar flash
+        self.withdraw()
+
         # Configurar ventana
         self.title("")
         self.geometry(f"{self.WINDOW_WIDTH}x{self.WINDOW_HEIGHT}")
         self.resizable(False, False)
 
-        self._center_window()
+        # CRÍTICO: Desactivar animaciones de CustomTkinter
+        # Esto elimina el efecto de "ventana negra" en pantalla completa
+        self.attributes("-alpha", 1.0)  # Opacidad total desde el inicio
+        
+        # En Windows, desactivar efectos de ventana
+        try:
+            # Desactivar animaciones de ventana en Windows
+            self.overrideredirect(False)  # Mantener decoraciones pero sin animación
+        except:
+            pass
 
         # Obtener configuración del tipo
         config = self.NOTIFICATION_CONFIG.get(
@@ -318,9 +330,25 @@ class NotificationWindow(ctk.CTkToplevel):
 
         self._create_notification_content(title, message, config)
 
+        # Forzar actualización inmediata de la ventana
+        self.update_idletasks()
+
+        self._center_window()
+
         # Hacer modal (bloquear ventana padre)
         self.transient(parent)
+
+        # Forzar renderizado completo antes de mostrar
+        self.update()
+
+        # CRÍTICO: Mostrar ventana solo cuando TODO esté listo
+        self.deiconify()
+
         self.grab_set()
+        
+        # Asegurar que la ventana esté al frente sin animación
+        self.lift()
+        self.focus_force()
 
     def _center_window(self):
         """Centrar la ventana en la pantalla"""

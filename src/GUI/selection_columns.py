@@ -211,7 +211,7 @@ class PreprocessingPanel:
             self._create_action_buttons(preprocessing_panel)
         else:
             # Si no hay NaN, mostrar botón para continuar directamente
-            self._create_continue_button(preprocessing_panel)
+            self._continue_without_preprocessing()
 
         return preprocessing_panel
 
@@ -345,28 +345,6 @@ class PreprocessingPanel:
         )
         reset_button.pack(side="right")
 
-    def _create_continue_button(self, master):
-        """Crear botón de continuar cuando no hay valores faltantes"""
-        button_frame = ctk.CTkFrame(master, fg_color="transparent")
-        button_frame.pack(fill="x", padx=15, pady=(10, 15))
-
-        # Mensaje informativo
-        info_label = ctk.CTkLabel(
-            button_frame,
-            text="✓ Los datos están listos. \nPorfavor Haz clic en 'Continuar' para dividir el dataset",
-            font=AppConfig.BODY_FONT,
-            text_color=AppTheme.SECONDARY_TEXT
-        )
-        info_label.pack(pady=(0, 10))
-
-        # Botón Continuar
-        continue_button = UploadButton(
-            button_frame,
-            text="Continuar",
-            command=self._continue_without_preprocessing
-        )
-        continue_button.pack(anchor="center")
-
     def _continue_without_preprocessing(self):
         """Continuar cuando no hay valores faltantes e ir directo a división"""
         # Registrar el dataframe como preprocesado (aunque no se modificó)
@@ -375,7 +353,8 @@ class PreprocessingPanel:
         NotificationWindow(
             self.app,
             "Datos Listos",
-            "No se requiere preprocesamiento.\nPuede proceder a dividir el dataset.",
+            "No se detectaron valores faltantes.\n"
+            "Los datos están listos para dividir en entrenamiento y test.",
             "success"
         )
 
@@ -729,37 +708,22 @@ class SelectionPanel:
         )
         self.frame_salida.pack(fill="x", padx=8, pady=(0, 8))
 
-        # Espacio para información adicional
-        info_frame = ctk.CTkFrame(
-            salida_container,
-            fg_color=AppTheme.PRIMARY_BACKGROUND,
-            corner_radius=6
-        )
-        info_frame.pack(fill="both", expand=True, padx=8, pady=(0, 8))
-
-        info_label = ctk.CTkLabel(
-            info_frame,
-            text="Información:\n\n"
-                 "1.Seleccione las columnas que\n"
-                 "  desea usar como entrada\n\n"
-                 "2.Seleccione la columna de\n"
-                 "  salida (objetivo)\n\n"
-                 "3.Haga clic en 'Procesar Datos'\n"
-                 "  para continuar",
-            font=("Segoe UI", 12),
-            text_color=AppTheme.SECONDARY_TEXT
-        )
-        info_label.pack(expand=True, padx=15, pady=15)
-
         # ═══════════════════════════════════════════════════════════
         # BOTÓN DE CONFIRMACIÓN
         # ═══════════════════════════════════════════════════════════
+
+        button_container = ctk.CTkFrame(
+            salida_container,
+            fg_color="transparent"
+        )
+        button_container.pack(fill="both", expand=True, padx=6, pady=(0, 8))
+
         self.button = UploadButton(
-            select_panel,
-            text="Procesar Datos",
+            button_container,
+            text="Confirmar",
             command=self.button_callback
         )
-        self.button.pack(fill="x", padx=15, pady=(10, 15))
+        self.button.place(relx=0.5, rely=0.6, anchor="center")
 
         return select_panel
 
