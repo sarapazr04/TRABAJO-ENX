@@ -235,15 +235,22 @@ class DataLoaderApp(ctk.CTk):
         self._display_data(dataframe)
         self._create_selection_panel(dataframe)
         self.upload_button.configure(state="normal", text="Cargar Archivo")
-        # Mostrar notificación de éxito
-        rows, cols = dataframe.shape  # .shape devuelve (filas, columnas)
-        NotificationWindow(
-            self,
-            "Carga Exitosa",
-            # :, = separador de miles
-            f"Archivo cargado correctamente\n\n{rows:,} filas x {cols} columnas",
-            "success"
-        )
+        
+        rows, cols = dataframe.shape
+        self.after(100, lambda: self._show_success_notification(rows, cols))
+    
+    def _show_success_notification(self, rows, cols):
+        """Muestra la notificación de éxito de carga"""
+        try:
+            NotificationWindow(
+                self,
+                "Carga Exitosa",
+                f"Archivo cargado correctamente\n\n{rows:,} filas x {cols} columnas",
+                "success"
+            )
+        except Exception as e:
+            # Si falla la notificación, solo imprimir el error
+            print(f"Error mostrando notificación: {e}")
 
     def _on_load_error(self, error_message):
         """Se ejecuta cuando hay un error al cargar el archivo"""

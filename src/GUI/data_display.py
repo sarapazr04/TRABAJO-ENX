@@ -189,23 +189,58 @@ class DataDisplayManager:
 
         Recorre todas las filas del DataFrame y las inserta
         con colores alternados (pares e impares).
+        
+        OPTIMIZACIÓN: Inserta en chunks para evitar congelamiento en Windows.
         """
-        for index in range(len(self.dataframe)):  # Recorrer todas las filas
-            # Formatear los valores de la fila
-            values = self._format_row_values(index)
-
-            # Determinar color (par o impar)
-            tag = "evenrow" if index % 2 == 0 else "oddrow"
-
-            # Insertar fila en el Treeview
-            self.tree.insert("", "end", text=str(index),
-                             values=values, tags=(tag,))
-
-        # Configurar colores alternados.
+        # Configurar colores alternados primero
         self.tree.tag_configure(
             "evenrow", background=AppTheme.SECONDERY_BACKGROUND)
         self.tree.tag_configure(
             "oddrow", background=AppTheme.PRIMARY_BACKGROUND)
+        
+        # Insertar datos en chunks para no congelar la GUI
+        self._insert_rows_in_chunks(0)
+    
+    def _insert_rows_in_chunks(self, start_index, chunk_size=100):
+        """
+        Insertar filas en chunks para mantener la GUI responsiva.
+        
+        Parameters
+        ----------
+        start_index : int
+            Índice desde donde empezar a insertar
+        chunk_size : int
+            Número de filas a insertar por chunk (default: 100)
+        """
+        total_rows = len(self.dataframe)
+        end_index = min(start_index + chunk_size, total_rows)
+        
+        # Insertar chunk actual
+        for index in range(start_index, end_index):
+            values = self._format_row_values(index)
+            tag = "evenrow" if index % 2 == 0 else "oddrow"
+            self.tree.insert("", "end", text=str(index),
+                           values=values, tags=(tag,))
+        
+        # Si quedan más filas, programar siguiente chunk
+        if end_index < total_rows:
+            # Calcular progreso
+            progress = (end_index / total_rows) * 100
+            
+            # Actualizar el título de la ventana con progreso (opcional)
+            # Si tienes acceso a la ventana principal, puedes hacer:
+            # self.container.master.title(f"Cargando datos... {progress:.1f}%")
+            
+            # Usar after() para no bloquear el mainloop
+            # 1ms es suficiente para que la GUI se actualice
+            self.container.after(1, lambda: self._insert_rows_in_chunks(end_index, chunk_size))
+        else:
+            # Todas las filas insertadas
+            # Scroll al inicio para mejor UX
+            self.tree.yview_moveto(0)
+            
+            # Restaurar título original si se modificó
+            # self.container.master.title("LUNEX DATASETS LOADER")
 
     def _format_row_values(self, row_index):
         """
