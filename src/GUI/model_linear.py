@@ -46,13 +46,176 @@ class LinearModelPanel(ctk.CTkFrame):
             panel, text="Crear Modelo Lineal", command=self._train_model)
         self.train_button.pack(pady=15)
 
-        # Área de resultados
-        self.result_text = ctk.CTkTextbox(panel, height=150)
-        self.result_text.pack(fill="x", padx=20, pady=10)
+        # Contenedor de resultados 
+        self.results_container = ctk.CTkFrame(
+            panel,
+            fg_color="transparent"
+        )
+        self.results_container.pack(fill="x", padx=20, pady=10)
 
         # Contenedor del gráfico
         self.graph_frame = ctk.CTkFrame(panel, fg_color=AppTheme.PRIMARY_BACKGROUND)
         self.graph_frame.pack(fill="both", expand=True, padx=20, pady=10)
+    
+    def _display_results(self, formula, r2_train, r2_test, mse_train, mse_test):
+        # Limpiar resultados anteriores
+
+        for widget in self.results_container.winfo_children():
+            widget.destroy()
+        
+        formula_panel = ctk.CTkFrame(
+            self.results_container,
+            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            corner_radius=8,
+            border_width=1,
+            border_color=AppTheme.BORDER
+        )
+        formula_panel.pack(fill="x", pady=(0, 12))
+
+        # Título de la sección
+        formula_title = ctk.CTkLabel(
+            formula_panel,
+            text="Formula Del Modelo",
+            font=("Orbitron", 13, "bold"),
+            text_color=AppTheme.PRIMARY_TEXT,
+            fg_color=AppTheme.TERTIARY_BACKGROUND,
+            corner_radius=6
+        )
+        formula_title.pack(pady=(12, 8), padx=15, anchor="w")
+
+        # Separador
+        separator = ctk.CTkFrame(
+            formula_panel,
+            height=1,
+            fg_color=AppTheme.BORDER
+       )
+        separator.pack(fill="x", padx=15, pady=(0, 12))
+
+        formula_label = ctk.CTkLabel(
+            formula_panel, 
+            text=formula, 
+            font=("Consolas", 13),
+            text_color=AppTheme.PRIMARY_TEXT,
+            wraplength=800,
+            anchor="center"
+        )
+        formula_label.pack(pady=(0, 15), padx=20, anchor="center")
+
+        # Metricas
+        metrics_container = ctk.CTkFrame(
+            self.results_container,
+            fg_color="transparent"
+        )
+        metrics_container.pack(fill="x")
+
+        # Configurar grid para dos columnas iguales
+        metrics_container.grid_columnconfigure(0, weight=1)
+        metrics_container.grid_columnconfigure(1, weight=1)
+
+        # Columna Entrenamiento
+        train_panel = ctk.CTkFrame(
+            metrics_container,
+            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            corner_radius=8,
+            border_width=1,
+            border_color=AppTheme.BORDER
+        )
+        train_panel.grid(row=0, column=0, sticky="nsew", padx=(0, 6))
+
+        train_title = ctk.CTkLabel(
+            train_panel,
+            text="Entrenamiento",
+            font=("Orbitron", 12, "bold"),
+            text_color=AppTheme.PRIMARY_TEXT,
+            fg_color=AppTheme.TERTIARY_BACKGROUND,
+            corner_radius=6
+        )
+        train_title.pack(pady=(12, 8), padx=15, anchor="w")
+
+        train_sep = ctk.CTkFrame(train_panel, height=1, fg_color=AppTheme.BORDER)
+        train_sep.pack(fill="x", padx=15, pady=(0, 10))
+
+        # Metricas de entrenamiento
+        self._create_metric_row(train_panel, "R²", r2_train, r2_test)
+        self._create_metric_row(train_panel, "ECM", mse_train, mse_test, is_ecm=True)
+
+        # Columna Test
+        test_panel = ctk.CTkFrame(
+            metrics_container,
+            fg_color=AppTheme.SECONDERY_BACKGROUND, 
+            corner_radius=8,
+            border_width=1,
+            border_color=AppTheme.BORDER
+        )
+        test_panel.grid(row=0, column=1, sticky="nsew", padx=(6, 0))
+
+        test_title = ctk.CTkLabel(
+            test_panel,
+            text="Test",
+            font=("Orbitron", 12, "bold"),
+            text_color=AppTheme.PRIMARY_TEXT,
+            fg_color=AppTheme.TERTIARY_BACKGROUND,
+            corner_radius=6
+        )
+        test_title.pack(pady=(12, 8), padx=15, anchor="w")
+
+        # Separador
+        test_sep = ctk.CTkFrame(test_panel, height=1, fg_color=AppTheme.BORDER)
+        test_sep.pack(fill="x", padx=15, pady=(0, 10))
+
+        # Metricas de test
+        self._create_metric_row(test_panel, "R²", r2_test, r2_train)
+        self._create_metric_row(test_panel, "ECM", mse_test, mse_train, is_ecm=True)
+
+
+    def _create_metric_row(self, parent, metric_name, value, compare_value, is_ecm=False):
+        """
+        Crea una fila con nombre y valor de métrica.
+
+        Parameters
+        ----------
+        parent : CTkFrame
+            Frame contenedor
+        metric_name : str
+            Nombre de la métrica (ej: "R²", "ECM")
+        value : float
+            Valor de la métrica
+        compare_value : float
+            Valor de comparación (para determinar color)
+        is_ecm : bool
+            True si es ECM (menor es mejor), False si es R² (mayor es mejor)
+        """
+        row_frame = ctk.CTkFrame(parent, fg_color="transparent")
+        row_frame.pack(fill="x", padx=15, pady=4)
+
+        # Nombre de la métrica
+        name_label = ctk.CTkLabel(
+            row_frame,
+            text=f"{metric_name}:",
+            font=("Segoe UI", 12, "bold"),
+            text_color=AppTheme.SECONDARY_TEXT,
+            width=60,
+            anchor="w"
+        )
+        name_label.pack(side="left")
+
+        # Determinar color segun la comparacion
+        if is_ecm:
+            # Para ECM: menor es mejor
+            color = AppTheme.SUCCES if value <= compare_value else AppTheme.WARNING
+        else:
+            # Para R²: mayor es mejor
+            color = AppTheme.SUCCES if value >= compare_value else AppTheme.WARNING
+
+        # Valor de la métrica
+        value_label = ctk.CTkLabel(
+            row_frame,
+            text=f"{value:.4f}",
+            font=("Consolas", 13, "bold"),
+            text_color=color
+        )
+        value_label.pack(side="left", padx=(10, 0))
+
 
     # ============================================================
     # ENTRENAMIENTO Y EVALUACIÓN DEL MODELO
@@ -91,23 +254,16 @@ class LinearModelPanel(ctk.CTkFrame):
         mse_train = mean_squared_error(y_train, y_pred_train)
         mse_test = mean_squared_error(y_test, y_pred_test)
 
+        # Construir fórmula con símbolos matemáticos
+        coef_terms = []
+        for coef, col in zip(model.coef_, X_train.columns):
+            coef_terms.append(f"{coef:.4f} · {col}")
+
         # Mostrar fórmula
-        coefs = " + ".join(
-            [f"{coef:.4f} * {col}" for coef, col in zip(model.coef_, X_train.columns)]
-        )
-        formula = f"{self.app.selection_panel.columna_salida} = {coefs} + {model.intercept_:.4f}"
+        coefs_str = " + ".join(coef_terms)
+        formula = f"{self.app.selection_panel.columna_salida} = {coefs_str} + {model.intercept_:.4f}"
 
-        # Mostrar resultados en el cuadro de texto
-        self.result_text.delete("1.0", "end")
-        self.result_text.insert("end", f" Fórmula del Modelo:\n{formula}\n\n")
-        self.result_text.insert(
-            "end",
-            f" Métricas:\n"
-            f"Entrenamiento → R²={r2_train:.4f}, ECM={mse_train:.4f}\n"
-            f"Test → R²={r2_test:.4f}, ECM={mse_test:.4f}\n",
-        )
-
-        self.result_text.configure(state="disabled")
+        self._display_results(formula, r2_train, r2_test, mse_train, mse_test)
 
         # Si es representable gráficamente
         if X_train.shape[1] == 1:
