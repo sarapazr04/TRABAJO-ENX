@@ -333,21 +333,15 @@ class LinearModelPanel(ctk.CTkFrame):
         mse_test = mean_squared_error(y_test, y_pred_test)
 
         # Construir fórmula con símbolos matemáticos
-        coef_terms = []
-        for coef, col in zip(model.coef_, X_train.columns):
-            # Determinar el signo y formatear correctamente
-            if coef >= 0:
-                coef_terms.append(f"{coef:.4f} * {col}")
-            else:
-                coef_terms.append(f"{coef:.4f} * {col}")
-
-        # Mostrar fórmula con manejo correcto de signos
+        coef_terms = [f"{coef:+.4f} * {col}" for coef, col in zip(model.coef_, X_train.columns)]
         intercept = model.intercept_
-        if intercept >= 0:
-            formula = f"{self.app.selection_panel.columna_salida} = {' + '.join(coef_terms)} + {intercept:.4f}"
-        else:
-            formula = f"{self.app.selection_panel.columna_salida} = {' + '.join(coef_terms)} - {abs(intercept):.4f}"
 
+        formula = (
+            f"{self.app.selection_panel.columna_salida} = "
+            f"{' '.join(coef_terms)} {intercept:+.4f}"
+        )
+
+        # Mostrar resultados y métricas
         self._display_results(formula, r2_train, r2_test, mse_train, mse_test)
 
         # Si es representable gráficamente
