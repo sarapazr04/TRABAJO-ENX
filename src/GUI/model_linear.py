@@ -78,7 +78,7 @@ class LinearModelPanel(ctk.CTkFrame):
         self.description_frame.pack(
             fill="both", expand=True, padx=20, pady=(0, 10))
         self.description_frame.pack_propagate(False)
-        self.save_button(self.description_frame)
+        self.save_button(panel)
 
     def _display_results(self,
                          formula,
@@ -604,8 +604,9 @@ class LinearModelPanel(ctk.CTkFrame):
         file_name = f"modelo_{timestamp}.joblib"
         file_path = Path(folder_path) / file_name
         try:
+            desc = self.desc_box.get()
             data_to_save = {"model": self.model,
-                            "desc": self.desc_box.get}
+                            "desc": desc}
 
             joblib.dump(data_to_save, file_path, compress=3)
             NotificationWindow(
