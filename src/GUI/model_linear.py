@@ -7,7 +7,10 @@ import numpy as np
 import pandas as pd
 from .components import Panel, UploadButton, NotificationWindow, AppTheme, AppConfig
 from .desc_model import DescriptBox 
-
+import joblib
+from pathlib import Path
+from datetime import datetime
+from tkinter import filedialog
 
 class LinearModelPanel(ctk.CTkFrame):
     """
@@ -326,6 +329,9 @@ class LinearModelPanel(ctk.CTkFrame):
         y_pred_train = model.predict(X_train)
         y_pred_test = model.predict(X_test)
 
+        # Almacenaje del modelo
+        self.model = model
+
         # Métricas
         r2_train = r2_score(y_train, y_pred_train)
         r2_test = r2_score(y_test, y_pred_test)
@@ -529,3 +535,62 @@ class LinearModelPanel(ctk.CTkFrame):
         
         # IMPORTANTE: Cerrar la figura de matplotlib para liberar recursos
         plt.close(fig)
+
+    def save_model(model, self, compress=3):
+        """
+        Guarda un modelo entrenado en un archivo .joblib.
+        
+        Abre un diálogo para que el usuario elija dónde guardar el archivo.
+        
+        Parameters
+        ----------
+        model : object
+            Objeto del modelo entrenado (ej. LinearRegression).
+
+        compress: nivel de compresión (por defecto 3)
+
+        Returns
+        -------
+        str or None
+        
+        Ruta donde se guardó el modelo, o None si el usuario canceló.
+        """
+        folder_path = filedialog.askdirectory(
+            parent=self,
+            title="Selecciona la carpeta para guardar el modelo",
+            mustexist=True
+        )
+
+        if not folder_path:
+            NotificationWindow(self,
+                               "Error",
+                               "No se seleccionó ninguna ruta",
+                               "error")
+            return None
+
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        file_name = f"modelo_{timestamp}.joblib"
+        file_path = Path(folder_path) / file_name
+        try:
+            joblib.dump(model, file_path, compress=3)
+            NotificationWindow(
+                self,
+                "Exito",
+                f"Modelo guardado correctamente en:\n{file_path}",
+                "success"
+            )
+            return str(file_path)
+        except Exception as e:
+            print(f"Error: {e}")
+            return None
+
+    def save_button(self):
+        # Botón de guardar
+        self.save_button = ctk.CTkButton(
+            self,
+            text="💾 Guardar Modelo",
+            command=self.save_model,
+            font=("Inter", 14, "bold"),
+            height=40
+        )
+        self.save_button.pack(pady=20)
