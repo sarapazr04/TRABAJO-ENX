@@ -604,7 +604,10 @@ class LinearModelPanel(ctk.CTkFrame):
         file_name = f"modelo_{timestamp}.joblib"
         file_path = Path(folder_path) / file_name
         try:
-            joblib.dump(self.model, file_path, compress=3)
+            data_to_save = {"model": self.model,
+                            "desc": self.desc_box.get}
+
+            joblib.dump(data_to_save, file_path, compress=3)
             NotificationWindow(
                 master,
                 "Exito",
