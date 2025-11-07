@@ -70,7 +70,7 @@ class LinearModelPanel(ctk.CTkFrame):
         )
         self.description_frame.pack(fill="both", expand=True, padx=20, pady=(0, 10))
         self.description_frame.pack_propagate(False) 
-
+        self.save_button(self.description_frame)
     
     def _display_results(self, formula, r2_train, r2_test, mse_train, mse_test):
         # Limpiar resultados anteriores
@@ -536,7 +536,7 @@ class LinearModelPanel(ctk.CTkFrame):
         # IMPORTANTE: Cerrar la figura de matplotlib para liberar recursos
         plt.close(fig)
 
-    def save_model(model, self, compress=3):
+    def save_model(self, master, compress=3):
         """
         Guarda un modelo entrenado en un archivo .joblib.
         
@@ -544,8 +544,7 @@ class LinearModelPanel(ctk.CTkFrame):
         
         Parameters
         ----------
-        model : object
-            Objeto del modelo entrenado (ej. LinearRegression).
+
 
         compress: nivel de compresión (por defecto 3)
 
@@ -556,13 +555,13 @@ class LinearModelPanel(ctk.CTkFrame):
         Ruta donde se guardó el modelo, o None si el usuario canceló.
         """
         folder_path = filedialog.askdirectory(
-            parent=self,
+            parent=master,
             title="Selecciona la carpeta para guardar el modelo",
             mustexist=True
         )
 
         if not folder_path:
-            NotificationWindow(self,
+            NotificationWindow(master,
                                "Error",
                                "No se seleccionó ninguna ruta",
                                "error")
@@ -572,9 +571,9 @@ class LinearModelPanel(ctk.CTkFrame):
         file_name = f"modelo_{timestamp}.joblib"
         file_path = Path(folder_path) / file_name
         try:
-            joblib.dump(model, file_path, compress=3)
+            joblib.dump(self.model, file_path, compress=3)
             NotificationWindow(
-                self,
+                master,
                 "Exito",
                 f"Modelo guardado correctamente en:\n{file_path}",
                 "success"
@@ -584,12 +583,12 @@ class LinearModelPanel(ctk.CTkFrame):
             print(f"Error: {e}")
             return None
 
-    def save_button(self):
+    def save_button(self, master):
         # Botón de guardar
         self.save_button = ctk.CTkButton(
-            self,
+            master,
             text="💾 Guardar Modelo",
-            command=self.save_model,
+            command=lambda: self.save_model(master),
             font=("Inter", 14, "bold"),
             height=40
         )
