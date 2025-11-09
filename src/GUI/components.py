@@ -118,9 +118,9 @@ class AppConfig:
     FAMILY_FONT = "Segoe UI"
     TITLE_FONT = ("Orbitron", 35, "bold")
     SUBTITLE_FONT = ("Segoe UI", 13)
-    BODY_FONT = ("Segoe UI", 13)
-    SMALL_FONT = ("Segoe UI", 9)
-    MONO_FONT = ("Consolas", 10)
+    BODY_FONT = ("Segoe UI", 15)
+    SMALL_FONT = ("Segoe UI", 10)
+    MONO_FONT = ("Consolas", 14)
 
     # Tamaños de ventana
     WINDOW_WIDTH = 1400
@@ -151,7 +151,7 @@ class UploadButton(ctk.CTkButton):
             master,
             text=text,
             command=command,
-            font=("Orbitron", 11, "bold"),
+            font=AppConfig.BODY_FONT,
             height=AppConfig.BUTTON_HEIGHT,
             corner_radius=6,
             fg_color=AppTheme.PRIMARY_ACCENT,

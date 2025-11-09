@@ -10,7 +10,7 @@ import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
 from .components import (
-    NotificationWindow, Panel, AppTheme, AppConfig, UploadButton
+    NotificationWindow, Panel, AppTheme, AppConfig, UploadButton, LoadingIndicator
 )
 
 
@@ -324,12 +324,12 @@ class PreprocessingPanel:
         button_frame.pack(fill="x", padx=15, pady=(0, 15))
 
         # Botón Aplicar
-        apply_button = UploadButton(
+        self.apply_button = UploadButton(
             button_frame,
             text="Aplicar",
             command=self._apply_preprocessing
         )
-        apply_button.pack(side="right", padx=(10, 0))
+        self.apply_button.pack(side="right", padx=(10, 0))
 
         # Botón Resetear
         reset_button = ctk.CTkButton(
@@ -360,8 +360,15 @@ class PreprocessingPanel:
 
     def _apply_preprocessing(self):
         """Aplicar el preprocesamiento según la opción seleccionada"""
-        option = self.option_var.get()
+        self.apply_button.configure(state="disabled")
+        
+        print("B4")
+        indicator = LoadingIndicator(self.app)
+        indicator.place(relx=0.5, rely=0.5, anchor="center")
+        print("after")
 
+        option = self.option_var.get()
+        print("after option get")
         # Validar selección
         if not option:
             NotificationWindow(
@@ -381,6 +388,9 @@ class PreprocessingPanel:
                 "Las columnas seleccionadas no contienen valores faltantes.",
                 "info"
             )
+            indicator.stop()
+            indicator.destroy()
+            self.apply_button.configure(state="normal")
             return
 
         try:
@@ -392,6 +402,7 @@ class PreprocessingPanel:
                 self._fill_with_median()
             elif option == "constant":
                 self._fill_with_constant()
+
         except Exception as e:
             NotificationWindow(
                 self.app,
@@ -399,6 +410,10 @@ class PreprocessingPanel:
                 f"Ocurrió un error:\n\n{str(e)}",
                 "error"
             )
+        print("STAHP")
+        indicator.stop()
+        indicator.destroy()
+        self.apply_button.configure(state="normal")
 
     def _drop_na(self):
         """Eliminar filas con valores faltantes"""
@@ -763,10 +778,6 @@ class SelectionPanel:
         # Reiniciar paneles previos si existen
         if hasattr(self.app, "reset_panels"):
             self.app.reset_panels()
-
-        print("\n--- Procesando Datos ---")
-        print(f"Datos de Entrada: {self.columnas_entrada}")
-        print(f"Datos de Salida: {self.columna_salida}")
 
         self._display_data()
 

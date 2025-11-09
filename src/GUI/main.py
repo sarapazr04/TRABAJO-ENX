@@ -343,7 +343,7 @@ class DataLoaderApp(ctk.CTk):
         # Crear y mostrar interfaz usando el metodo original _crear_interfaz()
         selection_interface = self.selection_panel._crear_interfaz()
         selection_interface.pack(
-            fill="both", expand=True, side="left", padx=10, pady=10)
+            fill="both", expand=True, side="left", padx=0, pady=0)
 
         # Crear panel vacio inicial
         self.selection_panel._create_empty_panel()

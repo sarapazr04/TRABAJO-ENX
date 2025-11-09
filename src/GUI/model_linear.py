@@ -32,21 +32,17 @@ class LinearModelPanel(ctk.CTkFrame):
         # Cachear canvas para evitar lags
         self.current_canvas = None  
         self._create_ui()
+        self._train_model()
 
     # ============================================================
     # INTERFAZ GRÁFICA
     # ============================================================
-    
+
     def _create_ui(self):
-        """Crea la estructura visual del panel (botón, resultados y gráfico)."""
+        """Crea la estructura visual del panel (botón, resultados y gráfico)"""
 
         panel = Panel(self, "Creación y Evaluación del Modelo Lineal")
         panel.pack(fill="both", expand=True, padx=10, pady=10)
-
-        # # Botón principal: entrenar y evaluar modelo lineal
-        self.train_button = UploadButton(
-            panel, text="Crear Modelo Lineal", command=self._train_model)
-        self.train_button.pack(pady=15)
 
         # Contenedor de resultados 
         self.results_container = ctk.CTkFrame(
@@ -61,14 +57,13 @@ class LinearModelPanel(ctk.CTkFrame):
 
         # Contenedor de la descripcion del modelo
         self.description_frame = ctk.CTkFrame(
-            panel, 
+            panel,
             fg_color=AppTheme.PRIMARY_BACKGROUND,
-            height=400  
+            height=400
         )
         self.description_frame.pack(fill="both", expand=True, padx=20, pady=(0, 10))
         self.description_frame.pack_propagate(False) 
 
-    
     def _display_results(self, formula, r2_train, r2_test, mse_train, mse_test):
         # Limpiar resultados anteriores
 
@@ -106,7 +101,7 @@ class LinearModelPanel(ctk.CTkFrame):
         formula_label = ctk.CTkLabel(
             formula_panel, 
             text=formula, 
-            font=("Consolas", 13),
+            font=AppConfig.MONO_FONT,
             text_color=AppTheme.PRIMARY_TEXT,
             wraplength=800,
             anchor="center"
@@ -204,7 +199,7 @@ class LinearModelPanel(ctk.CTkFrame):
         name_label = ctk.CTkLabel(
             row_frame,
             text=f"{metric_name}:",
-            font=("Segoe UI", 12, "bold"),
+            font=("Segoe UI", 14, "bold"),
             text_color=AppTheme.SECONDARY_TEXT,
             width=60,
             anchor="w"
@@ -223,12 +218,12 @@ class LinearModelPanel(ctk.CTkFrame):
         value_label = ctk.CTkLabel(
             row_frame,
             text=f"{value:.4f}",
-            font=("Consolas", 13, "bold"),
+            font=("Consolas", 14, "bold"),
             text_color=color
         )
         value_label.pack(side="left", padx=(10, 0))
 
-    def _create_description_panel(self,formula, r2_test, y_label):
+    def _create_description_panel(self, formula, r2_test, y_label):
         """
         Crea el panel de descripción del modelo.
         
