@@ -5,8 +5,16 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 import pandas as pd
-from .components import Panel, UploadButton, NotificationWindow, AppTheme, AppConfig
-from .desc_model import DescriptBox 
+from .components import (Panel,
+                         UploadButton,
+                         NotificationWindow,
+                         AppTheme,
+                         AppConfig)
+from .desc_model import DescriptBox
+import joblib
+from pathlib import Path
+from datetime import datetime
+from tkinter import filedialog
 
 
 class LinearModelPanel(ctk.CTkFrame):
@@ -25,20 +33,21 @@ class LinearModelPanel(ctk.CTkFrame):
         master : tk.Widget
             Contenedor padre del panel.
         app : DataLoaderApp
-            Instancia principal de la aplicación (para acceder a datos y estado).
+            Instancia principal de la aplicación
+              (para acceder a datos y estado).
         """
         super().__init__(master)
         self.app = app
         # Cachear canvas para evitar lags
-        self.current_canvas = None  
+        self.current_canvas = None
         self._create_ui()
 
     # ============================================================
     # INTERFAZ GRÁFICA
     # ============================================================
-    
+
     def _create_ui(self):
-        """Crea la estructura visual del panel (botón, resultados y gráfico)."""
+        """Crea la estructura visual del panel (botón, resultado y gráfico)."""
 
         panel = Panel(self, "Creación y Evaluación del Modelo Lineal")
         panel.pack(fill="both", expand=True, padx=10, pady=10)
@@ -48,7 +57,7 @@ class LinearModelPanel(ctk.CTkFrame):
             panel, text="Crear Modelo Lineal", command=self._train_model)
         self.train_button.pack(pady=15)
 
-        # Contenedor de resultados 
+        # Contenedor de resultados
         self.results_container = ctk.CTkFrame(
             panel,
             fg_color="transparent"
@@ -56,25 +65,32 @@ class LinearModelPanel(ctk.CTkFrame):
         self.results_container.pack(fill="x", padx=20, pady=10)
 
         # Contenedor del gráfico
-        self.graph_frame = ctk.CTkFrame(panel, fg_color=AppTheme.PRIMARY_BACKGROUND)
+        self.graph_frame = ctk.CTkFrame(
+            panel, fg_color=AppTheme.PRIMARY_BACKGROUND)
         self.graph_frame.pack(fill="both", expand=True, padx=20, pady=10)
 
         # Contenedor de la descripcion del modelo
         self.description_frame = ctk.CTkFrame(
-            panel, 
+            panel,
             fg_color=AppTheme.PRIMARY_BACKGROUND,
-            height=400  
+            height=400
         )
-        self.description_frame.pack(fill="both", expand=True, padx=20, pady=(0, 10))
-        self.description_frame.pack_propagate(False) 
+        self.description_frame.pack(
+            fill="both", expand=True, padx=20, pady=(0, 10))
+        self.description_frame.pack_propagate(False)
+        self.save_button(panel)
 
-    
-    def _display_results(self, formula, r2_train, r2_test, mse_train, mse_test):
+    def _display_results(self,
+                         formula,
+                         r2_train,
+                         r2_test,
+                         mse_train,
+                         mse_test):
         # Limpiar resultados anteriores
 
         for widget in self.results_container.winfo_children():
             widget.destroy()
-        
+
         formula_panel = ctk.CTkFrame(
             self.results_container,
             fg_color=AppTheme.SECONDERY_BACKGROUND,
@@ -100,12 +116,12 @@ class LinearModelPanel(ctk.CTkFrame):
             formula_panel,
             height=1,
             fg_color=AppTheme.BORDER
-       )
+        )
         separator.pack(fill="x", padx=15, pady=(0, 12))
 
         formula_label = ctk.CTkLabel(
-            formula_panel, 
-            text=formula, 
+            formula_panel,
+            text=formula,
             font=("Consolas", 13),
             text_color=AppTheme.PRIMARY_TEXT,
             wraplength=800,
@@ -144,17 +160,19 @@ class LinearModelPanel(ctk.CTkFrame):
         )
         train_title.pack(pady=(12, 8), padx=15, anchor="w")
 
-        train_sep = ctk.CTkFrame(train_panel, height=1, fg_color=AppTheme.BORDER)
+        train_sep = ctk.CTkFrame(
+            train_panel, height=1, fg_color=AppTheme.BORDER)
         train_sep.pack(fill="x", padx=15, pady=(0, 10))
 
         # Metricas de entrenamiento
         self._create_metric_row(train_panel, "R²", r2_train, r2_test)
-        self._create_metric_row(train_panel, "ECM", mse_train, mse_test, is_ecm=True)
+        self._create_metric_row(
+            train_panel, "ECM", mse_train, mse_test, is_ecm=True)
 
         # Columna Test
         test_panel = ctk.CTkFrame(
             metrics_container,
-            fg_color=AppTheme.SECONDERY_BACKGROUND, 
+            fg_color=AppTheme.SECONDERY_BACKGROUND,
             corner_radius=8,
             border_width=1,
             border_color=AppTheme.BORDER
@@ -177,10 +195,15 @@ class LinearModelPanel(ctk.CTkFrame):
 
         # Metricas de test
         self._create_metric_row(test_panel, "R²", r2_test, r2_train)
-        self._create_metric_row(test_panel, "ECM", mse_test, mse_train, is_ecm=True)
+        self._create_metric_row(
+            test_panel, "ECM", mse_test, mse_train, is_ecm=True)
 
-
-    def _create_metric_row(self, parent, metric_name, value, compare_value, is_ecm=False):
+    def _create_metric_row(self,
+                           parent,
+                           metric_name,
+                           value,
+                           compare_value,
+                           is_ecm=False):
         """
         Crea una fila con nombre y valor de métrica.
 
@@ -228,10 +251,10 @@ class LinearModelPanel(ctk.CTkFrame):
         )
         value_label.pack(side="left", padx=(10, 0))
 
-    def _create_description_panel(self,formula, r2_test, y_label):
+    def _create_description_panel(self, formula, r2_test, y_label):
         """
         Crea el panel de descripción del modelo.
-        
+
         Parameters
         ----------
         r2_test : float
@@ -242,8 +265,8 @@ class LinearModelPanel(ctk.CTkFrame):
         # Limpiar panel anterior si existe
         for widget in self.description_frame.winfo_children():
             widget.destroy()
-        
-        # Crear panel 
+
+        # Crear panel
         desc_container = ctk.CTkFrame(
             self.description_frame,
             fg_color=AppTheme.SECONDERY_BACKGROUND,
@@ -252,7 +275,7 @@ class LinearModelPanel(ctk.CTkFrame):
             border_color=AppTheme.BORDER
         )
         desc_container.pack(fill="both", expand=True)
-        
+
         # Titulo del panel
         desc_title = ctk.CTkLabel(
             desc_container,
@@ -263,7 +286,7 @@ class LinearModelPanel(ctk.CTkFrame):
             corner_radius=6
         )
         desc_title.pack(pady=(12, 8), padx=15, anchor="w")
-        
+
         # Separador
         separator = ctk.CTkFrame(
             desc_container,
@@ -271,11 +294,11 @@ class LinearModelPanel(ctk.CTkFrame):
             fg_color=AppTheme.BORDER
         )
         separator.pack(fill="x", padx=15, pady=(0, 12))
-        
+
         # Crear el textbox para descripción
         self.desc_box = DescriptBox(desc_container)
         self.desc_box.create_textbox(desc_container)
-        
+
         # Texto inicial orientativo
         descripcion_inicial = (
             f"Modelo creado correctamente.\n\n"
@@ -310,7 +333,8 @@ class LinearModelPanel(ctk.CTkFrame):
         """
         # Verificar que los datos están cargados y divididos
         if self.app.train_df is None or self.app.test_df is None:
-            NotificationWindow(self.app, "Error", "Primero divide el dataset.", "error")
+            NotificationWindow(self.app, "Error",
+                               "Primero divide el dataset.", "error")
             return
 
         X_train = self.app.train_df[self.app.selection_panel.columnas_entrada]
@@ -325,6 +349,9 @@ class LinearModelPanel(ctk.CTkFrame):
         # Predicciones
         y_pred_train = model.predict(X_train)
         y_pred_test = model.predict(X_test)
+
+        # Almacenaje del modelo
+        self.model = model
 
         # Métricas
         r2_train = r2_score(y_train, y_pred_train)
@@ -347,11 +374,16 @@ class LinearModelPanel(ctk.CTkFrame):
         # Si es representable gráficamente
         if X_train.shape[1] == 1:
             self._plot_graph(
-                X_train, y_train, X_test, y_test, model, self.app.selection_panel.columna_salida
+                X_train,
+                y_train,
+                X_test,
+                y_test,
+                model,
+                self.app.selection_panel.columna_salida
             )
         else:
             self.graph_frame.pack_forget()
-            
+
             NotificationWindow(
                 self.app,
                 "Aviso",
@@ -360,13 +392,18 @@ class LinearModelPanel(ctk.CTkFrame):
             )
         # =============================
         # PANEL DE DESCRIPCIÓN DEL MODELO
-        # ============================= 
+        # =============================
 
         # Crear panel de description en su propio frame
-        self._create_description_panel(formula, r2_test, self.app.selection_panel.columna_salida)
-        
+        self._create_description_panel(
+            formula, r2_test, self.app.selection_panel.columna_salida)
+
         # Notification de exito
-        NotificationWindow(self.app, "Éxito", "Modelo creado y evaluado correctamente.", "success")
+        NotificationWindow(
+            self.app,
+            "Éxito",
+            "Modelo creado y evaluado correctamente.",
+            "success")
 
     # ============================================================
     # GRÁFICO: PUNTOS Y RECTA DE AJUSTE
@@ -432,21 +469,23 @@ class LinearModelPanel(ctk.CTkFrame):
         plot_frame.pack(fill="both", expand=True, padx=15, pady=(0, 15))
 
         # Si hay muchos datos, muestrear para mejorar rendimiento
-        # Esto reduce el número de puntos a dibujar sin perder la visualización general
+        # Esto reduce el número de puntos a dibujar
         sample_size = 1000
-        
+
         # Muestrear datos de entrenamiento
         if len(X_train) > sample_size:
-            train_indices = np.random.choice(len(X_train), sample_size, replace=False)
+            train_indices = np.random.choice(
+                len(X_train), sample_size, replace=False)
             X_train_sample = X_train.iloc[train_indices]
             y_train_sample = y_train.iloc[train_indices]
         else:
             X_train_sample = X_train
             y_train_sample = y_train
-        
+
         # Muestrear datos de test
         if len(X_test) > sample_size:
-            test_indices = np.random.choice(len(X_test), sample_size, replace=False)
+            test_indices = np.random.choice(
+                len(X_test), sample_size, replace=False)
             X_test_sample = X_test.iloc[test_indices]
             y_test_sample = y_test.iloc[test_indices]
         else:
@@ -458,18 +497,18 @@ class LinearModelPanel(ctk.CTkFrame):
 
         # Datos de entrenamiento
         ax.scatter(
-            X_train_sample, 
-            y_train_sample, 
+            X_train_sample,
+            y_train_sample,
             color="#2ea88c",
             label="Entrenamiento",
             s=40,
             alpha=0.7
         )
-        
+
         # Datos de test
         ax.scatter(
-            X_test_sample, 
-            y_test_sample, 
+            X_test_sample,
+            y_test_sample,
             color="#dc5539",
             label="Test",
             s=40,
@@ -482,13 +521,13 @@ class LinearModelPanel(ctk.CTkFrame):
             max(X_train.values.max(), X_test.values.max()),
             100
         )
-        # Convertir a DataFrame con el mismo nombre de columna para evitar warnings
+        # Convertir a DataFrame con el mismo nombre de columna
         x_range_df = pd.DataFrame(x_range, columns=X_train.columns)
         y_line = model.predict(x_range_df)
-        
+
         ax.plot(
-            x_range, 
-            y_line, 
+            x_range,
+            y_line,
             color="red",
             label="Recta de ajuste",
             linewidth=2.5
@@ -499,7 +538,7 @@ class LinearModelPanel(ctk.CTkFrame):
         ax.set_ylabel(y_label, fontsize=11)
         ax.legend(loc='best', fontsize=10)
         ax.grid(True)
-        
+
         # Ajustar layout para evitar recortes
         plt.tight_layout()
 
@@ -507,19 +546,81 @@ class LinearModelPanel(ctk.CTkFrame):
         if self.current_canvas is not None:
             try:
                 self.current_canvas.get_tk_widget().destroy()
-            except:
+            except Exception:
                 pass
-        
+
         # Crear y almacenar el nuevo canvas
         self.current_canvas = FigureCanvasTkAgg(fig, master=plot_frame)
         self.current_canvas.draw()
-        
+
         # Obtener el widget de tkinter
         canvas_widget = self.current_canvas.get_tk_widget()
         canvas_widget.pack(fill="both", expand=True, padx=5, pady=5)
-        
+
         # Desactivar redibujado automático durante scroll
         canvas_widget.configure(takefocus=0)
-        
+
         # IMPORTANTE: Cerrar la figura de matplotlib para liberar recursos
         plt.close(fig)
+
+    def save_model(self, master, compress=3):
+        """
+        Guarda un modelo entrenado en un archivo .joblib.
+
+        Abre un diálogo para que el usuario elija dónde guardar el archivo.
+
+        Parameters
+        ----------
+
+
+        compress: nivel de compresión (por defecto 3)
+
+        Returns
+        -------
+        str or None
+
+        Ruta donde se guardó el modelo, o None si el usuario canceló.
+        """
+        folder_path = filedialog.askdirectory(
+            parent=master,
+            title="Selecciona la carpeta para guardar el modelo",
+            mustexist=True
+        )
+
+        if not folder_path:
+            NotificationWindow(master,
+                               "Error",
+                               "No se seleccionó ninguna ruta",
+                               "error")
+            return None
+
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        file_name = f"modelo_{timestamp}.joblib"
+        file_path = Path(folder_path) / file_name
+        try:
+            desc = self.desc_box.get()
+            data_to_save = {"model": self.model,
+                            "desc": desc}
+
+            joblib.dump(data_to_save, file_path, compress=3)
+            NotificationWindow(
+                master,
+                "Exito",
+                f"Modelo guardado correctamente en:\n{file_path}",
+                "success"
+            )
+            return str(file_path)
+        except Exception as e:
+            print(f"Error: {e}")
+            return None
+
+    def save_button(self, master):
+        # Botón de guardar
+        self.save_button = ctk.CTkButton(
+            master,
+            text="💾 Guardar Modelo",
+            command=lambda: self.save_model(master),
+            font=("Inter", 14, "bold"),
+            height=40
+        )
+        self.save_button.pack(pady=20)
