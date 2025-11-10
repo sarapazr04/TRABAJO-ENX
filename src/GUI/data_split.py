@@ -51,7 +51,7 @@ class DataSplitPanel(ctk.CTkFrame):
             width=100,
             height=32,
             font=AppConfig.BODY_FONT,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             border_color=AppTheme.BORDER
         )
         self.seed_entry.insert(0, "42")

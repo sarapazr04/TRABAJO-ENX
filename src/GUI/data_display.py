@@ -139,9 +139,9 @@ class DataDisplayManager:
         # Estilo base del Treeview
         style.configure(
             "Treeview",
-            background=AppTheme.SECONDERY_BACKGROUND,
+            background=AppTheme.SECONDARY_BACKGROUND,
             foreground=AppTheme.PRIMARY_TEXT,
-            fieldbackground=AppTheme.SECONDERY_BACKGROUND,
+            fieldbackground=AppTheme.SECONDARY_BACKGROUND,
             borderwidth=0,
             font=("Segoe UI", 14),
             rowheight=30
@@ -203,7 +203,7 @@ class DataDisplayManager:
 
         # Configurar colores alternados.
         self.tree.tag_configure(
-            "evenrow", background=AppTheme.SECONDERY_BACKGROUND)
+            "evenrow", background=AppTheme.SECONDARY_BACKGROUND)
         self.tree.tag_configure(
             "oddrow", background=AppTheme.PRIMARY_BACKGROUND)
     

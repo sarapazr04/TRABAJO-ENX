@@ -72,7 +72,7 @@ class LinearModelPanel(ctk.CTkFrame):
         
         formula_panel = ctk.CTkFrame(
             self.results_container,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             corner_radius=8,
             border_width=1,
             border_color=AppTheme.BORDER
@@ -122,7 +122,7 @@ class LinearModelPanel(ctk.CTkFrame):
         # Columna Entrenamiento
         train_panel = ctk.CTkFrame(
             metrics_container,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             corner_radius=8,
             border_width=1,
             border_color=AppTheme.BORDER
@@ -149,7 +149,7 @@ class LinearModelPanel(ctk.CTkFrame):
         # Columna Test
         test_panel = ctk.CTkFrame(
             metrics_container,
-            fg_color=AppTheme.SECONDERY_BACKGROUND, 
+            fg_color=AppTheme.SECONDARY_BACKGROUND, 
             corner_radius=8,
             border_width=1,
             border_color=AppTheme.BORDER
@@ -241,7 +241,7 @@ class LinearModelPanel(ctk.CTkFrame):
         # Crear panel 
         desc_container = ctk.CTkFrame(
             self.description_frame,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             corner_radius=8,
             border_width=1,
             border_color=AppTheme.BORDER
@@ -398,7 +398,7 @@ class LinearModelPanel(ctk.CTkFrame):
         # Frame principal con bordes
         graph_container = ctk.CTkFrame(
             self.graph_frame,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             corner_radius=8,
             border_width=1,
             border_color=AppTheme.BORDER
