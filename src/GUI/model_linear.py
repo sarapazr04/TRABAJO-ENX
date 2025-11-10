@@ -48,11 +48,6 @@ class LinearModelPanel(ctk.CTkFrame):
         panel = Panel(self, "Creación y Evaluación del Modelo Lineal")
         panel.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Botón principal: entrenar y evaluar modelo lineal
-        self.train_button = UploadButton(
-            panel, text="Crear Modelo Lineal", command=self._train_model)
-        self.train_button.pack(pady=15)
-
         # ═══════════════════════════════════════════════════════════
         # CONTENEDOR PRINCIPAL CON LAYOUT DE 2 COLUMNAS (GRID)
         # ═══════════════════════════════════════════════════════════
@@ -173,7 +168,7 @@ class LinearModelPanel(ctk.CTkFrame):
         # ═══════════════════════════════════════════════════════════
         train_panel = ctk.CTkFrame(
             self.results_container,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             corner_radius=8,
             border_width=1,
             border_color=AppTheme.BORDER
@@ -204,7 +199,7 @@ class LinearModelPanel(ctk.CTkFrame):
         # ═══════════════════════════════════════════════════════════
         test_panel = ctk.CTkFrame(
             self.results_container,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             corner_radius=8,
             border_width=1,
             border_color=AppTheme.BORDER
