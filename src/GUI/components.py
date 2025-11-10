@@ -339,7 +339,7 @@ class NotificationWindow(ctk.CTkToplevel):
         color = config["color"]
         icon = config["icon"]
 
-        main_frame = ctk.CTkFrame(
+        main_frame = ctk.CTkScrollableFrame(
             self,
             fg_color=AppTheme.SECONDARY_BACKGROUND,
             border_width=2,

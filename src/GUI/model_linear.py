@@ -104,7 +104,7 @@ class LinearModelPanel(ctk.CTkFrame):
         self.description_frame.pack(
             fill="both", expand=True, padx=20, pady=(10, 10))
         self.description_frame.pack_propagate(False)
-        
+
         # Botón de guardar modelo
         self._create_save_button(panel)
 
@@ -403,6 +403,9 @@ class LinearModelPanel(ctk.CTkFrame):
         mse_train = mean_squared_error(y_train, y_pred_train)
         mse_test = mean_squared_error(y_test, y_pred_test)
 
+        self.r2 = [r2_train, r2_test]
+        self.mse = [mse_train, mse_test]
+
         # ===================================
         # 6. CONSTRUIR FÓRMULA
         # ===================================
@@ -541,14 +544,14 @@ class LinearModelPanel(ctk.CTkFrame):
         plot_frame.pack(fill="both", expand=True, padx=15, pady=(0, 15))
 
         # ═══════════════════════════════════════════════════════════
-        # CREAR GRAFICO CON TODOS LOS DATOS 
+        # CREAR GRAFICO CON TODOS LOS DATOS
         # ═══════════════════════════════════════════════════════════
-        
+
         # Crear figura con altura reducida para que coincida con columna izquierda
         fig, ax = plt.subplots(figsize=(8, 3.8), dpi=85)
 
         # ─────────────────────────────────────────────────────────
-        # DATOS DE ENTRENAMIENTO 
+        # DATOS DE ENTRENAMIENTO
         # ─────────────────────────────────────────────────────────
         ax.scatter(
             X_train,
@@ -575,7 +578,7 @@ class LinearModelPanel(ctk.CTkFrame):
         )
 
         # ─────────────────────────────────────────────────────────
-        # 3. DATOS DE TEST : VALORES PREDICHOS 
+        # 3. DATOS DE TEST : VALORES PREDICHOS
         # ─────────────────────────────────────────────────────────
         # Usar un marcador diferente
         ax.scatter(
@@ -583,7 +586,7 @@ class LinearModelPanel(ctk.CTkFrame):
             y_pred_test,
             color='#4da6ff',
             label="Test (Predicho)",
-            s=60,  
+            s=60,
             alpha=0.9,
             marker='+',  # Marcador de cruz
             linewidths=2.5
@@ -682,12 +685,16 @@ class LinearModelPanel(ctk.CTkFrame):
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         file_name = f"modelo_{timestamp}.joblib"
         file_path = Path(folder_path) / file_name
-        
+
         try:
             desc = self.desc_box.get()
             data_to_save = {
                 "model": self.model,
-                "desc": desc
+                "desc": desc,
+                "r2": self.r2,
+                "mse": self.mse,
+                "col_entrada": self.app.selection_panel.columnas_entrada,
+                "col_salida": self.app.selection_panel.columna_salida
             }
 
             joblib.dump(data_to_save, file_path, compress=compress)
