@@ -60,7 +60,7 @@ class DataSplitPanel(ctk.CTkFrame):
         # Botón dividir
         self.split_button = UploadButton(
             controls_frame,
-            text="Dividir Dataset",
+            text="Dividir Dataset y crear modelo",
             command=self._split_dataset  # Función a ejecutar al hacer clic
         )
         self.split_button.pack(side="right")
