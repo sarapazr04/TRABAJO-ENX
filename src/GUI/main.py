@@ -56,6 +56,9 @@ class DataLoaderApp(ctk.CTk):
         # Esto reduce el lag cuando hay graficos de matplotlib
         self.ext_frame._parent_canvas.configure(scrollregion=(0, 0, 0, 2000))
 
+        # Pestañas: Crear Modelo / Cargar Modelo
+        self._create_tabs()
+
         self._create_control_panel()
         self._create_data_panel()
         self._create_status_bar()
@@ -64,13 +67,142 @@ class DataLoaderApp(ctk.CTk):
         self.protocol("WM_DELETE_WINDOW", self._on_closing)
 
     # ================================================================
+    # PESTAÑAS SUPERIORES: Crear modelo / Cargar modelo
+    # ================================================================
+    def _create_tabs(self):
+        """
+        Crea la barra de pestañas tipo navegador (Crear modelo / Cargar modelo)
+        y los contenedores de contenido para cada pestaña.
+        """
+        # Barra de pestañas 
+        self.tab_bar = ctk.CTkFrame(
+            self.ext_frame,
+            fg_color="transparent"
+        )
+        self.tab_bar.pack(fill="x", padx=20, pady=(10, 0))
+
+        # Botón-pestaña: Crear modelo (activa por defecto)
+        self.tab_create_button = ctk.CTkButton(
+            self.tab_bar,
+            text="Crear Modelo",
+            command=self._show_create_tab,
+            font=("Orbitron", 12, "bold"),
+            height=32,
+            corner_radius=6,
+            fg_color=AppTheme.PRIMARY_ACCENT,
+            hover_color=AppTheme.HOVER_ACCENT,
+            text_color="#ffffff",
+            border_width=0
+        )
+        self.tab_create_button.pack(side="left", padx=(0, 5))
+
+        # Botón-pestaña: Cargar modelo
+        self.tab_load_button = ctk.CTkButton(
+            self.tab_bar,
+            text="Cargar Modelo",
+            command=self._show_load_tab,
+            font=("Orbitron", 12, "bold"),
+            height=32,
+            corner_radius=6,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
+            hover_color=AppTheme.TERTIARY_BACKGROUND,
+            text_color=AppTheme.PRIMARY_TEXT,
+            border_width=0
+        )
+        self.tab_load_button.pack(side="left")
+
+        # Contenedor de contenido para "Crear modelo"
+        self.create_mode_frame = ctk.CTkFrame(
+            self.ext_frame,
+            fg_color="transparent"
+        )
+        self.create_mode_frame.pack(
+            fill="both", expand=True, padx=0, pady=(5, 0)
+        )
+
+        # Contenedor de contenido para "Cargar modelo" (de momento oculto)
+        self.load_mode_frame = ctk.CTkFrame(
+            self.ext_frame,
+            fg_color="transparent"
+        )
+
+    # ================================================================
+    # CAMBIO DE PESTAÑA
+    # ================================================================
+    def _show_create_tab(self):
+        """Mostrar la pestaña 'Crear modelo' y ocultar 'Cargar modelo'."""
+        # Botones activos/inactivos (estilo)
+        self.tab_create_button.configure(
+            fg_color=AppTheme.PRIMARY_ACCENT,
+            text_color="#ffffff"
+        )
+        self.tab_load_button.configure(
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
+            text_color=AppTheme.PRIMARY_TEXT
+        )
+
+        # Mostrar contenido de crear modelo
+        if not self.create_mode_frame.winfo_ismapped():
+            self.create_mode_frame.pack(
+                fill="both", expand=True, padx=0, pady=(5, 0)
+            )
+
+        # Ocultar contenido de cargar modelo
+        if self.load_mode_frame.winfo_ismapped():
+            self.load_mode_frame.pack_forget()
+
+    def _show_load_tab(self):
+        """Mostrar la pestaña 'Cargar modelo' y ocultar 'Crear modelo'."""
+        # Botones activos/inactivos (estilo)
+        self.tab_load_button.configure(
+            fg_color=AppTheme.PRIMARY_ACCENT,
+            text_color="#ffffff"
+        )
+        self.tab_create_button.configure(
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
+            text_color=AppTheme.PRIMARY_TEXT
+        )
+
+        # Mostrar contenido de cargar modelo (por ahora solo un panel vacío)
+        if not self.load_mode_frame.winfo_ismapped():
+            self.load_mode_frame.pack(
+                fill="both", expand=True, padx=0, pady=(5, 0)
+            )
+            # Panel vacío tipo "ventana de Google"
+            self._create_load_tab_placeholder()
+
+        # Ocultar contenido de crear modelo
+        if self.create_mode_frame.winfo_ismapped():
+            self.create_mode_frame.pack_forget()
+
+    def _create_load_tab_placeholder(self):
+        """
+        Crea un contenido vacío inicial para la pestaña 'Cargar modelo'.
+        De momento solo muestra un mensaje centrado.
+        """
+        # Limpiar por si se vuelve a entrar
+        for w in self.load_mode_frame.winfo_children():
+            w.destroy()
+
+        panel = Panel(self.load_mode_frame, "Cargar Modelo (en construcción)")
+        panel.pack(fill="both", expand=True, padx=20, pady=20)
+
+        label = ctk.CTkLabel(
+            panel,
+            text="Aquí aparecerá la interfaz para cargar un modelo guardado.",
+            font=("Segoe UI", 14),
+            text_color=AppTheme.DIM_TEXT
+        )
+        label.place(relx=0.5, rely=0.5, anchor="center")
+
+    # ================================================================
     # PANEL DE CONTROLES : Botón de carga y estadísticas
     # ================================================================
 
     def _create_control_panel(self):
         """Crear el panel con el botón de cargar y las estadísticas"""
         control_panel = ctk.CTkFrame(
-            self.ext_frame,
+            self.create_mode_frame,
             corner_radius=8,
             fg_color=AppTheme.SECONDARY_BACKGROUND,
             border_width=1,
@@ -333,7 +465,7 @@ class DataLoaderApp(ctk.CTk):
 
         # Crear nuevo frame exterior
         self.selection_frame = ctk.CTkFrame(
-            self.ext_frame, fg_color="transparent")
+            self.create_mode_frame, fg_color="transparent")
         self.selection_frame.pack(fill="x", expand=True, padx=20, pady=(0, 20))
 
         # Crear panel de seleccion con orden correcto de parametros
@@ -373,7 +505,7 @@ class DataLoaderApp(ctk.CTk):
             self._split_panel_frame.destroy()
 
         self._split_panel_frame = ctk.CTkFrame(
-            self.ext_frame, fg_color="transparent")
+            self.create_mode_frame, fg_color="transparent")
         self._split_panel_frame.pack(
             fill="x", expand=True, padx=20, pady=(0, 20))
 
@@ -400,7 +532,7 @@ class DataLoaderApp(ctk.CTk):
             except Exception:
                 pass
         self.description_panel = ctk.CTkFrame(
-            self.ext_frame, fg_color="transparent")
+            self.create_mode_frame, fg_color="transparent")
         self.description_panel.pack(fill="x",
                                     expand=True,
                                     padx=20,
@@ -419,7 +551,7 @@ class DataLoaderApp(ctk.CTk):
 
     def _create_data_panel(self):
         """Crear el panel donde se mostrará la tabla de datos"""
-        data_panel = Panel(self.ext_frame, "Visualización de Datos")
+        data_panel = Panel(self.create_mode_frame, "Visualización de Datos")
         data_panel.pack(fill="both", expand=True, padx=20, pady=(0, 20))
 
         # Frame exterior (transparente, no se toca)
@@ -499,7 +631,7 @@ class DataLoaderApp(ctk.CTk):
                 pass
         
         # Crear nuevo panel
-        self._model_panel_frame = ctk.CTkFrame(self.ext_frame, fg_color="transparent")
+        self._model_panel_frame = ctk.CTkFrame(self.create_mode_frame, fg_color="transparent")
         self._model_panel_frame.pack(fill="x", expand=True, padx=20, pady=(0, 20))
         model_panel = LinearModelPanel(self._model_panel_frame, self)
         model_panel.pack(fill="both", expand=True, padx=10, pady=10)
