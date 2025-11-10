@@ -176,24 +176,91 @@ class DataLoaderApp(ctk.CTk):
             self.create_mode_frame.pack_forget()
 
     def _create_load_tab_placeholder(self):
-        """
-        Crea un contenido vacío inicial para la pestaña 'Cargar modelo'.
-        De momento solo muestra un mensaje centrado.
-        """
-        # Limpiar por si se vuelve a entrar
+        """Crear el contenido de la pestaña 'Cargar modelo'."""
         for w in self.load_mode_frame.winfo_children():
             w.destroy()
 
-        panel = Panel(self.load_mode_frame, "Cargar Modelo (en construcción)")
-        panel.pack(fill="both", expand=True, padx=20, pady=20)
+        # ==============================
+        # PANEL PRINCIPAL (igual que ruta de Cargar Datos)
+        # ==============================
+        control_panel = ctk.CTkFrame(
+            self.load_mode_frame,
+            corner_radius=8,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
+            border_width=1,
+            border_color=AppTheme.BORDER
+        )
+        control_panel.pack(fill="x", padx=20, pady=(20, 10))
 
-        label = ctk.CTkLabel(
-            panel,
-            text="Aquí aparecerá la interfaz para cargar un modelo guardado.",
-            font=("Segoe UI", 14),
+        # Frame interior (alineación)
+        button_frame = ctk.CTkFrame(control_panel, fg_color="transparent")
+        button_frame.pack(fill="x", padx=20, pady=(15, 15))
+
+        # Etiqueta "RUTA :"
+        tag_label = ctk.CTkLabel(
+            button_frame,
+            text="RUTA :",
+            font=("Orbitron", 15, "bold"),
+            text_color=AppTheme.PRIMARY_TEXT
+        )
+        tag_label.pack(side="left", padx=(0, 10))
+
+        # Frame donde se muestra la ruta
+        self.model_path_frame = ctk.CTkFrame(
+            button_frame,
+            fg_color=AppTheme.PRIMARY_BACKGROUND,
+            corner_radius=6,
+            border_width=1,
+            border_color=AppTheme.BORDER
+        )
+        self.model_path_frame.pack(side="left", fill="x", expand=True)
+
+        # Texto dentro de la ruta
+        self.model_path_label = ctk.CTkLabel(
+            self.model_path_frame,
+            text="Ningún modelo seleccionado",
+            font=AppConfig.BODY_FONT,
             text_color=AppTheme.DIM_TEXT
         )
-        label.place(relx=0.5, rely=0.5, anchor="center")
+        self.model_path_label.pack(pady=10, padx=15)
+
+        # Botón “Cargar Modelo”
+        self.load_model_button = UploadButton(
+            button_frame,
+            text="Cargar Modelo",
+            command=self._load_model_dialog
+        )
+        self.load_model_button.pack(side="right", padx=(15, 0))
+
+    # ================================================================
+    # DIÁLOGO DE CARGA DE MODELO (.joblib)
+    # ================================================================
+    def _load_model_dialog(self):
+        """Abre el diálogo de selección de archivo para cargar un modelo .joblib"""
+        file_path = filedialog.askopenfilename(
+            title="Seleccionar modelo guardado",
+            filetypes=[("Modelos de regresión (.joblib)", "*.joblib")]
+        )
+
+        # Si el usuario cancela
+        if not file_path:
+            return
+
+        # Actualizar etiqueta visual con la ruta
+        self.model_path_label.configure(
+            text=file_path,
+            text_color=AppTheme.PRIMARY_ACCENT
+        )
+
+        # Notificación visual de éxito
+        notif = NotificationWindow(
+            self,
+            "Modelo seleccionado",
+            f"Archivo de modelo cargado:\n\n{file_path}",
+            "success"
+        )
+        self.after(2000, notif.destroy)
+
 
     # ================================================================
     # PANEL DE CONTROLES : Botón de carga y estadísticas
