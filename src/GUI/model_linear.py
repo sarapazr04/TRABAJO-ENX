@@ -48,8 +48,18 @@ class LinearModelPanel(ctk.CTkFrame):
         panel = Panel(self, "Creación y Evaluación del Modelo Lineal")
         panel.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Contenedor de resultados 
-        self.results_container = ctk.CTkFrame(
+        # Botón principal: entrenar y evaluar modelo lineal
+        self.train_button = UploadButton(
+            panel, text="Crear Modelo Lineal", command=self._train_model)
+        self.train_button.pack(pady=15)
+
+        # ═══════════════════════════════════════════════════════════
+        # CONTENEDOR PRINCIPAL CON LAYOUT DE 2 COLUMNAS (GRID)
+        # ═══════════════════════════════════════════════════════════
+        # Este contenedor organizará los resultados (izquierda) y
+        # el gráfico (derecha) en dos columnas
+
+        self.main_container = ctk.CTkFrame(
             panel,
             fg_color="transparent"
         )
@@ -149,8 +159,8 @@ class LinearModelPanel(ctk.CTkFrame):
 
         # Fórmula con wraplength ajustado para columna más estrecha
         formula_label = ctk.CTkLabel(
-            formula_panel, 
-            text=formula, 
+            formula_panel,
+            text=formula,
             font=AppConfig.MONO_FONT,
             text_color=AppTheme.PRIMARY_TEXT,
             wraplength=400,  # Ajustado para columna izquierda
@@ -249,7 +259,7 @@ class LinearModelPanel(ctk.CTkFrame):
         name_label = ctk.CTkLabel(
             row_frame,
             text=f"{metric_name}:",
-            font=("Segoe UI", 14, "bold"),
+            font=AppConfig.BODY_FONT,
             text_color=AppTheme.SECONDARY_TEXT,
             width=60,
             anchor="w"
@@ -268,7 +278,7 @@ class LinearModelPanel(ctk.CTkFrame):
         value_label = ctk.CTkLabel(
             row_frame,
             text=f"{value:.4f}",
-            font=("Consolas", 14, "bold"),
+            font=AppConfig.MONO_FONT,
             text_color=color
         )
         value_label.pack(side="left", padx=(10, 0))
