@@ -327,7 +327,7 @@ class PreprocessingPanel:
         self.apply_button = UploadButton(
             button_frame,
             text="Aplicar",
-            command=self._apply_preprocessing_thread
+            command=self._apply_preprocessing
         )
         self.apply_button.pack(side="right", padx=(10, 0))
 
@@ -360,9 +360,17 @@ class PreprocessingPanel:
 
     def _apply_preprocessing(self):
         self.apply_button.configure(state="disabled")
-        #self.loading_indicator = LoadingIndicator(self)
-        #self.loading_indicator.place(relx=0.5, rely=0.5, anchor="center")
 
+        # Crear indicador con texto personalizado
+        self.loading_indicator = LoadingIndicator(self.app)
+        self.loading_indicator.label.configure(text="Procesando datos...")
+        self.loading_indicator.status_label.configure(text="Por favor espere mientras se aplican los cambios.")
+        self.loading_indicator.place(relx=0.5, rely=0.5, anchor="center")
+         
+        # Forzar actualización de GUI antes de bloquear
+        self.app.update_idletasks()
+
+         # Ejecutar en un hilo secundario
         thread = threading.Thread(
             # Función a ejecutar en segundo plano
             target=self._apply_preprocessing_thread,
@@ -372,54 +380,63 @@ class PreprocessingPanel:
         thread.start()
 
     def _apply_preprocessing_thread(self):
-        """Aplicar el preprocesamiento según la opción seleccionada"""
+        """Aplicar el preprocesamiento según la opción seleccionada (en hilo)."""
         option = self.option_var.get()
 
         # Validar selección
+        # Validar selección
         if not option:
-            NotificationWindow(
+            self.app.after(0, lambda: NotificationWindow(
                 self.app,
                 "Error de Validación",
                 "Debe seleccionar una opción de preprocesamiento.",
                 "warning"
-            )
+            ))
+            self.app.after(0, self._hide_loading_indicator)
+            self.app.after(0, lambda: self.apply_button.configure(state="normal"))
             return
+        
 
         # Verificar valores faltantes
         df_subset = self.master_panel.df[self.selected_columns]
         if not df_subset.isnull().any().any():
-            NotificationWindow(
+            self.app.after(0, lambda: NotificationWindow(
                 self.app,
                 "Sin Valores Faltantes",
                 "Las columnas seleccionadas no contienen valores faltantes.",
                 "info"
-            )
-            #self.loading_indicator.stop()
-            #self.loading_indicator.destroy()
-            self.apply_button.configure(state="normal")
+            ))
+            self.app.after(0, self._hide_loading_indicator)
+            self.app.after(0, lambda: self.apply_button.configure(state="normal"))
             return
-        print("b4 change")
-        try:
-            if option == "drop":
-                self._drop_na()
-            print("b4 change")
-            if option == "mean":
-                self._fill_with_mean()
-            elif option == "median":
-                self._fill_with_median()
-            elif option == "constant":
-                self._fill_with_constant()
-            print("After changes")
-        except Exception as e:
-            NotificationWindow(
-                self.app,
-                "Error en Preprocesado",
-                f"Ocurrió un error:\n\n{str(e)}",
-                "error"
-            )
-        #self.loading_indicator.stop()
-        #self.loading_indicator.destroy()
-        self.apply_button.configure(state="normal")
+        
+         #  Ejecutar la lógica del preprocesado en el hilo principal
+        self.app.after(0, lambda: self._apply_preprocessing_logic(option))
+
+        #  Al terminar, cerrar el indicador y reactivar botón
+        self.app.after(0, self._hide_loading_indicator)
+        self.app.after(0, lambda: self.apply_button.configure(state="normal"))
+    
+    def _hide_loading_indicator(self):
+        if hasattr(self, "loading_indicator") and self.loading_indicator:
+            try:
+                self.loading_indicator.stop()
+                self.loading_indicator.destroy()
+            except Exception:
+                pass
+            self.loading_indicator = None
+    
+    def _apply_preprocessing_logic(self, option):
+        """Aplica el preprocesamiento sin modificar la GUI directamente."""
+        if option == "drop":
+            self._drop_na()
+        elif option == "mean":
+            self._fill_with_mean()
+        elif option == "median":
+            self._fill_with_median()
+        elif option == "constant":
+            self._fill_with_constant()
+
 
     def _drop_na(self):
         """Eliminar filas con valores faltantes"""
