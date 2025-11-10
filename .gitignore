@@ -38,3 +38,6 @@ Desktop.ini
 *.swo
 *~
 
+# Ignorar modelos guardados
+*.joblib
+
