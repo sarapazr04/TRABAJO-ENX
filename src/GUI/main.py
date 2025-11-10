@@ -132,7 +132,7 @@ class DataLoaderApp(ctk.CTk):
     # ================================================================
     def _show_create_tab(self):
         """Mostrar la pestaña 'Crear modelo' y ocultar 'Cargar modelo'."""
-        # Botones activos/inactivos (estilo)
+        # Activar colores de pestañas
         self.tab_create_button.configure(
             fg_color=AppTheme.PRIMARY_ACCENT,
             text_color="#ffffff"
@@ -142,19 +142,18 @@ class DataLoaderApp(ctk.CTk):
             text_color=AppTheme.PRIMARY_TEXT
         )
 
-        # Mostrar contenido de crear modelo
+        #  Mostrar frame de 'Crear modelo' (sin reconstruir nada)
         if not self.create_mode_frame.winfo_ismapped():
-            self.create_mode_frame.pack(
-                fill="both", expand=True, padx=0, pady=(5, 0)
-            )
+            self.create_mode_frame.pack(fill="both", expand=True, padx=0, pady=(5, 0))
 
-        # Ocultar contenido de cargar modelo
+        #  Ocultar frame de 'Cargar modelo' (sin destruir)
         if self.load_mode_frame.winfo_ismapped():
             self.load_mode_frame.pack_forget()
 
+
     def _show_load_tab(self):
         """Mostrar la pestaña 'Cargar modelo' y ocultar 'Crear modelo'."""
-        # Botones activos/inactivos (estilo)
+        # Activar colores de pestañas
         self.tab_load_button.configure(
             fg_color=AppTheme.PRIMARY_ACCENT,
             text_color="#ffffff"
@@ -164,17 +163,21 @@ class DataLoaderApp(ctk.CTk):
             text_color=AppTheme.PRIMARY_TEXT
         )
 
-        # Mostrar contenido de cargar modelo (por ahora solo un panel vacío)
-        if not self.load_mode_frame.winfo_ismapped():
-            self.load_mode_frame.pack(
-                fill="both", expand=True, padx=0, pady=(5, 0)
-            )
-            # Panel vacío tipo "ventana de Google"
-            self._create_load_tab_placeholder()
-
-        # Ocultar contenido de crear modelo
+        #  Ocultar 'Crear modelo' (solo ocultar)
         if self.create_mode_frame.winfo_ismapped():
             self.create_mode_frame.pack_forget()
+
+        #  Mostrar 'Cargar modelo' (solo crear una vez)
+        if not hasattr(self, "_load_model_panel_created"):
+            from .load_model import LoadModelPanel
+            load_panel = LoadModelPanel(self.load_mode_frame, self)
+            load_panel.pack(fill="both", expand=True, padx=20, pady=(10, 20))
+            self._load_model_panel_created = True
+
+        if not self.load_mode_frame.winfo_ismapped():
+            self.load_mode_frame.pack(fill="both", expand=True, padx=0, pady=(5, 0))
+
+
 
     def _create_load_tab_placeholder(self):
 
