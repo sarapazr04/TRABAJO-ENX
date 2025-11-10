@@ -25,13 +25,6 @@ class LoadModelPanel(ctk.CTkFrame):
 
     Permite seleccionar un archivo .joblib, restaurar el modelo
     y mostrar su información (fórmula, métricas, columnas y descripción).
-
-    Parameters
-    ----------
-    master : ctk.CTkFrame
-        Contenedor padre del panel.
-    app : DataLoaderApp
-        Instancia principal de la aplicación.
     """
 
     def __init__(self, master, app):
@@ -106,7 +99,6 @@ class LoadModelPanel(ctk.CTkFrame):
             if not isinstance(data, dict) or "model" not in data:
                 raise ValueError("El archivo no contiene un modelo válido.")
 
-            self._reset_app_state()
             self._display_model_info(data, file_path)
 
             notif = NotificationWindow(
@@ -129,29 +121,9 @@ class LoadModelPanel(ctk.CTkFrame):
     # MÉTODOS AUXILIARES
     # ================================================================
 
-    def _reset_app_state(self):
-        """Elimina paneles previos del modo 'Crear modelo'."""
-        for frame in (
-            getattr(self.app, "selection_frame", None),
-            getattr(self.app, "_split_panel_frame", None),
-            getattr(self.app, "_model_panel_frame", None),
-        ):
-            try:
-                if frame and frame.winfo_exists():
-                    frame.destroy()
-            except Exception:
-                pass
-
     def _display_model_info(self, data, file_path):
         """
         Muestra la información completa del modelo cargado.
-
-        Parameters
-        ----------
-        data : dict
-            Diccionario con el modelo y sus metadatos.
-        file_path : str
-            Ruta del archivo cargado.
         """
         for widget in self.result_container.winfo_children():
             widget.destroy()
