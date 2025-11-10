@@ -16,6 +16,7 @@ from data_import.importer import import_data
 from .data_split import DataSplitPanel
 from .desc_model import DescriptBox
 from .model_linear import LinearModelPanel
+from .welcome_message import WelcomeMessage
 
 
 class DataLoaderApp(ctk.CTk):
@@ -48,7 +49,7 @@ class DataLoaderApp(ctk.CTk):
 
         # Crear la interfaz
         self.configure(fg_color=AppTheme.PRIMARY_BACKGROUND)
-
+        self.welcome_window = WelcomeMessage(self)
         self.ext_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.ext_frame.pack(fill="both", expand=True)
 
@@ -71,7 +72,7 @@ class DataLoaderApp(ctk.CTk):
         control_panel = ctk.CTkFrame(
             self.ext_frame,
             corner_radius=8,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             border_width=1,
             border_color=AppTheme.BORDER
         )
@@ -88,7 +89,7 @@ class DataLoaderApp(ctk.CTk):
         # Botón de cargar
         self.upload_button = UploadButton(
             button_frame,
-            text="Cargar Archivo",
+            text="Cargar Datos",
             command=self._load_file  # Función a ejecutar al hacer clic
         )
         self.upload_button.pack(side="right", padx=(15, 0))
@@ -128,7 +129,7 @@ class DataLoaderApp(ctk.CTk):
             self,
             height=35,
             corner_radius=0,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             border_color=AppTheme.BORDER,
             border_width=1
         )
@@ -146,12 +147,12 @@ class DataLoaderApp(ctk.CTk):
         self.stats_label.pack(side="left", pady=0, padx=15)
 
     # ================================================================
-    # CARGAR ARCHIVO : Con threading para no bloquear la ventana
+    # CARGAR DATOS : Con threading para no bloquear la ventana
     # ================================================================
 
     def _load_file(self):
         """
-        Se ejecuta cuando haces clic en 'Cargar Archivo'.
+        Se ejecuta cuando haces clic en 'Cargar Datos'.
         Usa threading para no congelar la ventana mientras carga.
         """
         # Abrir diálogo para seleccionar archivo
@@ -234,7 +235,7 @@ class DataLoaderApp(ctk.CTk):
         self._update_statistics(dataframe)
         self._display_data(dataframe)
         self._create_selection_panel(dataframe)
-        self.upload_button.configure(state="normal", text="Cargar Archivo")
+        self.upload_button.configure(state="normal", text="Cargar Datos")
         
         rows, cols = dataframe.shape
         self.after(100, lambda: self._show_success_notification(rows, cols))
@@ -255,7 +256,7 @@ class DataLoaderApp(ctk.CTk):
     def _on_load_error(self, error_message):
         """Se ejecuta cuando hay un error al cargar el archivo"""
         self._hide_loading_indicator()
-        self.upload_button.configure(state="normal", text="Cargar Archivo")
+        self.upload_button.configure(state="normal", text="Cargar Datos")
 
         NotificationWindow(
             self,
@@ -343,7 +344,7 @@ class DataLoaderApp(ctk.CTk):
         # Crear y mostrar interfaz usando el metodo original _crear_interfaz()
         selection_interface = self.selection_panel._crear_interfaz()
         selection_interface.pack(
-            fill="both", expand=True, side="left", padx=10, pady=10)
+            fill="both", expand=True, side="left", padx=0, pady=0)
 
         # Crear panel vacio inicial
         self.selection_panel._create_empty_panel()

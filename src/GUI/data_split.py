@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from sklearn.model_selection import train_test_split
-from .components import Panel, NotificationWindow, AppTheme, AppConfig
+from .components import Panel, NotificationWindow, AppTheme, AppConfig, UploadButton
 
 
 class DataSplitPanel(ctk.CTkFrame):
@@ -26,9 +26,9 @@ class DataSplitPanel(ctk.CTkFrame):
 
         # Label del slider 
         self.slider_label = ctk.CTkLabel(
-            panel, 
+            panel,
             text="Porcentaje de entrenamiento: 80%",
-            font=("Orbitron", 12, "bold")
+            font=AppConfig.BODY_FONT
             )
         self.slider_label.pack(pady=(15, 10))
 
@@ -47,28 +47,21 @@ class DataSplitPanel(ctk.CTkFrame):
         seed_label.pack(side="left", padx=(0, 8))
 
         self.seed_entry = ctk.CTkEntry(
-            seed_container, 
-            width=100, 
+            seed_container,
+            width=100,
             height=32,
             font=AppConfig.BODY_FONT,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             border_color=AppTheme.BORDER
         )
         self.seed_entry.insert(0, "42")
         self.seed_entry.pack(side="left")
 
         # Botón dividir
-        self.split_button = ctk.CTkButton(
+        self.split_button = UploadButton(
             controls_frame,
             text="Dividir Dataset",
-            command=self._split_dataset,
-            font=("Orbitron", 11, "bold"),
-            height=AppConfig.BUTTON_HEIGHT,
-            width=150,
-            corner_radius=6,
-            fg_color=AppTheme.PRIMARY_ACCENT,
-            hover_color=AppTheme.HOVER_ACCENT,
-            text_color="#ffffff",
+            command=self._split_dataset  # Función a ejecutar al hacer clic
         )
         self.split_button.pack(side="right")
 
@@ -100,14 +93,14 @@ class DataSplitPanel(ctk.CTkFrame):
         ctk.CTkLabel(
             range_frame,
             text="50%",
-            font=("Segoe UI", 10),
+            font=("Segoe UI", 14),
             text_color=AppTheme.DIM_TEXT,
             ).pack(side="left")
         
         ctk.CTkLabel(
             range_frame,
             text="95%",
-            font=("Segoe UI", 10),
+            font=("Segoe UI", 14),
             text_color=AppTheme.DIM_TEXT,
             ).pack(side="right")
     

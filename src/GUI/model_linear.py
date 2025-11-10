@@ -36,6 +36,7 @@ class LinearModelPanel(ctk.CTkFrame):
         # Cachear canvas para evitar lags
         self.current_canvas = None
         self._create_ui()
+        self._train_model()
 
     # ============================================================
     # INTERFAZ GRÁFICA
@@ -47,18 +48,8 @@ class LinearModelPanel(ctk.CTkFrame):
         panel = Panel(self, "Creación y Evaluación del Modelo Lineal")
         panel.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Botón principal: entrenar y evaluar modelo lineal
-        self.train_button = UploadButton(
-            panel, text="Crear Modelo Lineal", command=self._train_model)
-        self.train_button.pack(pady=15)
-
-        # ═══════════════════════════════════════════════════════════
-        # CONTENEDOR PRINCIPAL CON LAYOUT DE 2 COLUMNAS (GRID)
-        # ═══════════════════════════════════════════════════════════
-        # Este contenedor organizará los resultados (izquierda) y
-        # el gráfico (derecha) en dos columnas
-
-        self.main_container = ctk.CTkFrame(
+        # Contenedor de resultados 
+        self.results_container = ctk.CTkFrame(
             panel,
             fg_color="transparent"
         )
@@ -130,7 +121,7 @@ class LinearModelPanel(ctk.CTkFrame):
         # ═══════════════════════════════════════════════════════════
         formula_panel = ctk.CTkFrame(
             self.results_container,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             corner_radius=8,
             border_width=1,
             border_color=AppTheme.BORDER
@@ -158,8 +149,8 @@ class LinearModelPanel(ctk.CTkFrame):
 
         # Fórmula con wraplength ajustado para columna más estrecha
         formula_label = ctk.CTkLabel(
-            formula_panel,
-            text=formula,
+            formula_panel, 
+            text=formula, 
             font=AppConfig.MONO_FONT,
             text_color=AppTheme.PRIMARY_TEXT,
             wraplength=400,  # Ajustado para columna izquierda
@@ -258,7 +249,7 @@ class LinearModelPanel(ctk.CTkFrame):
         name_label = ctk.CTkLabel(
             row_frame,
             text=f"{metric_name}:",
-            font=AppConfig.BODY_FONT,
+            font=("Segoe UI", 14, "bold"),
             text_color=AppTheme.SECONDARY_TEXT,
             width=60,
             anchor="w"
@@ -277,7 +268,7 @@ class LinearModelPanel(ctk.CTkFrame):
         value_label = ctk.CTkLabel(
             row_frame,
             text=f"{value:.4f}",
-            font=AppConfig.MONO_FONT,
+            font=("Consolas", 14, "bold"),
             text_color=color
         )
         value_label.pack(side="left", padx=(10, 0))
@@ -302,7 +293,7 @@ class LinearModelPanel(ctk.CTkFrame):
         # Crear panel
         desc_container = ctk.CTkFrame(
             self.description_frame,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             corner_radius=8,
             border_width=1,
             border_color=AppTheme.BORDER
@@ -510,7 +501,7 @@ class LinearModelPanel(ctk.CTkFrame):
         # ═══════════════════════════════════════════════════════════
         graph_container = ctk.CTkFrame(
             self.graph_frame,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             corner_radius=8,
             border_width=1,
             border_color=AppTheme.BORDER

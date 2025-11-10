@@ -60,7 +60,7 @@ class AppTheme:
 
     # Fondos (Colores principales)
     PRIMARY_BACKGROUND = "#1e1e1e"
-    SECONDERY_BACKGROUND = "#2d2d30"
+    SECONDARY_BACKGROUND = "#2d2d30"
     TERTIARY_BACKGROUND = "#3e3e42"
 
     # Acentos (colores destacados)
@@ -118,13 +118,13 @@ class AppConfig:
     FAMILY_FONT = "Segoe UI"
     TITLE_FONT = ("Orbitron", 35, "bold")
     SUBTITLE_FONT = ("Segoe UI", 13)
-    BODY_FONT = ("Segoe UI", 13)
-    SMALL_FONT = ("Segoe UI", 9)
-    MONO_FONT = ("Consolas", 10)
+    BODY_FONT = ("Segoe UI", 15)
+    SMALL_FONT = ("Segoe UI", 10)
+    MONO_FONT = ("Consolas", 14)
 
     # Tamaños de ventana
     WINDOW_WIDTH = 1400
-    WINDOW_HEIGHT = 800
+    WINDOW_HEIGHT = 700
     PADDING = 20
     BUTTON_HEIGHT = 40
 
@@ -151,7 +151,7 @@ class UploadButton(ctk.CTkButton):
             master,
             text=text,
             command=command,
-            font=("Orbitron", 11, "bold"),
+            font=AppConfig.BODY_FONT,
             height=AppConfig.BUTTON_HEIGHT,
             corner_radius=6,
             fg_color=AppTheme.PRIMARY_ACCENT,
@@ -168,7 +168,7 @@ class Panel(ctk.CTkFrame):
 
     Uso:
         panel = Panel(parent, "Mi Titulo")
-        label = ctk.CTkLabel(panel, tex = "Contenido")
+        label = ctk.CTkLabel(panel, text = "Contenido")
         label.pack()
     """
 
@@ -177,7 +177,7 @@ class Panel(ctk.CTkFrame):
         super().__init__(
             master,
             corner_radius=8,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             border_width=1,
             border_color=AppTheme.BORDER,
             **kwargs
@@ -226,7 +226,7 @@ class LoadingIndicator(ctk.CTkFrame):
         # Crear el frame
         super().__init__(
             master,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             corner_radius=8,
             border_width=2,
             border_color=AppTheme.PRIMARY_ACCENT,
@@ -341,7 +341,7 @@ class NotificationWindow(ctk.CTkToplevel):
 
         main_frame = ctk.CTkFrame(
             self,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             border_width=2,
             border_color=color
         )

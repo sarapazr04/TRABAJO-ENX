@@ -8,9 +8,9 @@ y preprocesar datos con valores faltantes.
 import customtkinter as ctk
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
-
+import threading
 from .components import (
-    NotificationWindow, Panel, AppTheme, AppConfig, UploadButton
+    NotificationWindow, Panel, AppTheme, AppConfig, UploadButton, LoadingIndicator
 )
 
 
@@ -148,10 +148,10 @@ class ColumnFrame(ctk.CTkFrame):
             values=columnas,
             command=command,
             font=AppConfig.BODY_FONT,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             button_color=AppTheme.PRIMARY_ACCENT,
             button_hover_color=AppTheme.HOVER_ACCENT,
-            dropdown_fg_color=AppTheme.SECONDERY_BACKGROUND,
+            dropdown_fg_color=AppTheme.SECONDARY_BACKGROUND,
             dropdown_hover_color=AppTheme.TERTIARY_BACKGROUND
         )
         # Si no hay título, agregar padding arriba
@@ -312,7 +312,7 @@ class PreprocessingPanel:
             options_frame,
             placeholder_text="Valor constante (ej: 0)",
             font=AppConfig.BODY_FONT,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             border_color=AppTheme.BORDER,
             height=32
         )
@@ -324,12 +324,12 @@ class PreprocessingPanel:
         button_frame.pack(fill="x", padx=15, pady=(0, 15))
 
         # Botón Aplicar
-        apply_button = UploadButton(
+        self.apply_button = UploadButton(
             button_frame,
             text="Aplicar",
-            command=self._apply_preprocessing
+            command=self._apply_preprocessing_thread
         )
-        apply_button.pack(side="right", padx=(10, 0))
+        self.apply_button.pack(side="right", padx=(10, 0))
 
         # Botón Resetear
         reset_button = ctk.CTkButton(
@@ -359,6 +359,19 @@ class PreprocessingPanel:
         )
 
     def _apply_preprocessing(self):
+        self.apply_button.configure(state="disabled")
+        #self.loading_indicator = LoadingIndicator(self)
+        #self.loading_indicator.place(relx=0.5, rely=0.5, anchor="center")
+
+        thread = threading.Thread(
+            # Función a ejecutar en segundo plano
+            target=self._apply_preprocessing_thread,
+            args=(),
+            daemon=True
+        )
+        thread.start()
+
+    def _apply_preprocessing_thread(self):
         """Aplicar el preprocesamiento según la opción seleccionada"""
         option = self.option_var.get()
 
@@ -381,17 +394,22 @@ class PreprocessingPanel:
                 "Las columnas seleccionadas no contienen valores faltantes.",
                 "info"
             )
+            #self.loading_indicator.stop()
+            #self.loading_indicator.destroy()
+            self.apply_button.configure(state="normal")
             return
-
+        print("b4 change")
         try:
             if option == "drop":
                 self._drop_na()
-            elif option == "mean":
+            print("b4 change")
+            if option == "mean":
                 self._fill_with_mean()
             elif option == "median":
                 self._fill_with_median()
             elif option == "constant":
                 self._fill_with_constant()
+            print("After changes")
         except Exception as e:
             NotificationWindow(
                 self.app,
@@ -399,6 +417,9 @@ class PreprocessingPanel:
                 f"Ocurrió un error:\n\n{str(e)}",
                 "error"
             )
+        #self.loading_indicator.stop()
+        #self.loading_indicator.destroy()
+        self.apply_button.configure(state="normal")
 
     def _drop_na(self):
         """Eliminar filas con valores faltantes"""
@@ -651,7 +672,7 @@ class SelectionPanel:
         # ═══════════════════════════════════════════════════════════
         entrada_container = ctk.CTkFrame(
             frame_in_out,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             corner_radius=8,
             border_width=1,
             border_color=AppTheme.BORDER
@@ -682,7 +703,7 @@ class SelectionPanel:
         # ═══════════════════════════════════════════════════════════
         salida_container = ctk.CTkFrame(
             frame_in_out,
-            fg_color=AppTheme.SECONDERY_BACKGROUND,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
             corner_radius=8,
             border_width=1,
             border_color=AppTheme.BORDER
@@ -763,10 +784,6 @@ class SelectionPanel:
         # Reiniciar paneles previos si existen
         if hasattr(self.app, "reset_panels"):
             self.app.reset_panels()
-
-        print("\n--- Procesando Datos ---")
-        print(f"Datos de Entrada: {self.columnas_entrada}")
-        print(f"Datos de Salida: {self.columna_salida}")
 
         self._display_data()
 
