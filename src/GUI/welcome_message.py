@@ -13,6 +13,11 @@ class WelcomeMessage():
         self.window.resizable(False, True)
         self.window.title("")
 
+        #  Hacer la ventana modal (bloquear interacción con la principal)
+        self.window.transient(self.app)   # Se mantiene encima de la ventana principal
+        self.window.grab_set()            # Bloquea interacción con la principal hasta cerrarla
+
+        # Crear el contenido del mensaje de bienvenida
         self._create_scroll_text()
 
     def _create_scroll_text(self):
