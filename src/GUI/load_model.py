@@ -6,20 +6,18 @@ y actualizar la interfaz con su información.
 import customtkinter as ctk
 from tkinter import filedialog
 import joblib
-from sklearn.metrics import mean_squared_error, r2_score
 from .components import (
     AppTheme, AppConfig, Panel, NotificationWindow, UploadButton
 )
 
 
 class LoadModelPanel(ctk.CTkFrame):
-    """
-    Panel principal para cargar un modelo entrenado desde archivo .joblib.
-    """
+    """Panel principal para cargar un modelo entrenado desde archivo .joblib."""
 
     def __init__(self, master, app):
         super().__init__(master)
         self.app = app
+        self.result_container = None  # <- contenedor para limpiar resultados fácilmente
         self._create_ui()
 
     # ================================================================
@@ -67,6 +65,10 @@ class LoadModelPanel(ctk.CTkFrame):
         )
         self.load_button.pack(side="right", padx=(15, 0))
 
+        # Frame vacío para mostrar resultados (fórmula, descripción, etc.)
+        self.result_container = ctk.CTkFrame(self, fg_color="transparent")
+        self.result_container.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+
     # ================================================================
     # LÓGICA DE CARGA DE MODELO
     # ================================================================
@@ -86,23 +88,11 @@ class LoadModelPanel(ctk.CTkFrame):
             if not isinstance(data_loaded, dict) or "model" not in data_loaded:
                 raise ValueError("El archivo no contiene un modelo válido.")
 
-            model = data_loaded["model"]
-            desc = data_loaded.get("desc", "Sin descripción guardada.")
-
-            # Extraer fórmula si es posible
-            if hasattr(model, "coef_") and hasattr(model, "intercept_"):
-                coef_str = " + ".join(
-                    [f"{coef:.4f}·x{i+1}" for i, coef in enumerate(model.coef_)]
-                )
-                formula = f"y = {coef_str} + {model.intercept_:.4f}"
-            else:
-                formula = "Fórmula no disponible (modelo incompatible)."
-
-            # Limpiar la interfaz principal
+            # Limpiar la interfaz principal (modo 'crear modelo')
             self._reset_app_state()
 
-            # Crear el panel de resultados
-            self._display_model_info(formula, desc, file_path)
+            # Mostrar nuevo modelo (borra resultados anteriores)
+            self._display_model_info(data_loaded, file_path)
 
             # Notificación de éxito (sin botón)
             notif = NotificationWindow(
@@ -137,37 +127,41 @@ class LoadModelPanel(ctk.CTkFrame):
             except Exception:
                 pass
 
-    def _display_model_info(self, formula, desc, file_path):
-        """Muestra fórmula, métricas (si existen) y descripción guardada."""
-        info_panel = Panel(self, "Modelo Cargado")
-        info_panel.pack(fill="both", expand=True, padx=20, pady=(15, 20))
+    def _display_model_info(self, data, file_path):
+        """Muestra la información básica del modelo cargado."""
+        # 🔹 Limpiar solo el contenedor de resultados previos
+        for w in self.result_container.winfo_children():
+            w.destroy()
 
-        # Fórmula
-        formula_label = ctk.CTkLabel(
-            info_panel,
-            text=f"Fórmula del modelo:\n\n{formula}",
+        model = data.get("model")
+        desc = data.get("desc", "Sin descripción guardada.")
+
+        # Intentar obtener fórmula si el modelo es lineal
+        if hasattr(model, "coef_") and hasattr(model, "intercept_"):
+            coef_str = " + ".join(
+                [f"{c:.4f}·x{i+1}" for i, c in enumerate(model.coef_)]
+            )
+            formula = f"y = {coef_str} + {model.intercept_:.4f}"
+        else:
+            formula = "Fórmula no disponible."
+
+        # Crear panel de información
+        panel = Panel(self.result_container, "Modelo Cargado")
+        panel.pack(fill="both", expand=True, padx=20, pady=(20, 20))
+
+        # Mostrar fórmula
+        label_formula = ctk.CTkLabel(
+            panel,
+            text=f" Fórmula del modelo:\n\n{formula}",
             font=("Consolas", 14),
             text_color=AppTheme.PRIMARY_TEXT,
-            wraplength=900,
-            justify="left"
+            justify="left",
+            wraplength=900
         )
-        formula_label.pack(pady=(20, 10), padx=25, anchor="w")
+        label_formula.pack(pady=(10, 20), padx=25, anchor="w")
 
-        # Métricas (si fueron guardadas)
-        r2 = getattr(self, "r2_", 0.0)
-        mse = getattr(self, "mse_", 0.0)
-
-        metrics_label = ctk.CTkLabel(
-            info_panel,
-            text=f"🔹 R²: {r2:.4f}\n🔹 ECM: {mse:.4f}",
-            font=AppConfig.BODY_FONT,
-            text_color=AppTheme.SECONDARY_TEXT,
-            justify="left"
-        )
-        metrics_label.pack(pady=(5, 15), padx=25, anchor="w")
-
-        # Descripción
-        desc_panel = Panel(info_panel, "Descripción Guardada")
+        # Mostrar descripción
+        desc_panel = Panel(panel, "Descripción Guardada")
         desc_panel.pack(fill="x", padx=20, pady=(10, 20))
 
         desc_box = ctk.CTkTextbox(
@@ -182,8 +176,10 @@ class LoadModelPanel(ctk.CTkFrame):
         desc_box.configure(state="disabled")
         desc_box.pack(fill="both", expand=True, padx=15, pady=15)
 
-        # Actualizar ruta
+        # Actualizar visualmente la ruta
         self.path_label.configure(
             text=file_path,
             text_color=AppTheme.PRIMARY_ACCENT
         )
+
+        self.update_idletasks()
