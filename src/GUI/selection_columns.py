@@ -199,7 +199,7 @@ class PreprocessingPanel:
         """Crear el panel principal de preprocesamiento"""
         preprocessing_panel = Panel(self.master, "Preprocesamiento de Datos")
 
-        # Primero crear la sección de estadísticas (esto calcula self.nas_stats)
+        # Primero crear la sección de estadísticas
         self._create_na_stats_section(preprocessing_panel)
 
         # AHORA verificar si hay valores faltantes (después de calcular)
@@ -364,13 +364,14 @@ class PreprocessingPanel:
         # Crear indicador con texto personalizado
         self.loading_indicator = LoadingIndicator(self.app)
         self.loading_indicator.label.configure(text="Procesando datos...")
-        self.loading_indicator.status_label.configure(text="Por favor espere mientras se aplican los cambios.")
+        self.loading_indicator.status_label.configure(
+            text="Por favor espere mientras se aplican los cambios.")
         self.loading_indicator.place(relx=0.5, rely=0.5, anchor="center")
-         
+
         # Forzar actualización de GUI antes de bloquear
         self.app.update_idletasks()
 
-         # Ejecutar en un hilo secundario
+        # Ejecutar en un hilo secundario
         thread = threading.Thread(
             # Función a ejecutar en segundo plano
             target=self._apply_preprocessing_thread,
@@ -393,9 +394,9 @@ class PreprocessingPanel:
                 "warning"
             ))
             self.app.after(0, self._hide_loading_indicator)
-            self.app.after(0, lambda: self.apply_button.configure(state="normal"))
+            self.app.after(
+                0, lambda: self.apply_button.configure(state="normal"))
             return
-        
 
         # Verificar valores faltantes
         df_subset = self.master_panel.df[self.selected_columns]
@@ -407,16 +408,17 @@ class PreprocessingPanel:
                 "info"
             ))
             self.app.after(0, self._hide_loading_indicator)
-            self.app.after(0, lambda: self.apply_button.configure(state="normal"))
+            self.app.after(
+                0, lambda: self.apply_button.configure(state="normal"))
             return
-        
+
          #  Ejecutar la lógica del preprocesado en el hilo principal
         self.app.after(0, lambda: self._apply_preprocessing_logic(option))
 
         #  Al terminar, cerrar el indicador y reactivar botón
         self.app.after(0, self._hide_loading_indicator)
         self.app.after(0, lambda: self.apply_button.configure(state="normal"))
-    
+
     def _hide_loading_indicator(self):
         if hasattr(self, "loading_indicator") and self.loading_indicator:
             try:
@@ -425,7 +427,7 @@ class PreprocessingPanel:
             except Exception:
                 pass
             self.loading_indicator = None
-    
+
     def _apply_preprocessing_logic(self, option):
         """Aplica el preprocesamiento sin modificar la GUI directamente."""
         if option == "drop":
@@ -436,7 +438,6 @@ class PreprocessingPanel:
             self._fill_with_median()
         elif option == "constant":
             self._fill_with_constant()
-
 
     def _drop_na(self):
         """Eliminar filas con valores faltantes"""
@@ -793,7 +794,7 @@ class SelectionPanel:
                 "Error de Tipo de Datos",
                 f"Las siguientes columnas contienen valores no numéricos:\n\n"
                 f"{', '.join(columnas_invalidas)}\n\n"
-                "Solo se permiten columnas numéricas para crear el modelo lineal.",
+                "Solo se permiten columnas numéricas.",
                 "error"
             )
             return
@@ -842,7 +843,8 @@ class SelectionPanel:
 
         # Destruir panel de preprocesamiento anterior si existe
         try:
-            if hasattr(self, 'pre_options') and self.pre_options.winfo_exists():
+            if hasattr(self,
+                       'pre_options') and self.pre_options.winfo_exists():
                 self.pre_options.pack_forget()
                 self.pre_options.destroy()
         except Exception:
