@@ -16,7 +16,8 @@ Compatible con el formato extendido:
 import joblib
 import customtkinter as ctk
 from tkinter import filedialog
-from .components import AppTheme, AppConfig, Panel, NotificationWindow, UploadButton
+from .components import (AppTheme,
+                         AppConfig, Panel, NotificationWindow, UploadButton)
 
 
 class LoadModelPanel(ctk.CTkFrame):

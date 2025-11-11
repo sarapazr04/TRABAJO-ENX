@@ -5,7 +5,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 import pandas as pd
-from .components import Panel, UploadButton, NotificationWindow, AppTheme, AppConfig
+from .components import Panel, NotificationWindow, AppTheme, AppConfig
 from .desc_model import DescriptBox
 import joblib
 from pathlib import Path
@@ -29,7 +29,7 @@ class LinearModelPanel(ctk.CTkFrame):
         master : tk.Widget
             Contenedor padre del panel.
         app : DataLoaderApp
-            Instancia principal de la aplicación (para acceder a datos y estado).
+            Instancia principal de la aplicación .
         """
         super().__init__(master)
         self.app = app
@@ -108,7 +108,12 @@ class LinearModelPanel(ctk.CTkFrame):
         # Botón de guardar modelo
         self._create_save_button(panel)
 
-    def _display_results(self, formula, r2_train, r2_test, mse_train, mse_test):
+    def _display_results(self,
+                         formula,
+                         r2_train,
+                         r2_test,
+                         mse_train,
+                         mse_test):
         """
         Muestra la fórmula y las métricas en la columna izquierda.
 
@@ -463,7 +468,14 @@ class LinearModelPanel(ctk.CTkFrame):
     # GRÁFICO: PUNTOS Y RECTA DE AJUSTE CON VALORES REALES Y PREDICHOS
     # ============================================================
 
-    def _plot_graph(self, X_train, y_train, X_test, y_test, y_pred_test, model, y_label):
+    def _plot_graph(self,
+                    X_train,
+                    y_train,
+                    X_test,
+                    y_test,
+                    y_pred_test,
+                    model,
+                    y_label):
         """
         Dibuja los puntos de entrenamiento y test junto con la recta de ajuste.
 
@@ -534,7 +546,7 @@ class LinearModelPanel(ctk.CTkFrame):
         # CREAR GRAFICO CON TODOS LOS DATOS
         # ═══════════════════════════════════════════════════════════
 
-        # Crear figura con altura reducida para que coincida con columna izquierda
+        # Crear figura con altura reducida
         fig, ax = plt.subplots(figsize=(8, 3.8), dpi=85)
 
         # ─────────────────────────────────────────────────────────
@@ -683,8 +695,7 @@ class LinearModelPanel(ctk.CTkFrame):
                     "La descripción del modelo está vacía",
                     "info"
                 )
-                desc = None
-                print("Esta vacío")
+
             data_to_save = {
                 "model": self.model,
                 "desc": desc,

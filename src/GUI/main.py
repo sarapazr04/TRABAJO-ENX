@@ -75,7 +75,7 @@ class DataLoaderApp(ctk.CTk):
         Crea la barra de pestañas tipo navegador (Crear modelo / Cargar modelo)
         y los contenedores de contenido para cada pestaña.
         """
-        # Barra de pestañas 
+        # Barra de pestañas
         self.tab_bar = ctk.CTkFrame(
             self.ext_frame,
             fg_color="transparent"
@@ -144,12 +144,12 @@ class DataLoaderApp(ctk.CTk):
 
         #  Mostrar frame de 'Crear modelo' (sin reconstruir nada)
         if not self.create_mode_frame.winfo_ismapped():
-            self.create_mode_frame.pack(fill="both", expand=True, padx=0, pady=(5, 0))
+            self.create_mode_frame.pack(
+                fill="both", expand=True, padx=0, pady=(5, 0))
 
         #  Ocultar frame de 'Cargar modelo' (sin destruir)
         if self.load_mode_frame.winfo_ismapped():
             self.load_mode_frame.pack_forget()
-
 
     def _show_load_tab(self):
         """Mostrar la pestaña 'Cargar modelo' y ocultar 'Crear modelo'."""
@@ -175,9 +175,8 @@ class DataLoaderApp(ctk.CTk):
             self._load_model_panel_created = True
 
         if not self.load_mode_frame.winfo_ismapped():
-            self.load_mode_frame.pack(fill="both", expand=True, padx=0, pady=(5, 0))
-
-
+            self.load_mode_frame.pack(
+                fill="both", expand=True, padx=0, pady=(5, 0))
 
     def _create_load_tab_placeholder(self):
 
@@ -188,8 +187,6 @@ class DataLoaderApp(ctk.CTk):
         # Crear y empaquetar el panel de carga de modelo
         load_panel = LoadModelPanel(self.load_mode_frame, self)
         load_panel.pack(fill="both", expand=True, padx=20, pady=(10, 20))
-
-
 
     # ================================================================
     # PANEL DE CONTROLES : Botón de carga y estadísticas
@@ -364,10 +361,10 @@ class DataLoaderApp(ctk.CTk):
         self._display_data(dataframe)
         self._create_selection_panel(dataframe)
         self.upload_button.configure(state="normal", text="Cargar Datos")
-        
+
         rows, cols = dataframe.shape
         self.after(100, lambda: self._show_success_notification(rows, cols))
-    
+
     def _show_success_notification(self, rows, cols):
         """Muestra la notificación de éxito de carga"""
         try:
@@ -481,7 +478,7 @@ class DataLoaderApp(ctk.CTk):
         """Registrar el dataframe preprocesado y mostrar el panel"""
         self.is_preprocessed = True
         self.preprocessed_df = df
-        
+
         # IMPORTANTE: Destruir el panel del modelo si existe
         # (porque al cambiar el preprocesamiento, el modelo anterior ya no es válido)
         if hasattr(self, '_model_panel_frame') and self._model_panel_frame:
@@ -491,7 +488,7 @@ class DataLoaderApp(ctk.CTk):
                     self._model_panel_frame = None
             except Exception:
                 pass
-        
+
         self._create_split_panel()
 
     def _create_split_panel(self):
@@ -625,13 +622,15 @@ class DataLoaderApp(ctk.CTk):
                     self._model_panel_frame.destroy()
             except Exception:
                 pass
-        
+
         # Crear nuevo panel
-        self._model_panel_frame = ctk.CTkFrame(self.create_mode_frame, fg_color="transparent")
-        self._model_panel_frame.pack(fill="x", expand=True, padx=20, pady=(0, 20))
+        self._model_panel_frame = ctk.CTkFrame(
+            self.create_mode_frame, fg_color="transparent")
+        self._model_panel_frame.pack(
+            fill="x", expand=True, padx=20, pady=(0, 20))
         model_panel = LinearModelPanel(self._model_panel_frame, self)
         model_panel.pack(fill="both", expand=True, padx=10, pady=10)
-    
+
     # ================================================================
     # REINICIAR ESTADO: Eliminar paneles previos
     # ================================================================
@@ -677,20 +676,20 @@ class DataLoaderApp(ctk.CTk):
             plt.close('all')
         except Exception:
             pass
-        
+
         try:
             # Destruir paneles específicos que pueden tener recursos
             if hasattr(self, '_split_panel_frame') and self._split_panel_frame:
                 self._split_panel_frame.destroy()
-                
+
             if hasattr(self, '_model_panel_frame') and self._model_panel_frame:
                 self._model_panel_frame.destroy()
-                
+
             if hasattr(self, 'selection_frame') and self.selection_frame:
                 self.selection_frame.destroy()
         except Exception:
             pass
-        
+
         try:
             # Limpiar referencias a dataframes
             self.current_dataframe = None
@@ -699,19 +698,19 @@ class DataLoaderApp(ctk.CTk):
             self.test_df = None
         except Exception:
             pass
-        
+
         try:
             # Forzar recolección de basura antes de cerrar
             import gc
             gc.collect()
         except Exception:
             pass
-        
+
         try:
             self.quit()
         except Exception:
             pass
-        
+
         try:
             # Destruir la ventana después de salir del mainloop
             self.destroy()

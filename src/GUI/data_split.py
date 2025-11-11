@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from sklearn.model_selection import train_test_split
-from .components import Panel, NotificationWindow, AppTheme, AppConfig, UploadButton
+from .components import (Panel,
+                         NotificationWindow, AppTheme, AppConfig, UploadButton)
 
 
 class DataSplitPanel(ctk.CTkFrame):
@@ -24,12 +25,12 @@ class DataSplitPanel(ctk.CTkFrame):
         panel = Panel(self, "División de Datos en Entrenamiento y Test")
         panel.pack(fill="both", expand=True, padx=10, pady=10)
 
-        # Label del slider 
+        # Label del slider
         self.slider_label = ctk.CTkLabel(
             panel,
             text="Porcentaje de entrenamiento: 80%",
             font=AppConfig.BODY_FONT
-            )
+        )
         self.slider_label.pack(pady=(15, 10))
 
         controls_frame = ctk.CTkFrame(panel, fg_color="transparent")
@@ -65,7 +66,7 @@ class DataSplitPanel(ctk.CTkFrame):
         )
         self.split_button.pack(side="right")
 
-        # Slider 
+        # Slider
         slider_container = ctk.CTkFrame(
             controls_frame,
             fg_color="transparent",
@@ -95,22 +96,22 @@ class DataSplitPanel(ctk.CTkFrame):
             text="50%",
             font=("Segoe UI", 14),
             text_color=AppTheme.DIM_TEXT,
-            ).pack(side="left")
-        
+        ).pack(side="left")
+
         ctk.CTkLabel(
             range_frame,
             text="95%",
             font=("Segoe UI", 14),
             text_color=AppTheme.DIM_TEXT,
-            ).pack(side="right")
-    
+        ).pack(side="right")
+
         # Resultado
         self.result_label = ctk.CTkLabel(
             panel,
-            text="", 
+            text="",
             text_color=AppTheme.SECONDARY_TEXT,
             font=AppConfig.BODY_FONT
-            )
+        )
         self.result_label.pack(pady=(4, 12))
 
     def _update_label(self, value):
@@ -184,4 +185,3 @@ class DataSplitPanel(ctk.CTkFrame):
         )
 
         self.app.set_split_completed()
-

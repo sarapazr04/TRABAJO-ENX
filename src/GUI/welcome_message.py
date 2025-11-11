@@ -76,7 +76,7 @@ class WelcomeMessage():
         textbox2.insert("0.0", body_text2)
         textbox2.configure(state="disabled")
         textbox2.pack(fill="both", expand=False, pady=(5, 0))
-        
+
         image2 = ctk.CTkImage(
             dark_image=Image.open("src/GUI/images/cargar_modelo_guia.png"),
             size=(870, 196)
