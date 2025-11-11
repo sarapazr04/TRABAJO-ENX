@@ -330,20 +330,7 @@ class LinearModelPanel(ctk.CTkFrame):
 
         # Texto inicial orientativo
         descripcion_inicial = (
-            f"Modelo creado correctamente.\n\n"
-            f"Fórmula del modelo:\n"
-            f"{formula}\n"
-            f"═══════════════════════════════════════════════════\n"
-            f"Interpretación:\n"
-            f"1. Coeficientes: "
-            f"Cada coeficiente indica el cambio promedio en '{y_label}' cuando\n"
-            f"   su variable correspondiente aumenta en 1 unidad, manteniendo\n"
-            f"   las demás variables constantes.\n\n"
-            f"2. Capacidad Predictiva: "
-            f"R² (test) = {r2_test:.4f} muestra la capacidad de generalización del modelo.\n"
-            f"   El modelo explica el {r2_test*100:.1f}% de la variabilidad de '{y_label}'.\n"
-            f"═══════════════════════════════════════════════════\n\n"
-            f"Escribe aquí tus observaciones adicionales..."
+            "Escribe aquí tus observaciones adicionales..."
         )
         self.desc_box.set(descripcion_inicial)
 
@@ -687,7 +674,17 @@ class LinearModelPanel(ctk.CTkFrame):
         file_path = Path(folder_path) / file_name
 
         try:
-            desc = self.desc_box.get()
+            desc = self.desc_box.get().strip()
+            if desc == "":
+
+                NotificationWindow(
+                    master,
+                    "Información",
+                    "La descripción del modelo está vacía",
+                    "info"
+                )
+                desc = None
+                print("Esta vacío")
             data_to_save = {
                 "model": self.model,
                 "desc": desc,
@@ -701,7 +698,7 @@ class LinearModelPanel(ctk.CTkFrame):
             NotificationWindow(
                 master,
                 "Éxito",
-                f"Modelo guardado correctamente en:\n{file_path}",
+                "Modelo guardado correctamente",
                 "success"
             )
             return str(file_path)
