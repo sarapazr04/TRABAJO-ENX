@@ -50,7 +50,8 @@ def import_data(file_path: str, preview_rows: int = 5) -> Tuple[pd.DataFrame,
                 table_name = tables.iloc[0, 0]
                 df = pd.read_sql_query(f"SELECT * FROM {table_name}", conn)
         else:
-            raise RuntimeError(f"Formato de archivo no soportado: {path.suffix}")
+            raise RuntimeError("Formato de"
+                               f" archivo no soportado: {path.suffix}")
 
         # Conversión de tipos (numéricos, fechas, etc.)
         df = coerce_dtypes(df)

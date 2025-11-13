@@ -45,8 +45,8 @@ class WelcomeMessage():
                                     expand=True,
                                     padx=10, pady=(0, 10),
                                     side="top")
-        body_text1 = ("Para empezar a crear un modelo a partir de datos, en la "
-                      "pestaña de Crear modelo, haga click en Cargar Datos.")
+        body_text1 = ("Para empezar a crear un modelo a partir de datos, en la"
+                      " pestaña de Crear modelo, haga click en Cargar Datos.")
         image1 = ctk.CTkImage(
             dark_image=Image.open("src/GUI/images/cargar_datos_guia.png"),
             size=(870, 196))

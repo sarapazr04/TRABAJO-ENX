@@ -144,7 +144,8 @@ class DataSplitPanel(ctk.CTkFrame):
             NotificationWindow(
                 self.app,
                 "Datos insuficientes",
-                "No hay suficientes filas para realizar la separación (mínimo 5).",
+                "No hay suficientes filas para"
+                " realizar la separación (mínimo 5).",
                 "error"
             )
             return
@@ -174,13 +175,15 @@ class DataSplitPanel(ctk.CTkFrame):
 
         # Feedback visual
         self.result_label.configure(
-            text=f"Entrenamiento: {len(train_df)} filas | Test: {len(test_df)} filas"
+            text=f"Entrenamiento: {len(train_df)} "
+            f"filas | Test: {len(test_df)} filas"
         )
         NotificationWindow(
             self.app,
             "División completada",
             f"Datos separados correctamente.\n"
-            f"Entrenamiento: {len(train_df)} filas\nTest: {len(test_df)} filas",
+            f"Entrenamiento: {len(train_df)} "
+            f"filas\nTest: {len(test_df)} filas",
             "success"
         )
 

@@ -269,10 +269,17 @@ class LinearModelPanel(ctk.CTkFrame):
         # Determinar color segun la comparacion
         if is_ecm:
             # Para ECM: menor es mejor
-            color = AppTheme.SUCCES if value <= compare_value else AppTheme.WARNING
+            if value <= compare_value:
+                color = AppTheme.SUCCES
+            else:
+                color = AppTheme.WARNING
         else:
             # Para R²: mayor es mejor
-            color = AppTheme.SUCCES if value >= compare_value else AppTheme.WARNING
+            if value >= compare_value:
+
+                color = AppTheme.SUCCES
+            else:
+                AppTheme.WARNING
 
         # Valor de la métrica
         value_label = ctk.CTkLabel(
@@ -412,9 +419,11 @@ class LinearModelPanel(ctk.CTkFrame):
         # Construir fórmula completa
         intercept = model.intercept_
         if intercept >= 0:
-            formula = f"{self.app.selection_panel.columna_salida} = {' + '.join(coef_terms)} + {intercept:.4f}"
+            formula = f"{self.app.selection_panel.columna_salida} "
+            f"= {' + '.join(coef_terms)} + {intercept:.4f}"
         else:
-            formula = f"{self.app.selection_panel.columna_salida} = {' + '.join(coef_terms)} - {abs(intercept):.4f}"
+            formula = f"{self.app.selection_panel.columna_salida} "
+            f"= {' + '.join(coef_terms)} - {abs(intercept):.4f}"
 
         # ===================================
         # 7. MOSTRAR RESULTADOS (fórmula y métricas)
@@ -441,7 +450,8 @@ class LinearModelPanel(ctk.CTkFrame):
             NotificationWindow(
                 self.app,
                 "Aviso",
-                "No se puede representar el gráfico (más de una variable de entrada).",
+                "No se puede representar el gráfico"
+                " (más de una variable de entrada).",
                 "info"
             )
 

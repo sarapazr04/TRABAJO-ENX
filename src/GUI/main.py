@@ -350,7 +350,8 @@ class DataLoaderApp(ctk.CTk):
         self.preprocessed_df = None
         self.train_df = None
         self.test_df = None
-        if self._split_panel_frame is not None and self._split_panel_frame.winfo_exists():
+        if (self._split_panel_frame is not None
+                and self._split_panel_frame.winfo_exists()):
             self._split_panel_frame.destroy()
             self._split_panel_frame = None
 
@@ -371,7 +372,8 @@ class DataLoaderApp(ctk.CTk):
             NotificationWindow(
                 self,
                 "Carga Exitosa",
-                f"Archivo cargado correctamente\n\n{rows:,} filas x {cols} columnas",
+                "Archivo cargado correctamente\n\n"
+                f"{rows:,} filas x {cols} columnas",
                 "success"
             )
         except Exception as e:
@@ -431,7 +433,8 @@ class DataLoaderApp(ctk.CTk):
         memory_mb = dataframe.memory_usage(
             deep=True).sum() / 1024**2  # Calcular memoria en MB
 
-        stats_text = f"Filas: {rows:,}  |  Columnas: {cols}  |  Memoria: {memory_mb:.2f} MB"
+        stats_text = f"Filas: {rows:,}  |  "
+        f"Columnas: {cols}  |  Memoria: {memory_mb:.2f} MB"
         self.stats_label.configure(text=stats_text)
 
     # ================================================================
@@ -480,7 +483,8 @@ class DataLoaderApp(ctk.CTk):
         self.preprocessed_df = df
 
         # IMPORTANTE: Destruir el panel del modelo si existe
-        # (porque al cambiar el preprocesamiento, el modelo anterior ya no es válido)
+        # (porque al cambiar el preprocesamiento,
+        # el modelo anterior ya no es válido)
         if hasattr(self, '_model_panel_frame') and self._model_panel_frame:
             try:
                 if self._model_panel_frame.winfo_exists():
@@ -494,7 +498,8 @@ class DataLoaderApp(ctk.CTk):
     def _create_split_panel(self):
         """Crear y mostrar el panel para dividir el dataset en train/test."""
         # Destruir/recrear si ya existe (por si se vuelve a preprocesar)
-        if self._split_panel_frame is not None and self._split_panel_frame.winfo_exists():
+        if (self._split_panel_frame is not None
+                and self._split_panel_frame.winfo_exists()):
             self._split_panel_frame.destroy()
 
         self._split_panel_frame = ctk.CTkFrame(
@@ -637,7 +642,8 @@ class DataLoaderApp(ctk.CTk):
 
     def reset_panels(self):
         """
-        Reiniciar el estado interno de la aplicación y eliminar paneles previos.
+        Reiniciar el estado interno de la aplicación
+        y eliminar paneles previos.
         Se usa cuando el usuario quiere procesar un nuevo modelo desde cero.
         """
         #  Destruir el panel de división (train/test) si existe
