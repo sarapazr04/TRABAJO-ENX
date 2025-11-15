@@ -1,5 +1,4 @@
 import customtkinter as ctk
-from PIL import Image
 from .components import AppTheme, AppConfig
 
 
@@ -45,47 +44,31 @@ class WelcomeMessage():
                                     expand=True,
                                     padx=10, pady=(0, 10),
                                     side="top")
-        body_text1 = ("Para empezar a crear un modelo a partir de datos, en la "
-                      "pestaña de Crear modelo, haga click en Cargar Datos.")
-        image1 = ctk.CTkImage(
-            dark_image=Image.open("src/GUI/images/cargar_datos_guia.png"),
-            size=(870, 196))
-
-        body_text2 = ("Para cargar un modelo ya entrenado, en la "
-                      "pestaña de Cargar modelo, haga click en Cargar Modelo.")
+        body_text1 = ("Para empezar a crear un modelo a partir de datos, en la"
+                      " pestaña de Crear modelo, haga click en Cargar Datos.")
 
         textbox1 = ctk.CTkTextbox(self.load_create_model)
         textbox1.configure(font=AppConfig.BODY_FONT,
                            wrap="word",
                            text_color=AppTheme.PRIMARY_TEXT,
                            fg_color="transparent",
-                           height=40)
+                           height=60)
         textbox1.insert("0.0", body_text1)
         textbox1.configure(state="disabled")
-        textbox1.pack(fill="both", expand=False, pady=(5, 0))
-        image_label1 = ctk.CTkLabel(
-            self.load_create_model, image=image1, text="")
-        image_label1.pack(fill="both", expand=True, pady=(5, 10))
+        textbox1.pack(fill="both", expand=False, pady=(5, 15), padx=10)
+
+        body_text2 = ("Para cargar un modelo ya entrenado, en la "
+                      "pestaña de Cargar modelo, haga click en Cargar Modelo.")
 
         textbox2 = ctk.CTkTextbox(self.load_create_model)
         textbox2.configure(font=AppConfig.BODY_FONT,
                            wrap="word",
                            text_color=AppTheme.PRIMARY_TEXT,
                            fg_color="transparent",
-                           height=40)
+                           height=60)
         textbox2.insert("0.0", body_text2)
         textbox2.configure(state="disabled")
-        textbox2.pack(fill="both", expand=False, pady=(5, 0))
-        
-        image2 = ctk.CTkImage(
-            dark_image=Image.open("src/GUI/images/cargar_modelo_guia.png"),
-            size=(870, 196)
-        )
-
-        image_label2 = ctk.CTkLabel(
-            self.load_create_model, image=image2, text=""
-        )
-        image_label2.pack(fill="both", expand=True, pady=(5, 10))
+        textbox2.pack(fill="both", expand=False, pady=(5, 15), padx=10)
 
 
 class InfoPanel(ctk.CTkFrame):

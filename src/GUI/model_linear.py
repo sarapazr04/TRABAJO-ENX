@@ -5,7 +5,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 import pandas as pd
-from .components import Panel, UploadButton, NotificationWindow, AppTheme, AppConfig
+from .components import Panel, NotificationWindow, AppTheme, AppConfig
 from .desc_model import DescriptBox
 import joblib
 from pathlib import Path
@@ -29,7 +29,7 @@ class LinearModelPanel(ctk.CTkFrame):
         master : tk.Widget
             Contenedor padre del panel.
         app : DataLoaderApp
-            Instancia principal de la aplicación (para acceder a datos y estado).
+            Instancia principal de la aplicación .
         """
         super().__init__(master)
         self.app = app
@@ -95,20 +95,58 @@ class LinearModelPanel(ctk.CTkFrame):
             padx=(10, 0)    # Espacio a la izquierda
         )
 
-        # Contenedor de la descripcion del modelo
-        self.description_frame = ctk.CTkFrame(
+        # ═══════════════════════════════════════════════════════════
+        # CONTENEDOR DE DESCRIPCIÓN Y GRAFICA DE TEST (
+        # ═══════════════════════════════════════════════════════════
+        self.bottom_container = ctk.CTkFrame(
             panel,
-            fg_color=AppTheme.PRIMARY_BACKGROUND,
-            height=400
+            fg_color="transparent"
         )
-        self.description_frame.pack(
+        self.bottom_container.pack(
             fill="both", expand=True, padx=20, pady=(10, 10))
-        self.description_frame.pack_propagate(False)
+
+        # Configurar grid: 2 columnas (50% cada una)
+        self.bottom_container.grid_columnconfigure(0, weight=1)
+        self.bottom_container.grid_columnconfigure(1, weight=1)
+        self.bottom_container.grid_rowconfigure(0, weight=1)
+
+        # ─────────────────────────────────────────────────────────
+        # COLUMNA IZQUIERDA: DESCRIPCIÓN DEL MODELO
+        # ─────────────────────────────────────────────────────────
+        self.description_frame = ctk.CTkFrame(
+            self.bottom_container,
+            fg_color=AppTheme.PRIMARY_BACKGROUND
+        )
+        self.description_frame.grid(
+            row=0,
+            column=0,
+            sticky="nsew",
+            padx=(0, 10)
+        )
+
+        # ─────────────────────────────────────────────────────────
+        # COLUMNA DERECHA: GRAFICA DE TEST
+        # ─────────────────────────────────────────────────────────
+        self.test_graph_frame = ctk.CTkFrame(
+            self.bottom_container,
+            fg_color=AppTheme.PRIMARY_BACKGROUND
+        )
+        self.test_graph_frame.grid(
+            row=0,
+            column=1,
+            sticky="nsew",
+            padx=(10, 0)
+        )
 
         # Botón de guardar modelo
         self._create_save_button(panel)
 
-    def _display_results(self, formula, r2_train, r2_test, mse_train, mse_test):
+    def _display_results(self,
+                         formula,
+                         r2_train,
+                         r2_test,
+                         mse_train,
+                         mse_test):
         """
         Muestra la fórmula y las métricas en la columna izquierda.
 
@@ -330,22 +368,178 @@ class LinearModelPanel(ctk.CTkFrame):
 
         # Texto inicial orientativo
         descripcion_inicial = (
-            f"Modelo creado correctamente.\n\n"
-            f"Fórmula del modelo:\n"
-            f"{formula}\n"
-            f"═══════════════════════════════════════════════════\n"
-            f"Interpretación:\n"
-            f"1. Coeficientes: "
-            f"Cada coeficiente indica el cambio promedio en '{y_label}' cuando\n"
-            f"   su variable correspondiente aumenta en 1 unidad, manteniendo\n"
-            f"   las demás variables constantes.\n\n"
-            f"2. Capacidad Predictiva: "
-            f"R² (test) = {r2_test:.4f} muestra la capacidad de generalización del modelo.\n"
-            f"   El modelo explica el {r2_test*100:.1f}% de la variabilidad de '{y_label}'.\n"
-            f"═══════════════════════════════════════════════════\n\n"
-            f"Escribe aquí tus observaciones adicionales..."
+            "Escribe aquí tus observaciones adicionales..."
         )
         self.desc_box.set(descripcion_inicial)
+
+    def _create_test_evaluation_graph(self, y_test, y_pred_test, y_label):
+        """
+        Crea una gráfica que muestra la evaluación del modelo
+        en el conjunto de test.
+
+        La gráfica compara los valores reales vs predichos y muestra el error.
+        Incluye:
+        - Scatter plot: Valores reales vs predichos
+        - Línea diagonal: Representa predicción perfecta
+        - Barras de error: Distancia entre real y predicho
+
+        Parameters
+        ----------
+        y_test : pd.Series
+            Valores reales del conjunto de test
+        y_pred_test : np.array
+            Valores predichos por el modelo para el test
+        y_label : str
+            Nombre de la variable de salida
+        """
+        # Limpiar gráfico anterior si existe
+        for widget in self.test_graph_frame.winfo_children():
+            widget.destroy()
+
+        # ═══════════════════════════════════════════════════════════
+        # CONTENEDOR DEL GRAFICO CON TITULO
+        # ═══════════════════════════════════════════════════════════
+        graph_container = ctk.CTkFrame(
+            self.test_graph_frame,
+            fg_color=AppTheme.SECONDARY_BACKGROUND,
+            corner_radius=8,
+            border_width=1,
+            border_color=AppTheme.BORDER
+        )
+        graph_container.pack(fill="both", expand=True)
+
+        # Titulo del grafico
+        graph_title = ctk.CTkLabel(
+            graph_container,
+            text="Evaluación del Modelo (Test)",
+            font=("Orbitron", 13, "bold"),
+            text_color=AppTheme.PRIMARY_TEXT,
+            fg_color=AppTheme.TERTIARY_BACKGROUND,
+            corner_radius=6
+        )
+        graph_title.pack(pady=(12, 8), padx=15, anchor="w")
+
+        # Separador
+        separator = ctk.CTkFrame(
+            graph_container,
+            height=1,
+            fg_color=AppTheme.BORDER
+        )
+        separator.pack(fill="x", padx=15, pady=(0, 12))
+
+        # Frame interno para el grafico
+        plot_frame = ctk.CTkFrame(
+            graph_container,
+            fg_color=AppTheme.PRIMARY_BACKGROUND,
+            corner_radius=6
+        )
+        plot_frame.pack(fill="both", expand=True, padx=15, pady=(0, 15))
+
+        # ═══════════════════════════════════════════════════════════
+        # CREAR GRAFICO: VALORES REALES VS PREDICHOS
+        # ═══════════════════════════════════════════════════════════
+
+        # Convertir a arrays numpy para facilitar el cálculo
+        y_test_array = y_test.values
+        y_pred_array = y_pred_test
+
+        # Crear figura
+        fig, ax = plt.subplots(figsize=(6, 4.5), dpi=85)
+
+        # ─────────────────────────────────────────────────────────
+        # CATTER PLOT: Valores reales vs predichos
+        # ─────────────────────────────────────────────────────────
+        ax.scatter(
+            y_test_array,
+            y_pred_array,
+            color="#007acc",
+            s=40,
+            alpha=0.5,
+            edgecolors="#005a9e",
+            linewidths=0.8,
+            label="Predicciones"
+        )
+
+        # ─────────────────────────────────────────────────────────
+        # LINEA DIAGONAL: Predicción perfecta (y = x)
+        # ─────────────────────────────────────────────────────────
+        # Calcular rango para la linea diagonal
+        min_val = min(y_test_array.min(), y_pred_array.min())
+        max_val = max(y_test_array.max(), y_pred_array.max())
+
+        # Añadir margen del 5% para que no esté pegado a los bordes
+        margin = (max_val - min_val) * 0.05
+        diagonal_range = np.array([min_val - margin, max_val + margin])
+
+        ax.plot(
+            diagonal_range,
+            diagonal_range,
+            color="#4ec9b0",
+            linestyle="--",
+            linewidth=2.5,
+            label="Predicción perfecta",
+            zorder=5
+        )
+
+        # ─────────────────────────────────────────────────────────
+        # 3. BARRAS DE ERROR: Visualización del error
+        # ─────────────────────────────────────────────────────────
+        # Dibujar lineas verticales desde cada punto hasta la diagonal
+        for i in range(len(y_test_array)):
+            ax.plot(
+                [y_test_array[i], y_test_array[i]],
+                [y_test_array[i], y_pred_array[i]],
+                color="red",
+                alpha=0.3,
+                linewidth=0.8,
+                zorder=1
+            )
+
+        # ─────────────────────────────────────────────────────────
+        # 3. CONFIGURACIÓN DE ETIQUETAS Y ESTILO
+        # ─────────────────────────────────────────────────────────
+
+        # Calcular error medio absoluto para mostrarlo en el titulo
+        mae = np.mean(np.abs(y_test_array - y_pred_array))
+
+        ax.set_xlabel(
+            f"{y_label} (Real)",
+            fontsize=10,
+            fontweight='bold'
+        )
+        ax.set_ylabel(
+            f"{y_label} (Predicho)",
+            fontsize=10,
+            fontweight='bold'
+        )
+        ax.set_title(
+            f"Real vs Predicho\nError Medio Absoluto: {mae:.2f}",
+            fontsize=11,
+            fontweight='bold',
+            pad=10
+        )
+        ax.legend(loc='best', fontsize=9, framealpha=0.9)
+        ax.grid(True, alpha=0.25, linestyle='--')
+
+        # Establecer los limites sin forzar aspecto cuadrado
+        ax.set_xlim(diagonal_range)
+        ax.set_ylim(diagonal_range)
+
+        # Ajustar layout
+        plt.tight_layout()
+
+        # ═══════════════════════════════════════════════════════════
+        # INTEGRAR EN LA INTERFAZ
+        # ═══════════════════════════════════════════════════════════
+        canvas = FigureCanvasTkAgg(fig, master=plot_frame)
+        canvas.draw()
+
+        canvas_widget = canvas.get_tk_widget()
+        canvas_widget.pack(fill="both", expand=True, padx=5, pady=5)
+        canvas_widget.configure(takefocus=0)
+
+        # Cerrar figura para liberar recursos
+        plt.close(fig)
 
     # ============================================================
     # ENTRENAMIENTO Y EVALUACIÓN DEL MODELO
@@ -361,7 +555,7 @@ class LinearModelPanel(ctk.CTkFrame):
         - Dibuja la recta si solo hay una variable de entrada.
         """
         # ===================================
-        # 1. VALIDACIÓN: Verificar que los datos están divididos
+        # VALIDACIÓN: Verificar que los datos están divididos
         # ===================================
         if self.app.train_df is None or self.app.test_df is None:
             NotificationWindow(
@@ -373,7 +567,7 @@ class LinearModelPanel(ctk.CTkFrame):
             return
 
         # ===================================
-        # 2. OBTENER DATOS CON LAS COLUMNAS SELECCIONADAS
+        # OBTENER DATOS CON LAS COLUMNAS SELECCIONADAS
         # ===================================
         X_train = self.app.train_df[self.app.selection_panel.columnas_entrada]
         y_train = self.app.train_df[self.app.selection_panel.columna_salida]
@@ -381,7 +575,7 @@ class LinearModelPanel(ctk.CTkFrame):
         y_test = self.app.test_df[self.app.selection_panel.columna_salida]
 
         # ===================================
-        # 3. ENTRENAR EL MODELO
+        # ENTRENAR EL MODELO
         # ===================================
         model = LinearRegression()
         model.fit(X_train, y_train)
@@ -390,13 +584,17 @@ class LinearModelPanel(ctk.CTkFrame):
         self.model = model
 
         # ===================================
-        # 4. CALCULAR PREDICCIONES
+        # CALCULAR PREDICCIONES
         # ===================================
         y_pred_train = model.predict(X_train)
         y_pred_test = model.predict(X_test)
 
+        # Almacenar para la gráfica de evaluación
+        self.y_test = y_test
+        self.y_pred_test = y_pred_test
+
         # ===================================
-        # 5. CALCULAR MÉTRICAS
+        # CALCULAR MÉTRICAS
         # ===================================
         r2_train = r2_score(y_train, y_pred_train)
         r2_test = r2_score(y_test, y_pred_test)
@@ -407,7 +605,7 @@ class LinearModelPanel(ctk.CTkFrame):
         self.mse = [mse_train, mse_test]
 
         # ===================================
-        # 6. CONSTRUIR FÓRMULA
+        # CONSTRUIR FÓRMULA
         # ===================================
         coef_terms = []
         for coef, col in zip(model.coef_, X_train.columns):
@@ -425,12 +623,12 @@ class LinearModelPanel(ctk.CTkFrame):
             formula = f"{self.app.selection_panel.columna_salida} = {' + '.join(coef_terms)} - {abs(intercept):.4f}"
 
         # ===================================
-        # 7. MOSTRAR RESULTADOS (fórmula y métricas)
+        # MOSTRAR RESULTADOS (fórmula y métricas)
         # ===================================
         self._display_results(formula, r2_train, r2_test, mse_train, mse_test)
 
         # ===================================
-        # 8. GRÁFICO (solo si hay 1 variable de entrada)
+        # GRÁFICO (solo si hay 1 variable de entrada)
         # ===================================
         if X_train.shape[1] == 1:
             self._plot_graph(
@@ -449,12 +647,13 @@ class LinearModelPanel(ctk.CTkFrame):
             NotificationWindow(
                 self.app,
                 "Aviso",
-                "No se puede representar el gráfico (más de una variable de entrada).",
+                "No se puede representar el gráfico "
+                "(más de una variable de entrada).",
                 "info"
             )
 
         # ===================================
-        # 9. PANEL DE DESCRIPCIÓN DEL MODELO
+        # PANEL DE DESCRIPCIÓN DEL MODELO
         # ===================================
         self._create_description_panel(
             formula,
@@ -463,7 +662,16 @@ class LinearModelPanel(ctk.CTkFrame):
         )
 
         # ===================================
-        # 10. NOTIFICACIÓN DE ÉXITO
+        # GRÁFICA DE EVALUACIÓN DE TEST
+        # ===================================
+        self._create_test_evaluation_graph(
+            y_test,
+            y_pred_test,
+            self.app.selection_panel.columna_salida
+        )
+
+        # ===================================
+        # NOTIFICACIÓN DE ÉXITO
         # ===================================
         NotificationWindow(
             self.app,
@@ -476,7 +684,14 @@ class LinearModelPanel(ctk.CTkFrame):
     # GRÁFICO: PUNTOS Y RECTA DE AJUSTE CON VALORES REALES Y PREDICHOS
     # ============================================================
 
-    def _plot_graph(self, X_train, y_train, X_test, y_test, y_pred_test, model, y_label):
+    def _plot_graph(self,
+                    X_train,
+                    y_train,
+                    X_test,
+                    y_test,
+                    y_pred_test,
+                    model,
+                    y_label):
         """
         Dibuja los puntos de entrenamiento y test junto con la recta de ajuste.
 
@@ -547,7 +762,7 @@ class LinearModelPanel(ctk.CTkFrame):
         # CREAR GRAFICO CON TODOS LOS DATOS
         # ═══════════════════════════════════════════════════════════
 
-        # Crear figura con altura reducida para que coincida con columna izquierda
+        # Crear figura con altura reducida
         fig, ax = plt.subplots(figsize=(8, 3.8), dpi=85)
 
         # ─────────────────────────────────────────────────────────
@@ -578,7 +793,7 @@ class LinearModelPanel(ctk.CTkFrame):
         )
 
         # ─────────────────────────────────────────────────────────
-        # 3. DATOS DE TEST : VALORES PREDICHOS
+        # DATOS DE TEST : VALORES PREDICHOS
         # ─────────────────────────────────────────────────────────
         # Usar un marcador diferente
         ax.scatter(
@@ -687,7 +902,16 @@ class LinearModelPanel(ctk.CTkFrame):
         file_path = Path(folder_path) / file_name
 
         try:
-            desc = self.desc_box.get()
+            desc = self.desc_box.get().strip()
+            if desc == "":
+
+                NotificationWindow(
+                    master,
+                    "Información",
+                    "La descripción del modelo está vacía",
+                    "info"
+                )
+
             data_to_save = {
                 "model": self.model,
                 "desc": desc,
@@ -701,7 +925,7 @@ class LinearModelPanel(ctk.CTkFrame):
             NotificationWindow(
                 master,
                 "Éxito",
-                f"Modelo guardado correctamente en:\n{file_path}",
+                "Modelo guardado correctamente",
                 "success"
             )
             return str(file_path)

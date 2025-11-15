@@ -206,7 +206,6 @@ class DataDisplayManager:
             "evenrow", background=AppTheme.SECONDARY_BACKGROUND)
         self.tree.tag_configure(
             "oddrow", background=AppTheme.PRIMARY_BACKGROUND)
-    
 
     def _format_row_values(self, row_index):
         """

@@ -7,9 +7,8 @@ dentro de un panel con estilo.
 """
 import customtkinter as ctk
 import tkinter.font as tkfont
-from .components import (
-    NotificationWindow, Panel
-)
+from .components import Panel
+
 
 """
     Widget de caja de texto para descripción de modelos.

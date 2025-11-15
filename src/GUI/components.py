@@ -322,7 +322,6 @@ class NotificationWindow(ctk.CTkToplevel):
         self.transient(parent)
         self.grab_set()
 
-
     def _center_window(self):
         """Centrar la ventana en la pantalla"""
         self.update_idletasks()
@@ -339,7 +338,7 @@ class NotificationWindow(ctk.CTkToplevel):
         color = config["color"]
         icon = config["icon"]
 
-        main_frame = ctk.CTkScrollableFrame(
+        main_frame = ctk.CTkFrame(
             self,
             fg_color=AppTheme.SECONDARY_BACKGROUND,
             border_width=2,
