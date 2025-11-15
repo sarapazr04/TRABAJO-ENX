@@ -13,52 +13,52 @@ from .components import AppTheme
 class SplashScreen(ctk.CTkToplevel):
     """
     Ventana de splash screen con animaciones profesionales.
-    
+
     Caracteristicas:
-    - Título 
+    - Título
     - Spinner circular animado
     - Barra de progreso con texto descriptivo
     """
-    
+
     def __init__(self, parent):
         """
         Inicializa la splash screen.
-        
+
         Parameters
         ----------
         parent : ctk.CTk
             Ventana principal de la aplicación
         """
         super().__init__(parent)
-        
+
         self.parent = parent
-        
+
         # Configuración de la ventana
         self.title("")
         self.geometry("700x500")
         self.resizable(False, False)
-        
+
         # Quitar bordes de ventana
         self.overrideredirect(True)
-        
+
         # Centrar en pantalla
         self._center_window()
-        
+
         # Hacer que esté siempre al frente
         self.attributes("-topmost", True)
-        
+
         # Variables de control
         self.animation_running = True
         self.spinner_angle = 0
         self.progress = 0
-        
+
         # Crear interfaz
         self._create_ui()
-        
+
         # Iniciar animaciones
         self._animate_spinner()
         self._simulate_loading()
-    
+
     def _center_window(self):
         """Centrar la ventana en la pantalla."""
         self.update_idletasks()
@@ -67,10 +67,10 @@ class SplashScreen(ctk.CTkToplevel):
         x = (self.winfo_screenwidth() // 2) - (width // 2)
         y = (self.winfo_screenheight() // 2) - (height // 2)
         self.geometry(f"{width}x{height}+{x}+{y}")
-    
+
     def _create_ui(self):
         """Crear la interfaz de la splash screen."""
-        
+
         # ═══════════════════════════════════════════════════════════
         # CONTENEDOR PRINCIPAL CON GRADIENTE
         # ═══════════════════════════════════════════════════════════
@@ -82,7 +82,7 @@ class SplashScreen(ctk.CTkToplevel):
             border_color=AppTheme.PRIMARY_ACCENT
         )
         self.main_frame.pack(fill="both", expand=True, padx=2, pady=2)
-        
+
         # ═══════════════════════════════════════════════════════════
         # CONTENEDOR SUPERIOR: DECORACIÓN
         # ═══════════════════════════════════════════════════════════
@@ -93,7 +93,7 @@ class SplashScreen(ctk.CTkToplevel):
             corner_radius=0
         )
         top_decoration.pack(fill="x", side="top")
-        
+
         # ═══════════════════════════════════════════════════════════
         # SECCIÓN CENTRAL: CONTENIDO
         # ═══════════════════════════════════════════════════════════
@@ -102,9 +102,9 @@ class SplashScreen(ctk.CTkToplevel):
             fg_color="transparent"
         )
         content_frame.pack(fill="both", expand=True, pady=30)
-        
+
         # ─────────────────────────────────────────────────────────
-        # TITULO PRINCIPAL 
+        # TITULO PRINCIPAL
         # ─────────────────────────────────────────────────────────
         self.title_label = ctk.CTkLabel(
             content_frame,
@@ -113,7 +113,7 @@ class SplashScreen(ctk.CTkToplevel):
             text_color=AppTheme.PRIMARY_TEXT
         )
         self.title_label.pack(pady=(50, 10))
-        
+
         # ─────────────────────────────────────────────────────────
         # SUBTITULO
         # ─────────────────────────────────────────────────────────
@@ -124,7 +124,7 @@ class SplashScreen(ctk.CTkToplevel):
             text_color=AppTheme.SECONDARY_TEXT
         )
         self.subtitle_label.pack(pady=(0, 40))
-        
+
         # ─────────────────────────────────────────────────────────
         # SPINNER ANIMADO
         # ─────────────────────────────────────────────────────────
@@ -136,7 +136,7 @@ class SplashScreen(ctk.CTkToplevel):
             highlightthickness=0
         )
         self.spinner_canvas.pack(pady=20)
-        
+
         # ─────────────────────────────────────────────────────────
         # BARRA DE PROGRESO
         # ─────────────────────────────────────────────────────────
@@ -145,7 +145,7 @@ class SplashScreen(ctk.CTkToplevel):
             fg_color="transparent"
         )
         progress_container.pack(pady=(20, 10), padx=100, fill="x")
-        
+
         self.progress_bar = ctk.CTkProgressBar(
             progress_container,
             mode="determinate",
@@ -156,7 +156,7 @@ class SplashScreen(ctk.CTkToplevel):
         )
         self.progress_bar.pack(fill="x")
         self.progress_bar.set(0)
-        
+
         # ─────────────────────────────────────────────────────────
         # TEXTO DE ESTADO
         # ─────────────────────────────────────────────────────────
@@ -167,7 +167,7 @@ class SplashScreen(ctk.CTkToplevel):
             text_color=AppTheme.DIM_TEXT
         )
         self.status_label.pack(pady=(10, 0))
-        
+
         # ═══════════════════════════════════════════════════════════
         # PIE DE PAGINA: VERSION
         # ═══════════════════════════════════════════════════════════
@@ -176,7 +176,7 @@ class SplashScreen(ctk.CTkToplevel):
             fg_color="transparent"
         )
         footer_frame.pack(side="bottom", pady=(10, 25))
-        
+
         version_label = ctk.CTkLabel(
             footer_frame,
             text="Version 1.0.0",
@@ -184,25 +184,25 @@ class SplashScreen(ctk.CTkToplevel):
             text_color=AppTheme.SECONDARY_TEXT
         )
         version_label.pack()
-    
+
     def _animate_spinner(self):
         """
         Animar el spinner circular.
-        
+
         Dibuja un arco rotatorio que simula un spinner de carga.
         """
         if not self.animation_running:
             return
-        
+
         # Limpiar canvas
         self.spinner_canvas.delete("all")
-        
+
         # Parámetros del spinner
         center_x = 40
         center_y = 40
         radius = 30
         thickness = 4
-        
+
         # Dibujar circulo de fondo
         self.spinner_canvas.create_oval(
             center_x - radius,
@@ -212,12 +212,12 @@ class SplashScreen(ctk.CTkToplevel):
             outline=AppTheme.TERTIARY_BACKGROUND,
             width=thickness
         )
-        
+
         # Calcular angulos para el arco animado
         start_angle = self.spinner_angle
         extent = 120  # Longitud del arco
-        
-        # Dibujar arco principal 
+
+        # Dibujar arco principal
         self.spinner_canvas.create_arc(
             center_x - radius,
             center_y - radius,
@@ -229,8 +229,8 @@ class SplashScreen(ctk.CTkToplevel):
             width=thickness,
             style="arc"
         )
-        
-        # Dibujar arco de "brillo" 
+
+        # Dibujar arco de "brillo"
         self.spinner_canvas.create_arc(
             center_x - radius,
             center_y - radius,
@@ -242,17 +242,17 @@ class SplashScreen(ctk.CTkToplevel):
             width=thickness,
             style="arc"
         )
-        
+
         # Incrementar angulo para rotación
         self.spinner_angle = (self.spinner_angle + 8) % 360
-        
+
         # Continuar animación
         self.after(30, self._animate_spinner)
-    
+
     def _simulate_loading(self):
         """
         Simular proceso de carga con barra de progreso.
-        
+
         Simula diferentes etapas de inicialización del programa:
         - Cargando componentes
         - Inicializando interfaz
@@ -266,34 +266,34 @@ class SplashScreen(ctk.CTkToplevel):
             (0.8, "Configurando herramientas..."),
             (1.0, "Finalizando..."),
         ]
-        
+
         self.current_stage = 0
-        
+
         self.after(1200, self._update_loading_stage)
-    
+
     def _update_loading_stage(self):
         """
         Actualizar la etapa actual de carga.
-        
+
         Este método se llama recursivamente para avanzar por todas las etapas.
         """
         if self.current_stage >= len(self.stages):
             # Terminar animación y cerrar
             self._close_splash()
             return
-        
+
         target_progress, status_text = self.stages[self.current_stage]
         self._animate_progress_to(target_progress, status_text)
-        
+
         # Tiempo de espera antes de la siguiente etapa (en milisegundos)
         delay = 800 if self.current_stage < len(self.stages) - 1 else 600
         self.current_stage += 1
         self.after(delay, self._update_loading_stage)
-    
+
     def _animate_progress_to(self, target, status_text):
         """
         Animar la barra de progreso hacia un valor objetivo.
-        
+
         Parameters
         ----------
         target : float
@@ -303,35 +303,35 @@ class SplashScreen(ctk.CTkToplevel):
         """
         # Actualizar texto de estado inmediatamente
         self.status_label.configure(text=status_text)
-        
+
         # Guardar el objetivo para la animación
         self.progress_target = target
-        
+
         # Iniciar animación de la barra
         self._animate_progress_step()
-    
+
     def _animate_progress_step(self):
         """
         Un paso de la animación de progreso.
-        
+
         Este método se llama recursivamente hasta alcanzar el objetivo.
         """
         if self.progress < self.progress_target:
             self.progress += 0.02
             self.progress_bar.set(min(self.progress, self.progress_target))
             self.after(20, self._animate_progress_step)
-    
+
     def _close_splash(self):
         """
         Cerrar la splash screen con transición suave.
-        
+
         Detiene las animaciones y cierra la ventana.
         """
         self.animation_running = False
-        
+
         # Esperar un momento antes de cerrar
         self.after(200, self._destroy_and_show_main)
-    
+
     def _destroy_and_show_main(self):
         """
         Destruir la splash screen y mostrar la ventana principal.
@@ -344,18 +344,18 @@ class SplashScreen(ctk.CTkToplevel):
 def show_splash_screen(app):
     """
     Mostrar la splash screen antes de la aplicación principal.
-    
+
     Esta función se llama desde main() antes de iniciar el mainloop.
-    
+
     Parameters
     ----------
     app : DataLoaderApp
         Instancia de la aplicación principal
-    
+
     Usage
     -----
     app = DataLoaderApp()
-    app.withdraw() 
+    app.withdraw()
     show_splash_screen(app)
     app.mainloop()
     """

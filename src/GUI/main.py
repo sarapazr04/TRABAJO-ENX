@@ -16,7 +16,6 @@ from data_import.importer import import_data
 from .data_split import DataSplitPanel
 from .desc_model import DescriptBox
 from .model_linear import LinearModelPanel
-from .welcome_message import WelcomeMessage
 from .load_model import LoadModelPanel
 from .splash_screen import show_splash_screen
 
@@ -51,13 +50,13 @@ class DataLoaderApp(ctk.CTk):
 
         # Crear la interfaz
         self.configure(fg_color=AppTheme.PRIMARY_BACKGROUND)
-        # self.welcome_window = WelcomeMessage(self)  # ELIMINADO: No mostrar ventana de bienvenida
-        
+        # self.welcome_window = WelcomeMessage(self)
+
         # ═══════════════════════════════════════════════════════════
         # PESTAÑAS FIJAS EN LA PARTE SUPERIOR (NO SCROLLEAN)
         # ═══════════════════════════════════════════════════════════
         self._create_tab_bar()
-        
+
         # ═══════════════════════════════════════════════════════════
         # CONTENEDOR SCROLLABLE PARA EL CONTENIDO
         # ═══════════════════════════════════════════════════════════
@@ -66,7 +65,7 @@ class DataLoaderApp(ctk.CTk):
 
         # Esto reduce el lag cuando hay graficos de matplotlib
         self.ext_frame._parent_canvas.configure(scrollregion=(0, 0, 0, 2000))
-        
+
         # ═══════════════════════════════════════════════════════════
         # CONTENEDORES DE CONTENIDO (DENTRO DEL SCROLLABLE)
         # ═══════════════════════════════════════════════════════════
@@ -85,9 +84,10 @@ class DataLoaderApp(ctk.CTk):
     def _create_tab_bar(self):
         """
         Crea solo la barra de pestañas (botones de navegación).
-        
+
         IMPORTANTE: Este método solo crea los botones de navegación que están
-        fijos en la parte superior. Los contenedores de contenido se crean después
+        fijos en la parte superior.
+        Los contenedores de contenido se crean después
         en _create_tab_content_containers() cuando self.ext_frame ya existe.
         """
         # Barra de pestañas FIJA (fuera del scrollable frame)
@@ -126,11 +126,11 @@ class DataLoaderApp(ctk.CTk):
             border_width=0
         )
         self.tab_load_button.pack(side="left")
-    
+
     def _create_tab_content_containers(self):
         """
         Crea los contenedores de contenido para cada pestaña.
-        
+
         Este método se llama DESPUÉS de crear self.ext_frame porque los
         contenedores necesitan estar dentro del frame scrollable.
         """
@@ -172,7 +172,7 @@ class DataLoaderApp(ctk.CTk):
         #  Ocultar frame de 'Cargar modelo' (sin destruir)
         if self.load_mode_frame.winfo_ismapped():
             self.load_mode_frame.pack_forget()
-        
+
         # Resetear scroll al inicio
         self._reset_scroll()
 
@@ -202,21 +202,22 @@ class DataLoaderApp(ctk.CTk):
         if not self.load_mode_frame.winfo_ismapped():
             self.load_mode_frame.pack(
                 fill="both", expand=True, padx=0, pady=(5, 0))
-        
+
         # Resetear scroll al inicio
         self._reset_scroll()
-    
+
     def _reset_scroll(self):
         """
         Resetea el scroll del frame scrollable al inicio (parte superior).
-        
-        Este método se llama automáticamente cuando el usuario cambia de pestaña
+
+        Este método se llama automáticamente
+        cuando el usuario cambia de pestaña
         para que siempre vea el inicio del contenido de la nueva pestaña.
         """
         # Acceder al canvas interno del CTkScrollableFrame
         # El canvas es el componente que maneja el scroll
         canvas = self.ext_frame._parent_canvas
-        
+
         # Mover el scroll a la posición (0, 0) - inicio
         canvas.yview_moveto(0)
 
@@ -347,18 +348,18 @@ class DataLoaderApp(ctk.CTk):
     def _validate_dataset(self, dataframe):
         """
         Valida que el dataset cargado sea válido y tenga datos utilizables.
-        
+
         Verifica:
         - Que el DataFrame no esté vacío
         - Que tenga al menos 2 filas (mínimo para análisis)
         - Que tenga al menos 2 columnas (entrada + salida)
         - Que contenga datos válidos (no todo NaN)
-        
+
         Parameters
         ----------
         dataframe : pd.DataFrame
             DataFrame a validar
-            
+
         Returns
         -------
         tuple(bool, str)
@@ -369,33 +370,37 @@ class DataLoaderApp(ctk.CTk):
         # Verificar que el DataFrame no sea None
         if dataframe is None:
             return False, "El archivo no pudo ser leído correctamente."
-        
+
         # Verificar que no esté vacío
         if dataframe.empty:
             return False, "El archivo está vacío. No contiene ningún dato."
-        
+
         # Verificar número de filas
         num_rows = len(dataframe)
         if num_rows < 2:
-            return False, f"El archivo solo tiene {num_rows} fila(s). Se necesitan al menos 2 filas para realizar análisis."
-        
+            return False, f"El archivo solo tiene {num_rows} fila(s). "
+        "Se necesitan al menos 2 filas para realizar análisis."
+
         # Verificar número de columnas
         num_cols = len(dataframe.columns)
         if num_cols < 2:
-            return False, f"El archivo solo tiene {num_cols} columna(s). Se necesitan al menos 2 columnas (entrada y salida) para crear modelos."
-        
+            return False, f"El archivo solo tiene {num_cols} columna(s). Se "
+        "necesitan al menos 2 columnas (entrada y salida) para crear modelos."
+
         # Verificar que no todas las celdas sean NaN
         total_cells = dataframe.size
         nan_cells = dataframe.isna().sum().sum()
-        
+
         if nan_cells == total_cells:
-            return False, "El archivo no contiene datos válidos. Todas las celdas están vacías."
-        
+            return False, "El archivo no contiene datos válidos. "
+        "Todas las celdas están vacías."
+
         # Verificar que al menos haya algunas filas completas
         complete_rows = dataframe.dropna().shape[0]
         if complete_rows == 0:
-            return False, "El archivo no tiene ninguna fila con datos completos. Todas las filas tienen valores faltantes."
-        
+            return False, "El archivo no tiene ninguna fila "
+        "con datos completos. Todas las filas tienen valores faltantes."
+
         # Validación exitosa
         return True, ""
 
@@ -407,16 +412,17 @@ class DataLoaderApp(ctk.CTk):
         try:
             # Intentar cargar el archivo
             df, preview = import_data(file_path)
-            
+
             # Validar que el dataset sea válido
             is_valid, error_message = self._validate_dataset(df)
-            
+
             if not is_valid:
                 # Dataset inválido - mostrar error
                 self.after(0, self._on_load_error, error_message)
                 return
 
-            # Si funciona y es válido, llamar función de éxito en el hilo principal
+            # Si funciona y es válido, llamar función
+            # de éxito en el hilo principal
             # self.after(0, ...) ejecuta la función en el hilo principal
             # No puedes modificar la GUI desde un thread.
             # Para eso usamos .after()
@@ -476,7 +482,8 @@ class DataLoaderApp(ctk.CTk):
             NotificationWindow(
                 self,
                 "Carga Exitosa",
-                f"Archivo cargado correctamente\n\n{rows:,} filas x {cols} columnas",
+                "Archivo cargado "
+                f"correctamente\n\n{rows:,} filas x {cols} columnas",
                 "success"
             )
         except Exception as e:
@@ -536,7 +543,8 @@ class DataLoaderApp(ctk.CTk):
         memory_mb = dataframe.memory_usage(
             deep=True).sum() / 1024**2  # Calcular memoria en MB
 
-        stats_text = f"Filas: {rows:,}  |  Columnas: {cols}  |  Memoria: {memory_mb:.2f} MB"
+        stats_text = f"Filas: {rows:,}  |  Columnas: {cols}  "
+        f"|  Memoria: {memory_mb:.2f} MB"
         self.stats_label.configure(text=stats_text)
 
     # ================================================================
@@ -585,7 +593,8 @@ class DataLoaderApp(ctk.CTk):
         self.preprocessed_df = df
 
         # IMPORTANTE: Destruir el panel del modelo si existe
-        # (porque al cambiar el preprocesamiento, el modelo anterior ya no es válido)
+        # (porque al cambiar el preprocesamiento,
+        #  el modelo anterior ya no es válido)
         if hasattr(self, '_model_panel_frame') and self._model_panel_frame:
             try:
                 if self._model_panel_frame.winfo_exists():
@@ -742,7 +751,8 @@ class DataLoaderApp(ctk.CTk):
 
     def reset_panels(self):
         """
-        Reiniciar el estado interno de la aplicación y eliminar paneles previos.
+        Reiniciar el estado interno de la aplicación y
+        eliminar paneles previos.
         Se usa cuando el usuario quiere procesar un nuevo modelo desde cero.
         """
         #  Destruir el panel de división (train/test) si existe
@@ -826,7 +836,7 @@ class DataLoaderApp(ctk.CTk):
 def main():
     """
     Función principal que inicia la aplicación.
-    
+
     Proceso de inicio:
     1. Crear la aplicación principal
     2. Ocultar temporalmente la ventana principal
@@ -834,8 +844,8 @@ def main():
     4. Cuando termina la splash screen, mostrar aplicación principal
     """
     app = DataLoaderApp()
-    app.withdraw() 
-    show_splash_screen(app)  
+    app.withdraw()
+    show_splash_screen(app)
     app.mainloop()
 
 

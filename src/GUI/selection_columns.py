@@ -10,7 +10,8 @@ import pandas as pd
 from pandas.api.types import is_numeric_dtype
 import threading
 from .components import (
-    NotificationWindow, Panel, AppTheme, AppConfig, UploadButton, LoadingIndicator
+    NotificationWindow, Panel, AppTheme,
+    AppConfig, UploadButton, LoadingIndicator
 )
 
 
@@ -250,7 +251,8 @@ class PreprocessingPanel:
             )
             color = AppTheme.WARNING
         else:
-            info_text = "✓ No hay valores faltantes en las columnas seleccionadas"
+            info_text = "✓ No hay valores faltantes "
+            "en las columnas seleccionadas"
             color = AppTheme.SUCCES
 
         self.stats_label = ctk.CTkLabel(
@@ -381,7 +383,8 @@ class PreprocessingPanel:
         thread.start()
 
     def _apply_preprocessing_thread(self):
-        """Aplicar el preprocesamiento según la opción seleccionada (en hilo)."""
+        """Aplicar el preprocesamiento según
+          la opción seleccionada (en hilo)."""
         option = self.option_var.get()
 
         # Validar selección
@@ -412,7 +415,7 @@ class PreprocessingPanel:
                 0, lambda: self.apply_button.configure(state="normal"))
             return
 
-         #  Ejecutar la lógica del preprocesado en el hilo principal
+        #  Ejecutar la lógica del preprocesado en el hilo principal
         self.app.after(0, lambda: self._apply_preprocessing_logic(option))
 
         #  Al terminar, cerrar el indicador y reactivar botón
@@ -476,7 +479,8 @@ class PreprocessingPanel:
             NotificationWindow(
                 self.app,
                 "Error",
-                "No hay columnas numéricas en la selección para calcular la media.",
+                "No hay columnas numéricas en la"
+                " selección para calcular la media.",
                 "warning"
             )
             return
@@ -494,7 +498,8 @@ class PreprocessingPanel:
         NotificationWindow(
             self.app,
             "Preprocesado Completado",
-            f"Se rellenaron valores faltantes con la media en {len(numeric_cols)} columna(s).",
+            "Se rellenaron valores faltantes"
+            f" con la media en {len(numeric_cols)} columna(s).",
             "success"
         )
 
@@ -513,7 +518,8 @@ class PreprocessingPanel:
             NotificationWindow(
                 self.app,
                 "Error",
-                "No hay columnas numéricas en la selección para calcular la mediana.",
+                "No hay columnas numéricas en "
+                "la selección para calcular la mediana.",
                 "warning"
             )
             return
@@ -531,7 +537,8 @@ class PreprocessingPanel:
         NotificationWindow(
             self.app,
             "Preprocesado Completado",
-            f"Se rellenaron valores faltantes con la mediana en {len(numeric_cols)} columna(s).",
+            "Se rellenaron valores faltantes "
+            f"con la mediana en {len(numeric_cols)} columna(s).",
             "success"
         )
 
@@ -601,7 +608,8 @@ class PreprocessingPanel:
             )
             color = AppTheme.WARNING
         else:
-            info_text = "✓ No hay valores faltantes en las columnas seleccionadas"
+            info_text = "✓ No hay valores faltantes"
+            " en las columnas seleccionadas"
             color = AppTheme.SUCCES
 
         self.stats_label.configure(text=info_text, text_color=color)

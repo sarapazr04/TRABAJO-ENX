@@ -44,8 +44,8 @@ class WelcomeMessage():
                                     expand=True,
                                     padx=10, pady=(0, 10),
                                     side="top")
-        body_text1 = ("Para empezar a crear un modelo a partir de datos, en la "
-                      "pestaña de Crear modelo, haga click en Cargar Datos.")
+        body_text1 = ("Para empezar a crear un modelo a partir de datos, en la"
+                      " pestaña de Crear modelo, haga click en Cargar Datos.")
 
         textbox1 = ctk.CTkTextbox(self.load_create_model)
         textbox1.configure(font=AppConfig.BODY_FONT,
@@ -56,7 +56,6 @@ class WelcomeMessage():
         textbox1.insert("0.0", body_text1)
         textbox1.configure(state="disabled")
         textbox1.pack(fill="both", expand=False, pady=(5, 15), padx=10)
-        
 
         body_text2 = ("Para cargar un modelo ya entrenado, en la "
                       "pestaña de Cargar modelo, haga click en Cargar Modelo.")
