@@ -1,16 +1,17 @@
 import customtkinter as ctk
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import joblib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
-import numpy as np
-import pandas as pd
-from .components import Panel, UploadButton, NotificationWindow, AppTheme, AppConfig
-from .desc_model import DescriptBox
-import joblib
 from pathlib import Path
 from datetime import datetime
 from tkinter import filedialog
+from .components import Panel, UploadButton, NotificationWindow, AppTheme, AppConfig
+from .desc_model import DescriptBox
+from .predict_gui import PredictionSection
 
 
 class LinearModelPanel(ctk.CTkFrame):
@@ -102,11 +103,19 @@ class LinearModelPanel(ctk.CTkFrame):
             height=400
         )
         self.description_frame.pack(
-            fill="both", expand=True, padx=20, pady=(10, 10))
+            fill="both", expand=True, padx=20, pady=10)
         self.description_frame.pack_propagate(False)
 
         # Botón de guardar modelo
         self._create_save_button(panel)
+
+        # Contenedor de la predicción del modelo
+
+        self.prediction_frame = ctk.CTkFrame(
+            panel,
+            fg_color=AppTheme.PRIMARY_BACKGROUND
+        )
+        self.prediction_frame.pack(fill="x", expand=True, padx=20, pady=10)
 
     def _display_results(self, formula, r2_train, r2_test, mse_train, mse_test):
         """
@@ -347,6 +356,17 @@ class LinearModelPanel(ctk.CTkFrame):
         )
         self.desc_box.set(descripcion_inicial)
 
+    def _create_prediction_panel(self, master, formula):
+        """Crea el panel de predicción del modelo."""
+        # Limpiar panel anterior si existe
+        for widget in self.prediction_frame.winfo_children():
+            widget.destroy()
+
+        # Crear el panel de predicción
+        prediction_panel = PredictionSection(self.app, master, self.app.selection_panel.columnas_entrada, formula)
+        prediction_panel.display_data()
+
+
     # ============================================================
     # ENTRENAMIENTO Y EVALUACIÓN DEL MODELO
     # ============================================================
@@ -463,7 +483,13 @@ class LinearModelPanel(ctk.CTkFrame):
         )
 
         # ===================================
-        # 10. NOTIFICACIÓN DE ÉXITO
+        # 10. PANEL DE PREDICCIÓN DEL MODELO
+        # ===================================
+        self._create_prediction_panel(self.prediction_frame, formula)
+
+
+        # ===================================
+        # 11. NOTIFICACIÓN DE ÉXITO
         # ===================================
         NotificationWindow(
             self.app,
