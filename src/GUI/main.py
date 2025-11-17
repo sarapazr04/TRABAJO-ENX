@@ -157,10 +157,12 @@ class DataLoaderApp(ctk.CTk):
         # Activar colores de pestañas
         self.tab_create_button.configure(
             fg_color=AppTheme.PRIMARY_ACCENT,
+            hover_color=AppTheme.HOVER_ACCENT,
             text_color="#ffffff"
         )
         self.tab_load_button.configure(
             fg_color=AppTheme.SECONDARY_BACKGROUND,
+            hover_color=AppTheme.TERTIARY_BACKGROUND,
             text_color=AppTheme.PRIMARY_TEXT
         )
 
@@ -181,10 +183,12 @@ class DataLoaderApp(ctk.CTk):
         # Activar colores de pestañas
         self.tab_load_button.configure(
             fg_color=AppTheme.PRIMARY_ACCENT,
+            hover_color=AppTheme.HOVER_ACCENT,
             text_color="#ffffff"
         )
         self.tab_create_button.configure(
             fg_color=AppTheme.SECONDARY_BACKGROUND,
+            hover_color=AppTheme.TERTIARY_BACKGROUND,
             text_color=AppTheme.PRIMARY_TEXT
         )
 

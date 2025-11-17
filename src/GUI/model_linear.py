@@ -1,16 +1,19 @@
 import customtkinter as ctk
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 import pandas as pd
 from .components import Panel, NotificationWindow, AppTheme, AppConfig
 from .desc_model import DescriptBox
 import joblib
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
 from pathlib import Path
 from datetime import datetime
 from tkinter import filedialog
+from .components import Panel, UploadButton, NotificationWindow, AppTheme, AppConfig
+from .desc_model import DescriptBox
+from .predict_gui import PredictionSection
 
 
 class LinearModelPanel(ctk.CTkFrame):
@@ -141,12 +144,15 @@ class LinearModelPanel(ctk.CTkFrame):
         # Botón de guardar modelo
         self._create_save_button(panel)
 
-    def _display_results(self,
-                         formula,
-                         r2_train,
-                         r2_test,
-                         mse_train,
-                         mse_test):
+        # Contenedor de la predicción del modelo
+
+        self.prediction_frame = ctk.CTkFrame(
+            panel,
+            fg_color=AppTheme.PRIMARY_BACKGROUND
+        )
+        self.prediction_frame.pack(fill="x", expand=True, padx=20, pady=10)
+
+    def _display_results(self, formula, r2_train, r2_test, mse_train, mse_test):
         """
         Muestra la fórmula y las métricas en la columna izquierda.
 
@@ -371,6 +377,16 @@ class LinearModelPanel(ctk.CTkFrame):
             "Escribe aquí tus observaciones adicionales..."
         )
         self.desc_box.set(descripcion_inicial)
+
+    def _create_prediction_panel(self, master, formula):
+        """Crea el panel de predicción del modelo."""
+        # Limpiar panel anterior si existe
+        for widget in self.prediction_frame.winfo_children():
+            widget.destroy()
+
+        # Crear el panel de predicción
+        prediction_panel = PredictionSection(self.app, master, self.app.selection_panel.columnas_entrada, formula)
+        prediction_panel.display_data()
 
     def _create_test_evaluation_graph(self, y_test, y_pred_test, y_label):
         """
@@ -660,6 +676,8 @@ class LinearModelPanel(ctk.CTkFrame):
             r2_test,
             self.app.selection_panel.columna_salida
         )
+
+        self._create_prediction_panel(self.prediction_frame, formula)
 
         # ===================================
         # GRÁFICA DE EVALUACIÓN DE TEST

@@ -16,8 +16,8 @@ Compatible con el formato extendido:
 import joblib
 import customtkinter as ctk
 from tkinter import filedialog
-from .components import (AppTheme,
-                         AppConfig, Panel, NotificationWindow, UploadButton)
+from .components import AppTheme, AppConfig, Panel, NotificationWindow, UploadButton
+from .predict_gui import PredictionSection
 
 
 class LoadModelPanel(ctk.CTkFrame):
@@ -140,7 +140,7 @@ class LoadModelPanel(ctk.CTkFrame):
         # Fórmula (si el modelo es lineal)
         if hasattr(model, "coef_") and hasattr(model, "intercept_"):
             coef_str = " + ".join(
-                f"{coef:.4f}·x{i+1}" for i, coef in enumerate(model.coef_)
+                f"{coef:.4f}*{col}" for coef, col in zip(model.coef_, cols_in)
             )
             formula = f"y = {coef_str} + {model.intercept_:.4f}"
         else:
@@ -211,3 +211,6 @@ class LoadModelPanel(ctk.CTkFrame):
         self.path_label.configure(text=file_path,
                                   text_color=AppTheme.PRIMARY_ACCENT)
         self.update_idletasks()
+
+        prediction_panel = PredictionSection(self.app, self.result_container, cols_in, formula)
+        prediction_panel.display_data()
