@@ -16,8 +16,8 @@ from data_import.importer import import_data
 from .data_split import DataSplitPanel
 from .desc_model import DescriptBox
 from .model_linear import LinearModelPanel
-from .welcome_message import WelcomeMessage
 from .load_model import LoadModelPanel
+from .splash_screen import show_splash_screen
 
 
 class DataLoaderApp(ctk.CTk):
@@ -50,15 +50,26 @@ class DataLoaderApp(ctk.CTk):
 
         # Crear la interfaz
         self.configure(fg_color=AppTheme.PRIMARY_BACKGROUND)
-        self.welcome_window = WelcomeMessage(self)
+        # self.welcome_window = WelcomeMessage(self)
+
+        # ═══════════════════════════════════════════════════════════
+        # PESTAÑAS FIJAS EN LA PARTE SUPERIOR (NO SCROLLEAN)
+        # ═══════════════════════════════════════════════════════════
+        self._create_tab_bar()
+
+        # ═══════════════════════════════════════════════════════════
+        # CONTENEDOR SCROLLABLE PARA EL CONTENIDO
+        # ═══════════════════════════════════════════════════════════
         self.ext_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.ext_frame.pack(fill="both", expand=True)
 
         # Esto reduce el lag cuando hay graficos de matplotlib
         self.ext_frame._parent_canvas.configure(scrollregion=(0, 0, 0, 2000))
 
-        # Pestañas: Crear Modelo / Cargar Modelo
-        self._create_tabs()
+        # ═══════════════════════════════════════════════════════════
+        # CONTENEDORES DE CONTENIDO (DENTRO DEL SCROLLABLE)
+        # ═══════════════════════════════════════════════════════════
+        self._create_tab_content_containers()
 
         self._create_control_panel()
         self._create_data_panel()
@@ -70,14 +81,18 @@ class DataLoaderApp(ctk.CTk):
     # ================================================================
     # PESTAÑAS SUPERIORES: Crear modelo / Cargar modelo
     # ================================================================
-    def _create_tabs(self):
+    def _create_tab_bar(self):
         """
-        Crea la barra de pestañas tipo navegador (Crear modelo / Cargar modelo)
-        y los contenedores de contenido para cada pestaña.
+        Crea solo la barra de pestañas (botones de navegación).
+
+        IMPORTANTE: Este método solo crea los botones de navegación que están
+        fijos en la parte superior.
+        Los contenedores de contenido se crean después
+        en _create_tab_content_containers() cuando self.ext_frame ya existe.
         """
-        # Barra de pestañas 
+        # Barra de pestañas FIJA (fuera del scrollable frame)
         self.tab_bar = ctk.CTkFrame(
-            self.ext_frame,
+            self,  # Padre: ventana principal (no scrollea)
             fg_color="transparent"
         )
         self.tab_bar.pack(fill="x", padx=20, pady=(10, 0))
@@ -112,6 +127,13 @@ class DataLoaderApp(ctk.CTk):
         )
         self.tab_load_button.pack(side="left")
 
+    def _create_tab_content_containers(self):
+        """
+        Crea los contenedores de contenido para cada pestaña.
+
+        Este método se llama DESPUÉS de crear self.ext_frame porque los
+        contenedores necesitan estar dentro del frame scrollable.
+        """
         # Contenedor de contenido para "Crear modelo"
         self.create_mode_frame = ctk.CTkFrame(
             self.ext_frame,
@@ -146,12 +168,15 @@ class DataLoaderApp(ctk.CTk):
 
         #  Mostrar frame de 'Crear modelo' (sin reconstruir nada)
         if not self.create_mode_frame.winfo_ismapped():
-            self.create_mode_frame.pack(fill="both", expand=True, padx=0, pady=(5, 0))
+            self.create_mode_frame.pack(
+                fill="both", expand=True, padx=0, pady=(5, 0))
 
         #  Ocultar frame de 'Cargar modelo' (sin destruir)
         if self.load_mode_frame.winfo_ismapped():
             self.load_mode_frame.pack_forget()
 
+        # Resetear scroll al inicio
+        self._reset_scroll()
 
     def _show_load_tab(self):
         """Mostrar la pestaña 'Cargar modelo' y ocultar 'Crear modelo'."""
@@ -179,9 +204,26 @@ class DataLoaderApp(ctk.CTk):
             self._load_model_panel_created = True
 
         if not self.load_mode_frame.winfo_ismapped():
-            self.load_mode_frame.pack(fill="both", expand=True, padx=0, pady=(5, 0))
+            self.load_mode_frame.pack(
+                fill="both", expand=True, padx=0, pady=(5, 0))
 
+        # Resetear scroll al inicio
+        self._reset_scroll()
 
+    def _reset_scroll(self):
+        """
+        Resetea el scroll del frame scrollable al inicio (parte superior).
+
+        Este método se llama automáticamente
+        cuando el usuario cambia de pestaña
+        para que siempre vea el inicio del contenido de la nueva pestaña.
+        """
+        # Acceder al canvas interno del CTkScrollableFrame
+        # El canvas es el componente que maneja el scroll
+        canvas = self.ext_frame._parent_canvas
+
+        # Mover el scroll a la posición (0, 0) - inicio
+        canvas.yview_moveto(0)
 
     def _create_load_tab_placeholder(self):
 
@@ -192,8 +234,6 @@ class DataLoaderApp(ctk.CTk):
         # Crear y empaquetar el panel de carga de modelo
         load_panel = LoadModelPanel(self.load_mode_frame, self)
         load_panel.pack(fill="both", expand=True, padx=20, pady=(10, 20))
-
-
 
     # ================================================================
     # PANEL DE CONTROLES : Botón de carga y estadísticas
@@ -309,19 +349,87 @@ class DataLoaderApp(ctk.CTk):
         )
         thread.start()
 
+    def _validate_dataset(self, dataframe):
+        """
+        Valida que el dataset cargado sea válido y tenga datos utilizables.
+
+        Verifica:
+        - Que el DataFrame no esté vacío
+        - Que tenga al menos 2 filas (mínimo para análisis)
+        - Que tenga al menos 2 columnas (entrada + salida)
+        - Que contenga datos válidos (no todo NaN)
+
+        Parameters
+        ----------
+        dataframe : pd.DataFrame
+            DataFrame a validar
+
+        Returns
+        -------
+        tuple(bool, str)
+            (es_valido, mensaje_error)
+            Si es válido: (True, "")
+            Si no es válido: (False, "descripción del problema")
+        """
+        # Verificar que el DataFrame no sea None
+        if dataframe is None:
+            return False, "El archivo no pudo ser leído correctamente."
+
+        # Verificar que no esté vacío
+        if dataframe.empty:
+            return False, "El archivo está vacío. No contiene ningún dato."
+
+        # Verificar número de filas
+        num_rows = len(dataframe)
+        if num_rows < 2:
+            return False, f"El archivo solo tiene {num_rows} fila(s). "
+        "Se necesitan al menos 2 filas para realizar análisis."
+
+        # Verificar número de columnas
+        num_cols = len(dataframe.columns)
+        if num_cols < 2:
+            return False, f"El archivo solo tiene {num_cols} columna(s). Se "
+        "necesitan al menos 2 columnas (entrada y salida) para crear modelos."
+
+        # Verificar que no todas las celdas sean NaN
+        total_cells = dataframe.size
+        nan_cells = dataframe.isna().sum().sum()
+
+        if nan_cells == total_cells:
+            return False, "El archivo no contiene datos válidos. "
+        "Todas las celdas están vacías."
+
+        # Verificar que al menos haya algunas filas completas
+        complete_rows = dataframe.dropna().shape[0]
+        if complete_rows == 0:
+            return False, "El archivo no tiene ninguna fila "
+        "con datos completos. Todas las filas tienen valores faltantes."
+
+        # Validación exitosa
+        return True, ""
+
     def _load_file_thread(self, file_path):
         """
         Esta función se ejecuta en segundo plano.
-        Carga el archivo y avisa si funciona o falla.
+        Carga el archivo, valida los datos y avisa si funciona o falla.
         """
         try:
             # Intentar cargar el archivo
             df, preview = import_data(file_path)
 
-            # Si funciona, llamar función de éxito en el hilo principal
+            # Validar que el dataset sea válido
+            is_valid, error_message = self._validate_dataset(df)
+
+            if not is_valid:
+                # Dataset inválido - mostrar error
+                self.after(0, self._on_load_error, error_message)
+                return
+
+            # Si funciona y es válido, llamar función
+            # de éxito en el hilo principal
             # self.after(0, ...) ejecuta la función en el hilo principal
             # No puedes modificar la GUI desde un thread.
-            # Poara eso usamos .after()
+            # Para eso usamos .after()
             self.after(0, self._on_load_success, file_path, df)
 
         except Exception as e:
@@ -368,17 +476,18 @@ class DataLoaderApp(ctk.CTk):
         self._display_data(dataframe)
         self._create_selection_panel(dataframe)
         self.upload_button.configure(state="normal", text="Cargar Datos")
-        
+
         rows, cols = dataframe.shape
         self.after(100, lambda: self._show_success_notification(rows, cols))
-    
+
     def _show_success_notification(self, rows, cols):
         """Muestra la notificación de éxito de carga"""
         try:
             NotificationWindow(
                 self,
                 "Carga Exitosa",
-                f"Archivo cargado correctamente\n\n{rows:,} filas x {cols} columnas",
+                "Archivo cargado "
+                f"correctamente\n\n{rows:,} filas x {cols} columnas",
                 "success"
             )
         except Exception as e:
@@ -438,7 +547,8 @@ class DataLoaderApp(ctk.CTk):
         memory_mb = dataframe.memory_usage(
             deep=True).sum() / 1024**2  # Calcular memoria en MB
 
-        stats_text = f"Filas: {rows:,}  |  Columnas: {cols}  |  Memoria: {memory_mb:.2f} MB"
+        stats_text = f"Filas: {rows:,}  |  Columnas: {cols}  "
+        f"|  Memoria: {memory_mb:.2f} MB"
         self.stats_label.configure(text=stats_text)
 
     # ================================================================
@@ -485,9 +595,10 @@ class DataLoaderApp(ctk.CTk):
         """Registrar el dataframe preprocesado y mostrar el panel"""
         self.is_preprocessed = True
         self.preprocessed_df = df
-        
+
         # IMPORTANTE: Destruir el panel del modelo si existe
-        # (porque al cambiar el preprocesamiento, el modelo anterior ya no es válido)
+        # (porque al cambiar el preprocesamiento,
+        #  el modelo anterior ya no es válido)
         if hasattr(self, '_model_panel_frame') and self._model_panel_frame:
             try:
                 if self._model_panel_frame.winfo_exists():
@@ -495,7 +606,7 @@ class DataLoaderApp(ctk.CTk):
                     self._model_panel_frame = None
             except Exception:
                 pass
-        
+
         self._create_split_panel()
 
     def _create_split_panel(self):
@@ -629,20 +740,23 @@ class DataLoaderApp(ctk.CTk):
                     self._model_panel_frame.destroy()
             except Exception:
                 pass
-        
+
         # Crear nuevo panel
-        self._model_panel_frame = ctk.CTkFrame(self.create_mode_frame, fg_color="transparent")
-        self._model_panel_frame.pack(fill="x", expand=True, padx=20, pady=(0, 20))
+        self._model_panel_frame = ctk.CTkFrame(
+            self.create_mode_frame, fg_color="transparent")
+        self._model_panel_frame.pack(
+            fill="x", expand=True, padx=20, pady=(0, 20))
         model_panel = LinearModelPanel(self._model_panel_frame, self)
         model_panel.pack(fill="both", expand=True, padx=10, pady=10)
-    
+
     # ================================================================
     # REINICIAR ESTADO: Eliminar paneles previos
     # ================================================================
 
     def reset_panels(self):
         """
-        Reiniciar el estado interno de la aplicación y eliminar paneles previos.
+        Reiniciar el estado interno de la aplicación y
+        eliminar paneles previos.
         Se usa cuando el usuario quiere procesar un nuevo modelo desde cero.
         """
         #  Destruir el panel de división (train/test) si existe
@@ -681,20 +795,20 @@ class DataLoaderApp(ctk.CTk):
             plt.close('all')
         except Exception:
             pass
-        
+
         try:
             # Destruir paneles específicos que pueden tener recursos
             if hasattr(self, '_split_panel_frame') and self._split_panel_frame:
                 self._split_panel_frame.destroy()
-                
+
             if hasattr(self, '_model_panel_frame') and self._model_panel_frame:
                 self._model_panel_frame.destroy()
-                
+
             if hasattr(self, 'selection_frame') and self.selection_frame:
                 self.selection_frame.destroy()
         except Exception:
             pass
-        
+
         try:
             # Limpiar referencias a dataframes
             self.current_dataframe = None
@@ -703,19 +817,19 @@ class DataLoaderApp(ctk.CTk):
             self.test_df = None
         except Exception:
             pass
-        
+
         try:
             # Forzar recolección de basura antes de cerrar
             import gc
             gc.collect()
         except Exception:
             pass
-        
+
         try:
             self.quit()
         except Exception:
             pass
-        
+
         try:
             # Destruir la ventana después de salir del mainloop
             self.destroy()
@@ -724,7 +838,18 @@ class DataLoaderApp(ctk.CTk):
 
 
 def main():
+    """
+    Función principal que inicia la aplicación.
+
+    Proceso de inicio:
+    1. Crear la aplicación principal
+    2. Ocultar temporalmente la ventana principal
+    3. Mostrar splash screen con animación
+    4. Cuando termina la splash screen, mostrar aplicación principal
+    """
     app = DataLoaderApp()
+    app.withdraw()
+    show_splash_screen(app)
     app.mainloop()
 
 

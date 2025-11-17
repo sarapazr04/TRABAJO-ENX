@@ -17,7 +17,6 @@ import joblib
 import customtkinter as ctk
 from tkinter import filedialog
 from .components import AppTheme, AppConfig, Panel, NotificationWindow, UploadButton
-from .predict_gui import PredictionSection
 
 
 class LoadModelPanel(ctk.CTkFrame):
@@ -78,7 +77,8 @@ class LoadModelPanel(ctk.CTkFrame):
 
         # Contenedor inferior de resultados
         self.result_container = ctk.CTkFrame(self, fg_color="transparent")
-        self.result_container.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+        self.result_container.pack(fill="both",
+                                   expand=True, padx=20, pady=(0, 20))
 
     # ================================================================
     # LÓGICA DE CARGA
@@ -207,7 +207,8 @@ class LoadModelPanel(ctk.CTkFrame):
         desc_box.pack(fill="both", expand=True, padx=15, pady=15)
 
         # Actualizar ruta en interfaz
-        self.path_label.configure(text=file_path, text_color=AppTheme.PRIMARY_ACCENT)
+        self.path_label.configure(text=file_path,
+                                  text_color=AppTheme.PRIMARY_ACCENT)
         self.update_idletasks()
 
         prediction_panel = PredictionSection(self.app, self.result_container, cols_in, formula)

@@ -6,6 +6,11 @@ import joblib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
+import numpy as np
+import pandas as pd
+from .components import Panel, UploadButton, NotificationWindow, AppTheme, AppConfig
+from .desc_model import DescriptBox
+import joblib
 from pathlib import Path
 from datetime import datetime
 from tkinter import filedialog
@@ -30,7 +35,7 @@ class LinearModelPanel(ctk.CTkFrame):
         master : tk.Widget
             Contenedor padre del panel.
         app : DataLoaderApp
-            Instancia principal de la aplicación (para acceder a datos y estado).
+            Instancia principal de la aplicación .
         """
         super().__init__(master)
         self.app = app
@@ -96,26 +101,19 @@ class LinearModelPanel(ctk.CTkFrame):
             padx=(10, 0)    # Espacio a la izquierda
         )
 
-        # Contenedor de la descripcion del modelo
-        self.description_frame = ctk.CTkFrame(
+        # ═══════════════════════════════════════════════════════════
+        # CONTENEDOR DE DESCRIPCIÓN Y GRAFICA DE TEST (
+        # ═══════════════════════════════════════════════════════════
+        self.bottom_container = ctk.CTkFrame(
             panel,
-            fg_color=AppTheme.PRIMARY_BACKGROUND,
-            height=400
+            fg_color="transparent"
         )
         self.description_frame.pack(
-            fill="both", expand=True, padx=20, pady=10)
+            fill="both", expand=True, padx=20, pady=(10, 10))
         self.description_frame.pack_propagate(False)
 
         # Botón de guardar modelo
         self._create_save_button(panel)
-
-        # Contenedor de la predicción del modelo
-
-        self.prediction_frame = ctk.CTkFrame(
-            panel,
-            fg_color=AppTheme.PRIMARY_BACKGROUND
-        )
-        self.prediction_frame.pack(fill="x", expand=True, padx=20, pady=10)
 
     def _display_results(self, formula, r2_train, r2_test, mse_train, mse_test):
         """
@@ -339,33 +337,9 @@ class LinearModelPanel(ctk.CTkFrame):
 
         # Texto inicial orientativo
         descripcion_inicial = (
-            f"Modelo creado correctamente.\n\n"
-            f"Fórmula del modelo:\n"
-            f"{formula}\n"
-            f"═══════════════════════════════════════════════════\n"
-            f"Interpretación:\n"
-            f"1. Coeficientes: "
-            f"Cada coeficiente indica el cambio promedio en '{y_label}' cuando\n"
-            f"   su variable correspondiente aumenta en 1 unidad, manteniendo\n"
-            f"   las demás variables constantes.\n\n"
-            f"2. Capacidad Predictiva: "
-            f"R² (test) = {r2_test:.4f} muestra la capacidad de generalización del modelo.\n"
-            f"   El modelo explica el {r2_test*100:.1f}% de la variabilidad de '{y_label}'.\n"
-            f"═══════════════════════════════════════════════════\n\n"
-            f"Escribe aquí tus observaciones adicionales..."
+            "Escribe aquí tus observaciones adicionales..."
         )
         self.desc_box.set(descripcion_inicial)
-
-    def _create_prediction_panel(self, master, formula):
-        """Crea el panel de predicción del modelo."""
-        # Limpiar panel anterior si existe
-        for widget in self.prediction_frame.winfo_children():
-            widget.destroy()
-
-        # Crear el panel de predicción
-        prediction_panel = PredictionSection(self.app, master, self.app.selection_panel.columnas_entrada, formula)
-        prediction_panel.display_data()
-
 
     # ============================================================
     # ENTRENAMIENTO Y EVALUACIÓN DEL MODELO
@@ -381,7 +355,7 @@ class LinearModelPanel(ctk.CTkFrame):
         - Dibuja la recta si solo hay una variable de entrada.
         """
         # ===================================
-        # 1. VALIDACIÓN: Verificar que los datos están divididos
+        # VALIDACIÓN: Verificar que los datos están divididos
         # ===================================
         if self.app.train_df is None or self.app.test_df is None:
             NotificationWindow(
@@ -393,7 +367,7 @@ class LinearModelPanel(ctk.CTkFrame):
             return
 
         # ===================================
-        # 2. OBTENER DATOS CON LAS COLUMNAS SELECCIONADAS
+        # OBTENER DATOS CON LAS COLUMNAS SELECCIONADAS
         # ===================================
         X_train = self.app.train_df[self.app.selection_panel.columnas_entrada]
         y_train = self.app.train_df[self.app.selection_panel.columna_salida]
@@ -401,7 +375,7 @@ class LinearModelPanel(ctk.CTkFrame):
         y_test = self.app.test_df[self.app.selection_panel.columna_salida]
 
         # ===================================
-        # 3. ENTRENAR EL MODELO
+        # ENTRENAR EL MODELO
         # ===================================
         model = LinearRegression()
         model.fit(X_train, y_train)
@@ -410,13 +384,17 @@ class LinearModelPanel(ctk.CTkFrame):
         self.model = model
 
         # ===================================
-        # 4. CALCULAR PREDICCIONES
+        # CALCULAR PREDICCIONES
         # ===================================
         y_pred_train = model.predict(X_train)
         y_pred_test = model.predict(X_test)
 
+        # Almacenar para la gráfica de evaluación
+        self.y_test = y_test
+        self.y_pred_test = y_pred_test
+
         # ===================================
-        # 5. CALCULAR MÉTRICAS
+        # CALCULAR MÉTRICAS
         # ===================================
         r2_train = r2_score(y_train, y_pred_train)
         r2_test = r2_score(y_test, y_pred_test)
@@ -427,7 +405,7 @@ class LinearModelPanel(ctk.CTkFrame):
         self.mse = [mse_train, mse_test]
 
         # ===================================
-        # 6. CONSTRUIR FÓRMULA
+        # CONSTRUIR FÓRMULA
         # ===================================
         coef_terms = []
         for coef, col in zip(model.coef_, X_train.columns):
@@ -445,12 +423,12 @@ class LinearModelPanel(ctk.CTkFrame):
             formula = f"{self.app.selection_panel.columna_salida} = {' + '.join(coef_terms)} - {abs(intercept):.4f}"
 
         # ===================================
-        # 7. MOSTRAR RESULTADOS (fórmula y métricas)
+        # MOSTRAR RESULTADOS (fórmula y métricas)
         # ===================================
         self._display_results(formula, r2_train, r2_test, mse_train, mse_test)
 
         # ===================================
-        # 8. GRÁFICO (solo si hay 1 variable de entrada)
+        # GRÁFICO (solo si hay 1 variable de entrada)
         # ===================================
         if X_train.shape[1] == 1:
             self._plot_graph(
@@ -469,12 +447,13 @@ class LinearModelPanel(ctk.CTkFrame):
             NotificationWindow(
                 self.app,
                 "Aviso",
-                "No se puede representar el gráfico (más de una variable de entrada).",
+                "No se puede representar el gráfico "
+                "(más de una variable de entrada).",
                 "info"
             )
 
         # ===================================
-        # 9. PANEL DE DESCRIPCIÓN DEL MODELO
+        # PANEL DE DESCRIPCIÓN DEL MODELO
         # ===================================
         self._create_description_panel(
             formula,
@@ -483,13 +462,7 @@ class LinearModelPanel(ctk.CTkFrame):
         )
 
         # ===================================
-        # 10. PANEL DE PREDICCIÓN DEL MODELO
-        # ===================================
-        self._create_prediction_panel(self.prediction_frame, formula)
-
-
-        # ===================================
-        # 11. NOTIFICACIÓN DE ÉXITO
+        # 10. NOTIFICACIÓN DE ÉXITO
         # ===================================
         NotificationWindow(
             self.app,
@@ -502,7 +475,14 @@ class LinearModelPanel(ctk.CTkFrame):
     # GRÁFICO: PUNTOS Y RECTA DE AJUSTE CON VALORES REALES Y PREDICHOS
     # ============================================================
 
-    def _plot_graph(self, X_train, y_train, X_test, y_test, y_pred_test, model, y_label):
+    def _plot_graph(self,
+                    X_train,
+                    y_train,
+                    X_test,
+                    y_test,
+                    y_pred_test,
+                    model,
+                    y_label):
         """
         Dibuja los puntos de entrenamiento y test junto con la recta de ajuste.
 
@@ -573,7 +553,7 @@ class LinearModelPanel(ctk.CTkFrame):
         # CREAR GRAFICO CON TODOS LOS DATOS
         # ═══════════════════════════════════════════════════════════
 
-        # Crear figura con altura reducida para que coincida con columna izquierda
+        # Crear figura con altura reducida
         fig, ax = plt.subplots(figsize=(8, 3.8), dpi=85)
 
         # ─────────────────────────────────────────────────────────
@@ -604,7 +584,7 @@ class LinearModelPanel(ctk.CTkFrame):
         )
 
         # ─────────────────────────────────────────────────────────
-        # 3. DATOS DE TEST : VALORES PREDICHOS
+        # DATOS DE TEST : VALORES PREDICHOS
         # ─────────────────────────────────────────────────────────
         # Usar un marcador diferente
         ax.scatter(
@@ -713,7 +693,16 @@ class LinearModelPanel(ctk.CTkFrame):
         file_path = Path(folder_path) / file_name
 
         try:
-            desc = self.desc_box.get()
+            desc = self.desc_box.get().strip()
+            if desc == "":
+
+                NotificationWindow(
+                    master,
+                    "Información",
+                    "La descripción del modelo está vacía",
+                    "info"
+                )
+
             data_to_save = {
                 "model": self.model,
                 "desc": desc,
@@ -727,7 +716,7 @@ class LinearModelPanel(ctk.CTkFrame):
             NotificationWindow(
                 master,
                 "Éxito",
-                f"Modelo guardado correctamente en:\n{file_path}",
+                "Modelo guardado correctamente",
                 "success"
             )
             return str(file_path)
