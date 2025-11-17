@@ -192,7 +192,7 @@ class MultipleEntriesFrame():
 if __name__ == "__main__":
     app = ctk.CTk()
     app.geometry("1200x700")
-    predict = PredictionSection(app, "Pepino")
+    predict = PredictionSection(app, app, list("pepino"), "noseq = 1 * p + 2* e + 0 * p + 1 * i + 2* n + 3 * o")
 
     def a():
         predict.display_data()

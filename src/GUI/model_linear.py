@@ -378,6 +378,16 @@ class LinearModelPanel(ctk.CTkFrame):
         )
         self.desc_box.set(descripcion_inicial)
 
+    def _create_prediction_panel(self, master, formula):
+        """Crea el panel de predicción del modelo."""
+        # Limpiar panel anterior si existe
+        for widget in self.prediction_frame.winfo_children():
+            widget.destroy()
+
+        # Crear el panel de predicción
+        prediction_panel = PredictionSection(self.app, master, self.app.selection_panel.columnas_entrada, formula)
+        prediction_panel.display_data()
+
     def _create_test_evaluation_graph(self, y_test, y_pred_test, y_label):
         """
         Crea una gráfica que muestra la evaluación del modelo
@@ -666,6 +676,8 @@ class LinearModelPanel(ctk.CTkFrame):
             r2_test,
             self.app.selection_panel.columna_salida
         )
+
+        self._create_prediction_panel(self.prediction_frame, formula)
 
         # ===================================
         # GRÁFICA DE EVALUACIÓN DE TEST
