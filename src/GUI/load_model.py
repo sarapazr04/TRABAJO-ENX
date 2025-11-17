@@ -17,7 +17,6 @@ import joblib
 import customtkinter as ctk
 from tkinter import filedialog
 from .components import AppTheme, AppConfig, Panel, NotificationWindow, UploadButton
-from .predict_gui import PredictionSection
 
 
 class LoadModelPanel(ctk.CTkFrame):
