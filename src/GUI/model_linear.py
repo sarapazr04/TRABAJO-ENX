@@ -677,6 +677,8 @@ class LinearModelPanel(ctk.CTkFrame):
             self.app.selection_panel.columna_salida
         )
 
+        self._create_prediction_panel(self.prediction_frame, formula)
+
         # ===================================
         # GRÁFICA DE EVALUACIÓN DE TEST
         # ===================================
