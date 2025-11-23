@@ -1,5 +1,5 @@
 import pandas as pd
-from data_import.importer import import_data
+from src.data_import.importer import import_data
 
 
 def test_import_simple_csv(tmp_path):
