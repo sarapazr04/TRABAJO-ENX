@@ -20,13 +20,11 @@ def test_model_save_and_load():
         joblib.dump(data, tmp.name)
         loaded = joblib.load(tmp.name)
 
-    # Validar estructura
     assert "model" in loaded
     assert "r2" in loaded
     assert "mse" in loaded
     assert "col_entrada" in loaded
     assert "col_salida" in loaded
 
-    # Validar que el modelo sigue funcionando
-    pred = loaded["model"].predict([[4]])
-    assert pred[0] == 8
+    pred = loaded["model"].predict([[4]])[0]
+    assert abs(pred - 8) < 1e-6
