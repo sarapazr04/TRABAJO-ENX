@@ -465,7 +465,8 @@ class DataLoaderApp(ctk.CTk):
         self.preprocessed_df = None
         self.train_df = None
         self.test_df = None
-        if self._split_panel_frame is not None and self._split_panel_frame.winfo_exists():
+        if (self._split_panel_frame is not None and
+           self._split_panel_frame.winfo_exists()):
             self._split_panel_frame.destroy()
             self._split_panel_frame = None
 
@@ -612,7 +613,8 @@ class DataLoaderApp(ctk.CTk):
     def _create_split_panel(self):
         """Crear y mostrar el panel para dividir el dataset en train/test."""
         # Destruir/recrear si ya existe (por si se vuelve a preprocesar)
-        if self._split_panel_frame is not None and self._split_panel_frame.winfo_exists():
+        if (self._split_panel_frame is not None and
+           self._split_panel_frame.winfo_exists()):
             self._split_panel_frame.destroy()
 
         self._split_panel_frame = ctk.CTkFrame(
