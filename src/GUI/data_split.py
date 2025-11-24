@@ -204,13 +204,5 @@ class DataSplitPanel(ctk.CTkFrame):
             text=f"Entrenamiento: {len(train_df)} filas "
             f"| Test: {len(test_df)} filas"
         )
-        NotificationWindow(
-            self.app,
-            "División completada",
-            f"Datos separados correctamente.\n"
-            f"Entrenamiento: {len(train_df)} "
-            f"filas\nTest: {len(test_df)} filas",
-            "success"
-        )
 
         self.app.set_split_completed()
