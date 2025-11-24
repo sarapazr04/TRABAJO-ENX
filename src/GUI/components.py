@@ -290,7 +290,7 @@ class NotificationWindow(ctk.CTkToplevel):
 
     # Tamaño de la ventana
     WINDOW_WIDTH = 450
-    WINDOW_HEIGHT = 180
+    WINDOW_HEIGHT = 200
 
     # Configuración de colores e iconos según el tipo
     NOTIFICATION_CONFIG = {

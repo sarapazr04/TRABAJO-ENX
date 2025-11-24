@@ -62,7 +62,7 @@ class DataSplitPanel(ctk.CTkFrame):
         self.split_button = UploadButton(
             controls_frame,
             text="Dividir Dataset y crear modelo",
-            command=self._split_dataset  # Función a ejecutar al hacer clic
+            command=self._split_dataset  # Función a ejecutar al hacer click
         )
         self.split_button.pack(side="right")
 
@@ -148,6 +148,32 @@ class DataSplitPanel(ctk.CTkFrame):
                 "para realizar la separación (mínimo 5).",
                 "error"
             )
+            return
+
+        try:
+            float(self.seed_entry.get())
+        except ValueError:
+            NotificationWindow(
+                self.app,
+                "Semilla incorrecta",
+                "La semilla tiene que ser un número "
+                "entre 0 y 10000000000.",
+                "error"
+            )
+            self.seed_entry.delete(0, 'end')
+            return
+
+        if (int(self.seed_entry.get()) < 0 or
+           int(self.seed_entry.get()) > 10000000000):
+
+            NotificationWindow(
+                self.app,
+                "Semilla incorrecta",
+                "La semilla tiene que ser un valor "
+                "entre 0 y 10000000000.",
+                "error"
+            )
+            self.seed_entry.delete(0, 'end')
             return
 
         # Parámetros
