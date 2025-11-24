@@ -157,20 +157,20 @@ class DataSplitPanel(ctk.CTkFrame):
                 self.app,
                 "Semilla incorrecta",
                 "La semilla tiene que ser un número "
-                "entre 0 y 10000000000.",
+                "entre 0 y 4294967295.",
                 "error"
             )
             self.seed_entry.delete(0, 'end')
             return
 
         if (int(self.seed_entry.get()) < 0 or
-           int(self.seed_entry.get()) > 10000000000):
+           int(self.seed_entry.get()) > 4294967295):
 
             NotificationWindow(
                 self.app,
                 "Semilla incorrecta",
                 "La semilla tiene que ser un valor "
-                "entre 0 y 10000000000.",
+                "entre 0 y 4294967295.",
                 "error"
             )
             self.seed_entry.delete(0, 'end')
