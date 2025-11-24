@@ -434,7 +434,8 @@ class DataLoaderApp(ctk.CTk):
 
         except Exception as e:
             # Si falla, llamar función de error en el hilo principal
-            self.after(0, self._on_load_error, str(e))
+            e = str(e).split(":")[0]
+            self.after(0, self._on_load_error, e)
 
     def _on_load_success(self, file_path, dataframe):
         """
@@ -503,7 +504,7 @@ class DataLoaderApp(ctk.CTk):
         NotificationWindow(
             self,
             "Error de Carga",
-            f"No se puede cargar el archivo:\n\n{error_message}",
+            f"No se puede cargar el archivo: \n{error_message}",
             "error"
         )
 
