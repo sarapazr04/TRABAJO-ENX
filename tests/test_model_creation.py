@@ -2,7 +2,9 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score, mean_squared_error
 
-# Caja negra funcional test para la creación y evaluación de un modelo de regresión lineal
+# Caja negra funcional test para la creación y
+# evaluación de un modelo de regresión lineal
+
 
 def test_model_creation():
     # Dataset simple

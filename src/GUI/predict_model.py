@@ -19,4 +19,4 @@ def predict_result(entry_cols, entry_vals, formula):
     return salida + " = " + str(result)
 
 
-# print(predict_result(list("pepino"), list("676967"), "noseq = 1 * p + 2* e + 0 * p + 1 * i + 2* n + 3 * o"))
+# print(predict_result(list("pe"), list("67"), "noseq = 1 * p + 2* e"))
