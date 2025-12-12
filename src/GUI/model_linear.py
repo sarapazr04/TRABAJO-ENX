@@ -640,11 +640,11 @@ class LinearModelPanel(ctk.CTkFrame):
         # Construir fórmula completa
         intercept = model.intercept_
         if intercept >= 0:
-            formula = f"{self.app.selection_panel.columna_salida}"
-            f" = {' + '.join(coef_terms)} + {intercept:.4f}"
+            formula = (f"{self.app.selection_panel.columna_salida}"
+                       f" = {' + '.join(coef_terms)} + {intercept:.4f}")
         else:
-            formula = f"{self.app.selection_panel.columna_salida}"
-            f" = {' + '.join(coef_terms)} - {abs(intercept):.4f}"
+            formula = (f"{self.app.selection_panel.columna_salida}"
+                       f" = {' + '.join(coef_terms)} - {abs(intercept):.4f}")
 
         # ===================================
         # MOSTRAR RESULTADOS (fórmula y métricas)
