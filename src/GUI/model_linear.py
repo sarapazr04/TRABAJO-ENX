@@ -2,8 +2,6 @@ import customtkinter as ctk
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from .components import Panel, NotificationWindow, AppTheme, AppConfig
-from .desc_model import DescriptBox
 import joblib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from sklearn.linear_model import LinearRegression
@@ -11,7 +9,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 from pathlib import Path
 from datetime import datetime
 from tkinter import filedialog
-from .components import Panel, UploadButton, NotificationWindow, AppTheme, AppConfig
+from .components import Panel, NotificationWindow, AppTheme, AppConfig
 from .desc_model import DescriptBox
 from .predict_gui import PredictionSection
 
@@ -152,7 +150,8 @@ class LinearModelPanel(ctk.CTkFrame):
         )
         self.prediction_frame.pack(fill="x", expand=True, padx=20, pady=10)
 
-    def _display_results(self, formula, r2_train, r2_test, mse_train, mse_test):
+    def _display_results(self, formula, r2_train, r2_test,
+                         mse_train, mse_test):
         """
         Muestra la fórmula y las métricas en la columna izquierda.
 
@@ -308,10 +307,14 @@ class LinearModelPanel(ctk.CTkFrame):
         # Determinar color segun la comparacion
         if is_ecm:
             # Para ECM: menor es mejor
-            color = AppTheme.SUCCES if value <= compare_value else AppTheme.WARNING
+            color = AppTheme.SUCCES
+            if value > compare_value:
+                AppTheme.WARNING
         else:
             # Para R²: mayor es mejor
-            color = AppTheme.SUCCES if value >= compare_value else AppTheme.WARNING
+            color = AppTheme.SUCCES
+            if value < compare_value:
+                AppTheme.WARNING
 
         # Valor de la métrica
         value_label = ctk.CTkLabel(
@@ -385,7 +388,10 @@ class LinearModelPanel(ctk.CTkFrame):
             widget.destroy()
 
         # Crear el panel de predicción
-        prediction_panel = PredictionSection(self.app, master, self.app.selection_panel.columnas_entrada, formula)
+        prediction_panel = PredictionSection(
+            self.app, master,
+            self.app.selection_panel.columnas_entrada,
+            formula)
         prediction_panel.display_data()
 
     def _create_test_evaluation_graph(self, y_test, y_pred_test, y_label):
@@ -634,9 +640,11 @@ class LinearModelPanel(ctk.CTkFrame):
         # Construir fórmula completa
         intercept = model.intercept_
         if intercept >= 0:
-            formula = f"{self.app.selection_panel.columna_salida} = {' + '.join(coef_terms)} + {intercept:.4f}"
+            formula = (f"{self.app.selection_panel.columna_salida}"
+                       f" = {' + '.join(coef_terms)} + {intercept:.4f}")
         else:
-            formula = f"{self.app.selection_panel.columna_salida} = {' + '.join(coef_terms)} - {abs(intercept):.4f}"
+            formula = (f"{self.app.selection_panel.columna_salida}"
+                       f" = {' + '.join(coef_terms)} - {abs(intercept):.4f}")
 
         # ===================================
         # MOSTRAR RESULTADOS (fórmula y métricas)

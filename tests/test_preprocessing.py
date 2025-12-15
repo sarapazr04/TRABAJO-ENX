@@ -15,7 +15,9 @@ class FakeNotificationWindow:
 
 @pytest.fixture(autouse=True)
 def patch_notification_window(monkeypatch):
-    monkeypatch.setattr(selection_columns, "NotificationWindow", FakeNotificationWindow)
+    monkeypatch.setattr(selection_columns,
+                        "NotificationWindow",
+                        FakeNotificationWindow)
 
 
 # ============================================================
@@ -68,7 +70,8 @@ def run_preprocessing(option, df, selected_cols, constant=None):
     pre.option_var = type("obj", (), {"get": lambda self=option: option})
 
     if constant is not None:
-        pre.constant_entry = type("obj", (), {"get": lambda self=constant: constant})
+        pre.constant_entry = type("obj", (),
+                                  {"get": lambda self=constant: constant})
     else:
         pre.constant_entry = type("obj", (), {"get": lambda self="": ""})
 

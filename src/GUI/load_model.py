@@ -16,7 +16,8 @@ Compatible con el formato extendido:
 import joblib
 import customtkinter as ctk
 from tkinter import filedialog
-from .components import AppTheme, AppConfig, Panel, NotificationWindow, UploadButton
+from .components import (AppTheme, AppConfig, Panel,
+                         NotificationWindow, UploadButton)
 from .predict_gui import PredictionSection
 
 
@@ -212,5 +213,6 @@ class LoadModelPanel(ctk.CTkFrame):
                                   text_color=AppTheme.PRIMARY_ACCENT)
         self.update_idletasks()
 
-        prediction_panel = PredictionSection(self.app, self.result_container, cols_in, formula)
+        prediction_panel = PredictionSection(self.app, self.result_container,
+                                             cols_in, formula)
         prediction_panel.display_data()
